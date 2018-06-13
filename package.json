@@ -1,0 +1,25 @@
+{
+  "name": "template",
+  "version": "1.0.0",
+  "description": "REST API Template ",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon ./server/server",
+    "test": "mocha"
+  },
+  "author": "Andrey Gazhala",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "intel": "^1.2.0",
+    "mongoose": "^5.1.4",
+    "morgan": "^1.9.0"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chai-http": "^4.0.0",
+    "nodemon": "^1.17.5"
+  }
+}

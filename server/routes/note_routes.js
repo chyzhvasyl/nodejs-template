@@ -4,7 +4,7 @@ const Note = require('../models/note');
 const intel = require('intel');
 
 router.get('/', function(req, res, next) {
-  res.send('Hello, World!');
+  res.render('index.html');
   intel.info('HOME ROUTE');
 });
 

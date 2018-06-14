@@ -1,0 +1,103 @@
+Server started on port  3000
+Connected to database mongodb://localhost:27017/template
+Take all notes  { title: 'Note One',
+  body: 'This is note one',
+  _id: 5b223f6327b13e2686df8d25,
+  __v: 0 }
+Server started on port  3000
+Connected to database mongodb://localhost:27017/template
+Updated note  {"title":"eadsfscaaaaaadsdsasacfff","body":"aasszcxaxaxasxasdssddsdsa","_id":"5b223f6327b13e2686df8d25","__v":0}
+Updated note  {"title":"aaaaadsdsasacfff","body":"aasszcxaxaxasxasdssddsdsa","_id":"5b223f6327b13e2686df8d25","__v":0}
+Updated note  {"title":"aaaaadsf","body":"aasszcxaxddsdsa","_id":"5b223f6327b13e2686df8d25","__v":0}
+Updated note  {"title":"af","body":"aasszcxaxddsdsa","_id":"5b223f6327b13e2686df8d25","__v":0}
+Updated note  {"title":"aasdsadsadf","body":"aasszcxaxddsdsa","_id":"5b223f6327b13e2686df8d25","__v":0}
+Server started on port  3000
+Connected to database mongodb://localhost:27017/template
+Server started on port  3000
+Connected to database mongodb://localhost:27017/template
+Take all notes  { title: 'Note one',
+  body: 'This is note one',
+  _id: 5b225d3c86c90d375d6a1529,
+  __v: 0 }
+Get single note  {"title":"Note two","body":"This is note two","_id":"5b225d3d86c90d375d6a152b","__v":0}
+Added new note  {"title":"Note free","body":"This is note fhree","_id":"5b225d3d86c90d375d6a152d","__v":0}
+Take all notes  { title: 'Note one',
+  body: 'This is note one',
+  _id: 5b225d3d86c90d375d6a152e,
+  __v: 0 }
+ERROR  {"errors":{"body":{"message":"Path `body` is required.","name":"ValidatorError","properties":{"message":"Path `{PATH}` is required.","type":"required","path":"body"},"kind":"required","path":"body","$isValidatorError":true}},"_message":"Note validation failed","message":"Note validation failed: body: Path `body` is required.","name":"ValidationError"}
+    at new ValidationError (/home/andrey/Sourses/nodejs/template/node_modules/mongoose/lib/error/validation.js:27:11)
+    at model.Document.invalidate (/home/andrey/Sourses/nodejs/template/node_modules/mongoose/lib/document.js:1846:32)
+    at p.doValidate.skipSchemaValidators (/home/andrey/Sourses/nodejs/template/node_modules/mongoose/lib/document.js:1714:17)
+    at /home/andrey/Sourses/nodejs/template/node_modules/mongoose/lib/schematype.js:808:9
+    at _combinedTickCallback (internal/process/next_tick.js:131:7)
+    at process._tickCallback (internal/process/next_tick.js:180:9)
+Take all notes  { title: 'Note one',
+  body: 'This is note one',
+  _id: 5b225d3e86c90d375d6a152f,
+  __v: 0 }
+Deleted note  {"title":"Note one","body":"This is note one","_id":"5b225d3e86c90d375d6a152f","__v":0}
+Server started on port  3000
+Connected to database mongodb://localhost:27017/template
+Take all notes  { title: 'Note one',
+  body: 'This is note one',
+  _id: 5b225d97a5e18337b701c87e,
+  __v: 0 }
+Get single note  {"title":"Note two","body":"This is note two","_id":"5b225d97a5e18337b701c880","__v":0}
+Added new note  {"title":"Note free","body":"This is note fhree","_id":"5b225d98a5e18337b701c882","__v":0}
+Take all notes  { title: 'Note one',
+  body: 'This is note one',
+  _id: 5b225d98a5e18337b701c883,
+  __v: 0 }
+Updated note  {"title":"1","body":"2","_id":"5b225d98a5e18337b701c883","__v":0}
+Take all notes  { title: 'Note one',
+  body: 'This is note one',
+  _id: 5b225d98a5e18337b701c884,
+  __v: 0 }
+Deleted note  {"title":"Note one","body":"This is note one","_id":"5b225d98a5e18337b701c884","__v":0}
+Take all notes  
+Server started on port  3000
+Connected to database mongodb://localhost:27017/template
+Take all notes  
+Server started on port  3000
+Connected to database mongodb://localhost:27017/template
+Server started on port  3000
+Connected to database mongodb://localhost:27017/template
+Server started on port  3000
+Connected to database mongodb://localhost:27017/template
+Server started on port  3000
+Connected to database mongodb://localhost:27017/template
+Take all notes  { title: 'Note one',
+  body: 'This is note one',
+  _id: 5b225e3125067a39231681e4,
+  __v: 0 }
+Get single note  {"title":"Note two","body":"This is note two","_id":"5b225e3225067a39231681e6","__v":0}
+Added new note  {"title":"Note free","body":"This is note fhree","_id":"5b225e3225067a39231681e8","__v":0}
+Take all notes  { title: 'Note one',
+  body: 'This is note one',
+  _id: 5b225e3225067a39231681e9,
+  __v: 0 }
+Updated note  {"title":"1","body":"2","_id":"5b225e3225067a39231681e9","__v":0}
+Take all notes  { title: 'Note one',
+  body: 'This is note one',
+  _id: 5b225e3325067a39231681ea,
+  __v: 0 }
+Deleted note  {"title":"Note one","body":"This is note one","_id":"5b225e3325067a39231681ea","__v":0}
+Server started on port  3000
+Connected to database mongodb://localhost:27017/template
+Take all notes  { title: 'Note one',
+  body: 'This is note one',
+  _id: 5b225e5135a3c339696b35a5,
+  __v: 0 }
+Get single note  {"title":"Note two","body":"This is note two","_id":"5b225e5235a3c339696b35a7","__v":0}
+Added new note  {"title":"Note free","body":"This is note fhree","_id":"5b225e5235a3c339696b35a9","__v":0}
+Take all notes  { title: 'Note one',
+  body: 'This is note one',
+  _id: 5b225e5235a3c339696b35aa,
+  __v: 0 }
+Updated note  {"title":"1","body":"2","_id":"5b225e5235a3c339696b35aa","__v":0}
+Take all notes  { title: 'Note one',
+  body: 'This is note one',
+  _id: 5b225e5235a3c339696b35ab,
+  __v: 0 }
+Deleted note  {"title":"Note one","body":"This is note one","_id":"5b225e5235a3c339696b35ab","__v":0}

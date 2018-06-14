@@ -92,7 +92,7 @@ describe('Notes', function() {
       .end(function(err, res){
         chai.request(server)
           .put('/note/'+res.body[0]._id)
-          .send({'title': 'Note Two'})
+          .send({'title': '1', 'body': '2'})
           .end(function(error, response){
             response.should.have.status(200);
             response.should.be.json;
@@ -101,7 +101,7 @@ describe('Notes', function() {
             response.body.UPDATED.should.be.a('object');
             response.body.UPDATED.should.have.property('title');
             response.body.UPDATED.should.have.property('_id');
-            response.body.UPDATED.title.should.equal('Note Two');
+            response.body.UPDATED.title.should.equal('1');
             done();
         });
       });

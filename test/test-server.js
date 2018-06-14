@@ -14,10 +14,11 @@ describe('Notes', function() {
   Note.collection.drop();
 
   beforeEach(function(done){
-    var newNote = new Note({
+    let newNote1 = new Note({
       title: 'Note one',
       body: 'This is note one'
     });
+
     newNote.save(function(err) {
       done();
     });
@@ -69,7 +70,7 @@ describe('Notes', function() {
   it('should add a SINGLE note on /notes POST', function(done) {
     chai.request(server)
       .post('/notes')
-      .send({'title': 'Note free'})
+      .send({'title': 'Note free', 'body': 'This is note fhree'})
       .end(function(err, res){
         res.should.have.status(200);
         res.should.be.json;

@@ -3,11 +3,13 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
-const dbConfig = require('./config/database');
-const corsOptions = require('./config/cors');
 const fs = require('fs');
 const path = require('path');
 const intel = require('intel');
+const Note = require('./models/note');
+
+const dbConfig = require('./config/database');
+const corsOptions = require('./config/cors');
 
 // *** logger *** //
 intel.addHandler(new intel.handlers.File('./server/logs/file.log'));

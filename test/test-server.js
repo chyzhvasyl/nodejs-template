@@ -14,7 +14,7 @@ describe('Notes', function() {
   Note.collection.drop();
 
   beforeEach(function(done){
-    let newNote1 = new Note({
+    let newNote = new Note({
       title: 'Note one',
       body: 'This is note one'
     });

@@ -1,36 +1,36 @@
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const mongoose = require('mongoose');
+var chai = require('chai');
+var chaiHttp = require('chai-http');
+var mongoose = require('mongoose');
 
-const server = require('../server/server');
-const Note = require('../server/models/note');
+var server = require('../server/server');
+var Article = require('../server/models/article');
 
-const should = chai.should();
+var should = chai.should();
 chai.use(chaiHttp);
 
 
-describe('Notes', function() {
+describe('Articles', function() {
 
-  Note.collection.drop();
+  Article.collection.drop();
 
   beforeEach(function(done){
-    let newNote = new Note({
-      title: 'Note one',
-      body: 'This is note one'
+    let newArticle = new Article({
+      title: 'Article one',
+      body: 'This is article one'
     });
 
-    newNote.save(function(err) {
+    newArticle.save(function(err) {
       done();
     });
   });
   afterEach(function(done){
-    Note.collection.drop();
+    Article.collection.drop();
     done();
   });
 
-  it('should list ALL notes on /notes GET', function(done) {
+  it('should list ALL articles on /articles GET', function(done) {
     chai.request(server)
-      .get('/notes')
+      .get('/articles')
       .end(function(err, res){
         res.should.have.status(200);
         res.should.be.json;
@@ -38,20 +38,20 @@ describe('Notes', function() {
         res.body[0].should.have.property('_id');
         res.body[0].should.have.property('title');
         res.body[0].should.have.property('body');
-        res.body[0].title.should.equal('Note one');
-        res.body[0].body.should.equal('This is note one');
+        res.body[0].title.should.equal('Article one');
+        res.body[0].body.should.equal('This is article one');
         done();
       });
   });
 
-  it('should list a SINGLE note on /note/<id> GET', function(done) {
-      var newNote = new Note({
-        title: 'Note two',
-        body: 'This is note two'
+  it('should list a SINGLE article on /article/<id> GET', function(done) {
+      var newArticle = new Article({
+        title: 'Article two',
+        body: 'This is article two'
       });
-      newNote.save(function(err, data) {
+      newArticle.save(function(err, data) {
         chai.request(server)
-          .get('/note/'+data.id)
+          .get('/article/'+data.id)
           .end(function(err, res){
             res.should.have.status(200);
             res.should.be.json;
@@ -59,18 +59,18 @@ describe('Notes', function() {
             res.body.should.have.property('_id');
             res.body.should.have.property('title');
             res.body.should.have.property('body');
-            res.body.title.should.equal('Note two');
-            res.body.body.should.equal('This is note two');
+            res.body.title.should.equal('Article two');
+            res.body.body.should.equal('This is article two');
             res.body._id.should.equal(data.id);
             done();
           });
       });
   });
 
-  it('should add a SINGLE note on /notes POST', function(done) {
+  it('should add a SINGLE article on /articles POST', function(done) {
     chai.request(server)
-      .post('/notes')
-      .send({'title': 'Note free', 'body': 'This is note fhree'})
+      .post('/articles')
+      .send({'title': 'Article free', 'body': 'This is article fhree'})
       .end(function(err, res){
         res.should.have.status(200);
         res.should.be.json;
@@ -80,18 +80,18 @@ describe('Notes', function() {
         res.body.SUCCESS.should.have.property('title');
         res.body.SUCCESS.should.have.property('body');
         res.body.SUCCESS.should.have.property('_id');
-        res.body.SUCCESS.title.should.equal('Note free');
-        res.body.SUCCESS.body.should.equal('This is note fhree');
+        res.body.SUCCESS.title.should.equal('Article free');
+        res.body.SUCCESS.body.should.equal('This is article fhree');
         done();
       });
   });
 
-  it('should update a SINGLE note on /note/<id> PUT', function(done) {
+  it('should update a SINGLE article on /article/<id> PUT', function(done) {
     chai.request(server)
-      .get('/notes')
+      .get('/articles')
       .end(function(err, res){
         chai.request(server)
-          .put('/note/'+res.body[0]._id)
+          .put('/article/'+res.body[0]._id)
           .send({'title': '1', 'body': '2'})
           .end(function(error, response){
             response.should.have.status(200);
@@ -107,12 +107,12 @@ describe('Notes', function() {
       });
   });
 
-  it('should delete a SINGLE note on /note/<id> DELETE', function(done) {
+  it('should delete a SINGLE article on /article/<id> DELETE', function(done) {
     chai.request(server)
-      .get('/notes')
+      .get('/articles')
       .end(function(err, res){
         chai.request(server)
-          .delete('/note/'+res.body[0]._id)
+          .delete('/article/'+res.body[0]._id)
           .end(function(error, response){
             response.should.have.status(200);
             response.should.be.json;
@@ -121,10 +121,9 @@ describe('Notes', function() {
             response.body.REMOVED.should.be.a('object');
             response.body.REMOVED.should.have.property('title');
             response.body.REMOVED.should.have.property('_id');
-            response.body.REMOVED.title.should.equal('Note one');
+            response.body.REMOVED.title.should.equal('Article one');
             done();
         });
       });
   });
-
 });

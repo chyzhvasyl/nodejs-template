@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Comment = require('../models/comment');
+const Article = require('../models/article');
 const intel = require('intel');
 
 // *** api routes *** //
@@ -25,11 +26,14 @@ function findAllComments(req, res) {
 
 // *** get SINGLE article *** //
 function findCommentById(req, res) {
-  Comment.findById(req.params.id, function(err, comment) {
+  Comment.findById(req.params.id)
+  .populate('article')
+  .exec(function(err, comment) {
     if(err) {
       res.json({'ERROR': err});
       intel.error("ERROR ", err);
     } else {
+      console.log(comment.article.title);
       res.json(comment);
       intel.info('Get single comment ', comment);
     }
@@ -49,6 +53,7 @@ function addComment(req, res) {
     // status: req.body.status,
     // comments: req.body.comments
   });
+
   newComment.save(function(err, newComment) {
     if(err) {
       res.json({'ERROR': err});

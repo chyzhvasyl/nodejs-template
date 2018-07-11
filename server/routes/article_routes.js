@@ -40,6 +40,20 @@ router.get('/article/:id', findArticleById);
 router.post('/articles', addArticle);
 router.put('/article/:id', updateArticle);
 router.delete('/article/:id', deleteArticle);
+router.get('/uploads/:name', findImageByName);
+
+// *** get SINGLE image *** //
+function findImageByName(req, res) {  
+    Article.findOne({'img.name':req.params.name}, function(err, article){
+      if(err) {
+        res.json({'ERROR': err});
+        intel.error("ERROR ", err);
+      } else {
+        res.contentType(article.img.contentType);
+        res.send(article.img.data);
+      }
+    })
+}
 
 // *** get ALL articles *** //
 function findAllArticles(req, res) {
@@ -79,8 +93,9 @@ function addArticle(req, res) {
         const newArticle = new Article();
         newArticle.title = req.body.title;
         newArticle.body = req.body.body;
+        newArticle.img.name = req.file.filename,
         newArticle.img.data = fs.readFileSync(req.file.path);
-        // newArticle.img.contentType = 'image/jpg';
+        newArticle.img.contentType = req.file.mimetype;
         newArticle.timeOfCreation = req.body.timeOfCreation;
         newArticle.timeOfPublication = req.body.timeOfPublication;
         newArticle.category = req.body.category;
@@ -91,6 +106,13 @@ function addArticle(req, res) {
             res.json({'ERROR': err});
             intel.error("ERROR ", err);
           } else {
+            const newComment = new Comment({
+              body: 'New Comment',
+              article: newArticle._id
+            });
+            newComment.save(function (err) {
+              if (err) return handleError(err);
+            });  
             res.json({'SUCCESS': newArticle});
             intel.info('Added new article ', newArticle);
           }
@@ -130,8 +152,9 @@ function updateArticle(req, res) {
         Article.findById(req.params.id, function(err, article) {
           article.title = req.body.title;
           article.body = req.body.body;
+          article.img.name = req.file.filename,
           article.img.data = fs.readFileSync(req.file.path);
-          // article.img.contentType = 'image/jpg';
+          article.img.contentType = feq.file.mimetype;
           article.timeOfCreation = req.body.timeOfCreation;
           article.timeOfPublication = req.body.timeOfPublication;
           article.category = req.body.category;
@@ -149,25 +172,7 @@ function updateArticle(req, res) {
           });
         });
       } else {
-        Article.findById(req.params.id, function(err, article) {
-          article.title = req.body.title;
-          article.body = req.body.body;
-          article.timeOfCreation = req.body.timeOfCreation;
-          article.timeOfPublication = req.body.timeOfPublication;
-          article.category = req.body.category;
-          article.confirmation = req.body.confirmation;
-          article.status = req.body.status;
-          article.comments = req.body.comments;
-          article.save(function(err) {
-            if(err) {
-              res.json({'ERROR': err});
-              intel.error("ERROR ", err);
-            } else {
-              res.json({'UPDATED': article});
-              intel.info('Updated article ', article);
-            }
-          });
-        });
+
       }
       
     }

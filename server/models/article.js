@@ -15,6 +15,7 @@ const articleSchema = new Schema({
     trim: true
   },
   img: { 
+    name: String,
     data: Buffer, 
     contentType: String 
   },

@@ -37,23 +37,10 @@ function checkFileType(file, cb){
 // *** api routes *** //
 router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
+router.get('/articles/:category', findArticlesByCategory);
 router.post('/articles', addArticle);
 router.put('/article/:id', updateArticle);
 router.delete('/article/:id', deleteArticle);
-router.get('/uploads/:name', findImageByName);
-
-// *** get SINGLE image *** //
-function findImageByName(req, res) {  
-    Article.findOne({'img.name':req.params.name}, function(err, article){
-      if(err) {
-        res.json({'ERROR': err});
-        intel.error("ERROR ", err);
-      } else {
-        res.contentType(article.img.contentType);
-        res.send(article.img.data);
-      }
-    })
-}
 
 // *** get ALL articles *** //
 function findAllArticles(req, res) {
@@ -68,7 +55,7 @@ function findAllArticles(req, res) {
   });
 }
 
-// *** get SINGLE article *** //
+// *** get SINGLE article by id *** //
 function findArticleById(req, res) {
   Article.findById(req.params.id, function(err, article) {
     if(err) {
@@ -77,6 +64,19 @@ function findArticleById(req, res) {
     } else {
       res.json(article);
       intel.info('Get single article ', article);
+    }
+  });
+}
+
+// *** get All articles by category *** //
+function findArticlesByCategory(req, res) {  
+  Article.find({'category':req.params.category}, function(err, articles){
+    if(err) {
+      res.json({'ERROR': err});
+      intel.error("ERROR ", err);
+    } else {
+      res.json(articles);
+      intel.info("Take all articles with category" + req.params.category, articles);
     }
   });
 }

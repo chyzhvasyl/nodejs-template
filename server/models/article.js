@@ -16,7 +16,7 @@ const articleSchema = new Schema({
   },
   img: { 
     name: String,
-    data: Buffer, 
+    data: Buffer,
     contentType: String 
   },
   timeOfCreation: {

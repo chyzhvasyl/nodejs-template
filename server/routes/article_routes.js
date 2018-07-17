@@ -37,7 +37,7 @@ function checkFileType(file, cb){
 // *** api routes *** //
 router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
-router.get('/articles/:category', findArticlesByCategory);
+router.get('/articles/:category', findAllArticlesByCategory);
 router.post('/articles', addArticle);
 router.put('/article/:id', updateArticle);
 router.delete('/article/:id', deleteArticle);
@@ -69,7 +69,7 @@ function findArticleById(req, res) {
 }
 
 // *** get All articles by category *** //
-function findArticlesByCategory(req, res) {  
+function findAllArticlesByCategory(req, res) {  
   Article.find({'category':req.params.category}, function(err, articles){
     if(err) {
       res.json({'ERROR': err});
@@ -81,7 +81,7 @@ function findArticlesByCategory(req, res) {
   });
 }
 
-// *** post add SINGLE article  *** //
+// *** add SINGLE article  *** //
 function addArticle(req, res) {
   upload(req, res, function (err) {
     if (err) {
@@ -140,9 +140,10 @@ function addArticle(req, res) {
   });
 };  
 
-// *** put SINGLE article *** //
+// *** update SINGLE article *** //
 function updateArticle(req, res) {
   upload(req, res, function (err) {
+    console.log(req);
     if (err) {
       res.json({'ERROR': err});
       intel.error("ERROR ", err);
@@ -154,7 +155,7 @@ function updateArticle(req, res) {
           article.body = req.body.body;
           article.img.name = req.file.filename,
           article.img.data = fs.readFileSync(req.file.path);
-          article.img.contentType = feq.file.mimetype;
+          article.img.contentType = req.file.mimetype;
           article.timeOfCreation = req.body.timeOfCreation;
           article.timeOfPublication = req.body.timeOfPublication;
           article.category = req.body.category;
@@ -172,9 +173,27 @@ function updateArticle(req, res) {
           });
         });
       } else {
-
+        Article.findById(req.params.id, function(err, article) {
+          article.title = req.body.title;
+          article.body = req.body.body;
+          article.img = undefined;
+          article.timeOfCreation = req.body.timeOfCreation;
+          article.timeOfPublication = req.body.timeOfPublication;
+          article.category = req.body.category;
+          article.confirmation = req.body.confirmation;
+          article.status = req.body.status;
+          article.comments = req.body.comments;
+          article.save(function(err) {
+            if(err) {
+              res.json({'ERROR': err});
+              intel.error("ERROR ", err);
+            } else {
+              res.json({'UPDATED': article});
+              intel.info('Updated article ', article);
+            }
+          });
+        });
       }
-      
     }
   });
 }

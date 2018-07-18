@@ -34,7 +34,7 @@ const articleSchema = new Schema({
   },
   confirmation: {
     type: Boolean,
-    required: false,
+    required: true,
     default: false
   },
   status: {

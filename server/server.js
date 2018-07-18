@@ -19,6 +19,7 @@ intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
 // *** routes *** //
 const articleRoutes = require('./routes/article_routes.js');
 const commentRoutes = require('./routes/comment_routes.js');
+const categoryRoutes = require('./routes/category_routes');
 
 // *** mongodb config *** //
 mongoose.connect(dbConfig.database, (err, res) => {
@@ -50,6 +51,7 @@ server.use(morgan(':method :url :status :res[content-length] - :response-time ms
 // *** main routes *** //
 server.use('/', articleRoutes);
 server.use('/', commentRoutes);
+server.use('/', categoryRoutes);
 
 // *** server config *** //
 // const hostname = '192.168.0.123';

@@ -38,7 +38,7 @@ function checkFileType(file, cb){
 router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
 router.get('/articles/:category', findAllArticlesByCategory);
-router.post('/articles', addArticle);
+router.post('/article', addArticle);
 router.put('/article/:id', updateArticle);
 router.delete('/article/:id', deleteArticle);
 
@@ -63,7 +63,7 @@ function findArticleById(req, res) {
       intel.error("ERROR ", err);
     } else {
       res.json(article);
-      intel.info('Get single article ', article);
+      intel.info('Get single article by id ', article);
     }
   });
 }
@@ -76,7 +76,7 @@ function findAllArticlesByCategory(req, res) {
       intel.error("ERROR ", err);
     } else {
       res.json(articles);
-      intel.info("Take all articles with category" + req.params.category, articles);
+      intel.info("Take all articles by category" + req.params.category, articles);
     }
   });
 }
@@ -106,13 +106,13 @@ function addArticle(req, res) {
             res.json({'ERROR': err});
             intel.error("ERROR ", err);
           } else {
-            const newComment = new Comment({
-              body: 'New Comment',
-              article: newArticle._id
-            });
-            newComment.save(function (err) {
-              if (err) return handleError(err);
-            });  
+            // const newComment = new Comment({
+            //   body: 'New Comment',
+            //   article: newArticle._id
+            // });
+            // newComment.save(function (err) {
+            //   if (err) return handleError(err);
+            // });  
             res.json({'SUCCESS': newArticle});
             intel.info('Added new article ', newArticle);
           }

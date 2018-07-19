@@ -21,7 +21,7 @@ const articleSchema = new Schema({
   },
   timeOfCreation: {
     type: Date,
-    // required: true,
+    required: true,
     default: Date.now 
   },
   timeOfPublication: {
@@ -29,8 +29,7 @@ const articleSchema = new Schema({
   },
   category: {
     type: String,
-    required: true,
-    enum: ['social', 'politics', 'sports']
+    required: true
   },
   confirmation: {
     type: Boolean,
@@ -42,7 +41,7 @@ const articleSchema = new Schema({
     required: true,
     enum: ['created', 'modified', 'published']
   },
-  comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }]
+  comments: [{ type: Schema.Types.ObjectId, ref: 'comment' }]
 });
 
 

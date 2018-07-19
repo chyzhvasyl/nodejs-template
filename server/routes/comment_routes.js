@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const Comment = require('../models/comment');
-const Article = require('../models/article');
 const intel = require('intel');
 
 // *** api routes *** //
@@ -27,13 +26,13 @@ function findAllComments(req, res) {
 // *** get SINGLE article *** //
 function findCommentById(req, res) {
   Comment.findById(req.params.id)
-  .populate('Article')
+  .populate('article')
   .exec(function(err, comment) {
     if(err) {
       res.json({'ERROR': err});
       intel.error("ERROR ", err);
     } else {
-      console.log(comment.article);
+      console.log(comment.article.body);
       res.json(comment);
       intel.info('Get single comment ', comment);
     }

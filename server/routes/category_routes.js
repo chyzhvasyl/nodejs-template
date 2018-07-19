@@ -27,6 +27,7 @@ function findAllCategories(req, res) {
 function findCategoryById(req, res) {
   Category.findById(req.params.id, function(err, category) {
     if(err) {
+      res.status(400);
       res.json({'ERROR': err});
       intel.error("ERROR ", err);
     } else {
@@ -44,10 +45,12 @@ function addCategory(req, res) {
 
   newCategory.save(function(err, newCategory) {
     if(err) {
+      res.status(400);
       res.json({'ERROR': err});
       intel.error("ERROR ", err);
     } else {
-      res.json({'SUCCESS': newCategory});
+      // res.json({'SUCCESS': newCategory});
+      res.json(newCategory);
       intel.info('Added new category ', newCategory);
     }
   });
@@ -59,10 +62,12 @@ function updateCategory(req, res) {
     category.name = req.body.name;
     category.save(function(err) {
       if(err) {
+        res.status(400);
         res.json({'ERROR': err});
         intel.error("ERROR ", err);
       } else {
-        res.json({'UPDATED': category});
+        // res.json({'UPDATED': category});
+        res.json(category);
         intel.info('Updated category ', category);
       }
     });
@@ -73,14 +78,17 @@ function updateCategory(req, res) {
 function deleteCategory(req, res) {
   Category.findById(req.params.id, function(err, category) {
     if(err) {
+      res.status(400);
       res.json({'ERROR': err});
     } else {
       category.remove(function(err){
         if(err) {
+          res.status(400);
           res.json({'ERROR': err});
           intel.error("ERROR ", err);
         } else {
-          res.json({'REMOVED': category});
+          // res.json({'REMOVED': category});
+          res.json(category);
           intel.info('Deleted category ', category);
         }
       });

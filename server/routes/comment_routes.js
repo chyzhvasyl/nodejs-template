@@ -27,13 +27,13 @@ function findAllComments(req, res) {
 // *** get SINGLE article *** //
 function findCommentById(req, res) {
   Comment.findById(req.params.id)
-  .populate('article')
+  .populate('Article')
   .exec(function(err, comment) {
     if(err) {
       res.json({'ERROR': err});
       intel.error("ERROR ", err);
     } else {
-      console.log(comment.article.title);
+      console.log(comment.article);
       res.json(comment);
       intel.info('Get single comment ', comment);
     }
@@ -59,12 +59,54 @@ function addComment(req, res) {
       res.json({'ERROR': err});
       intel.error("ERROR ", err);
     } else {
-      res.json({'SUCCESS': newComment});
+      // res.json({'SUCCESS': newComment});
+      res.json(newComment);
       intel.info('Added new comment ', newComment);
     }
   });
 }
+// // *** put SINGLE article *** //
+// function updateArticle(req, res) {
+//   Article.findById(req.params.id, function(err, article) {
+//     article.title = req.body.title;
+//     article.body = req.body.body;
+//     article.photoUrl = req.body.photoUrl;
+//     article.timeOfCreation = req.body.timeOfCreation;
+//     article.timeOfPublication = req.body.timeOfPublication;
+//     article.category = req.body.category;
+//     article.confirmation = req.body.confirmation;
+//     article.status = req.body.status;
+//     article.comments = req.body.comments;
+//     article.save(function(err) {
+//       if(err) {
+//         res.json({'ERROR': err});
+//         intel.error("ERROR ", err);
+//       } else {
+//         res.json({'UPDATED': article});
+//         intel.info('Updated article ', article);
+//       }
+//     });
+//   });
+// }
 
+// // *** delete SINGLE article *** //
+// function deleteArticle(req, res) {
+//   Article.findById(req.params.id, function(err, article) {
+//     if(err) {
+//       res.json({'ERROR': err});
+//     } else {
+//       article.remove(function(err){
+//         if(err) {
+//           res.json({'ERROR': err});
+//           intel.error("ERROR ", err);
+//         } else {
+//           res.json({'REMOVED': article});
+//           intel.info('Deleted article ', article);
+//         }
+//       });
+//     }
+//   });
+// }
 // // *** put SINGLE article *** //
 // function updateArticle(req, res) {
 //   Article.findById(req.params.id, function(err, article) {

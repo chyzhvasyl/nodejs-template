@@ -46,6 +46,7 @@ router.delete('/article/:id', deleteArticle);
 function findAllArticles(req, res) {
   Article.find(function(err, articles) {
     if(err) {
+      res.status(404);
       res.json({'ERROR': err});
       intel.error("ERROR ", err);
     } else {
@@ -59,6 +60,7 @@ function findAllArticles(req, res) {
 function findArticleById(req, res) {
   Article.findById(req.params.id, function(err, article) {
     if(err) {
+      res.status(400);
       res.json({'ERROR': err});
       intel.error("ERROR ", err);
     } else {
@@ -72,6 +74,7 @@ function findArticleById(req, res) {
 function findAllArticlesByCategory(req, res) {  
   Article.find({'category':req.params.category}, function(err, articles){
     if(err) {
+      res.status(400);
       res.json({'ERROR': err});
       intel.error("ERROR ", err);
     } else {
@@ -85,6 +88,7 @@ function findAllArticlesByCategory(req, res) {
 function addArticle(req, res) {
   upload(req, res, function (err) {
     if (err) {
+      res.status(400);
       res.json({'ERROR': err});
       intel.error("ERROR ", err);
       return
@@ -103,17 +107,19 @@ function addArticle(req, res) {
         newArticle.status = req.body.status;
         newArticle.save(function(err, newArticle) {
           if (err) {
+            res.sendStatus(400);
             res.json({'ERROR': err});
             intel.error("ERROR ", err);
           } else {
-            // const newComment = new Comment({
-            //   body: 'New Comment',
-            //   article: newArticle._id
-            // });
-            // newComment.save(function (err) {
-            //   if (err) return handleError(err);
-            // });  
-            res.json({'SUCCESS': newArticle});
+            const newComment = new Comment({
+              body: 'New Comment',
+              article: newArticle._id
+            });
+            newComment.save(function (err) {
+              if (err) return handleError(err);
+            });  
+            // res.json({'SUCCESS': newArticle});
+            res.json(newArticle);
             intel.info('Added new article ', newArticle);
           }
         }); 
@@ -128,11 +134,20 @@ function addArticle(req, res) {
         newArticle.status = req.body.status;
         newArticle.save(function(err, newArticle) {
           if (err) {
+            res.status(400);
             res.json({'ERROR': err});
             intel.error("ERROR ", err);
           } else {
-            res.json({'SUCCESS': newArticle});
-             intel.info('Added new article ', newArticle);
+            const newComment = new Comment({
+              body: 'New Comment',
+              article: newArticle._id
+            });
+            newComment.save(function (err) {
+              if (err) return handleError(err);
+            });  
+            // res.json({'SUCCESS': newArticle});
+            res.json(newArticle);
+            intel.info('Added new article ', newArticle);
           }
         }); 
       }
@@ -145,6 +160,7 @@ function updateArticle(req, res) {
   upload(req, res, function (err) {
     console.log(req);
     if (err) {
+      res.status(400);
       res.json({'ERROR': err});
       intel.error("ERROR ", err);
       return
@@ -164,10 +180,12 @@ function updateArticle(req, res) {
           article.comments = req.body.comments;
           article.save(function(err) {
             if(err) {
+              res.status(400);
               res.json({'ERROR': err});
               intel.error("ERROR ", err);
             } else {
-              res.json({'UPDATED': article});
+              // res.json({'UPDATED': article});
+              res.json(article);
               intel.info('Updated article ', article);
             }
           });
@@ -185,10 +203,12 @@ function updateArticle(req, res) {
           article.comments = req.body.comments;
           article.save(function(err) {
             if(err) {
+              res.status(400);
               res.json({'ERROR': err});
               intel.error("ERROR ", err);
             } else {
-              res.json({'UPDATED': article});
+              // res.json({'UPDATED': article});
+              res.json(article);
               intel.info('Updated article ', article);
             }
           });
@@ -202,6 +222,7 @@ function updateArticle(req, res) {
 function deleteArticle(req, res) {
   Article.findById(req.params.id, function(err, article) {
     if(err) {
+      res.status(400);
       res.json({'ERROR': err});
     } else {
       article.remove(function(err){
@@ -209,7 +230,8 @@ function deleteArticle(req, res) {
           res.json({'ERROR': err});
           intel.error("ERROR ", err);
         } else {
-          res.json({'REMOVED': article});
+          // res.json({'REMOVED': article});
+          res.json(article);
           intel.info('Deleted article ', article);
         }
       });

@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const Article = require('../models/article');
-const Comment = require('../models/comment');
 const intel = require('intel');
 const fs = require('fs');
 const multer = require('multer');
@@ -110,14 +109,7 @@ function addArticle(req, res) {
             res.sendStatus(400);
             res.json({'ERROR': err});
             intel.error("ERROR ", err);
-          } else {
-            const newComment = new Comment({
-              body: 'New Comment',
-              article: newArticle._id
-            });
-            newComment.save(function (err) {
-              if (err) return handleError(err);
-            });  
+          } else { 
             // res.json({'SUCCESS': newArticle});
             res.json(newArticle);
             intel.info('Added new article ', newArticle);
@@ -137,14 +129,7 @@ function addArticle(req, res) {
             res.status(400);
             res.json({'ERROR': err});
             intel.error("ERROR ", err);
-          } else {
-            const newComment = new Comment({
-              body: 'New Comment',
-              article: newArticle._id
-            });
-            newComment.save(function (err) {
-              if (err) return handleError(err);
-            });  
+          } else { 
             // res.json({'SUCCESS': newArticle});
             res.json(newArticle);
             intel.info('Added new article ', newArticle);

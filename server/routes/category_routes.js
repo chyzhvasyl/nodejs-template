@@ -40,7 +40,7 @@ function findCategoryById(req, res) {
 // *** add SINGLE category *** //
 function addCategory(req, res) {
   var newCategory = new Category({
-    name: req.body.name,
+    name: req.body.name
   });
 
   newCategory.save(function(err, newCategory) {

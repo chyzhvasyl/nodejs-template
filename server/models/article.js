@@ -27,10 +27,6 @@ const articleSchema = new Schema({
   timeOfPublication: {
     type: Date
   },
-  category: {
-    type: String,
-    required: true
-  },
   confirmation: {
     type: Boolean,
     required: true,
@@ -41,7 +37,9 @@ const articleSchema = new Schema({
     required: true,
     enum: ['created', 'modified', 'published']
   },
-  comments: [{ type: Schema.Types.ObjectId, ref: 'comment' }]
+  category: { type: Schema.Types.ObjectId, ref: 'category' },
+  comments: [{ type: Schema.Types.ObjectId, ref: 'comment' }],
+  user: { type: Schema.Types.ObjectId, ref: 'user' }
 });
 
 

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Article = require('../models/article');
 const Schema = mongoose.Schema;
 
 const commentSchema = new Schema({
@@ -28,7 +27,7 @@ const commentSchema = new Schema({
         default: Date.now
     },
     article: { type: Schema.Types.ObjectId, ref: 'article' },
-    user: { type: Schema.Types.ObjectId, ref: 'User'}
+    user: { type: Schema.Types.ObjectId, ref: 'user'}
 });
 
 const Comment = mongoose.model('comment', commentSchema);

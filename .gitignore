@@ -2,5 +2,4 @@ node_modules
 .idea
 .vscode
 server/uploads
-server/logs/file.log
-server/logs/access.log
+server/logs/**

@@ -37,30 +37,36 @@ function checkFileType(file, cb){
 router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
 router.get('/articles/:category', findAllArticlesByCategory);
-router.post('/article', addArticle);
+router.post('/article/:category_id', addArticle);
 router.put('/article/:id', updateArticle);
 router.delete('/article/:id', deleteArticle);
 
 // *** get ALL articles *** //
 function findAllArticles(req, res) {
-  Article.find(function(err, articles) {
+  Article.find()
+    .populate('comments')
+    .populate('category')
+    .exec(function(err, articles) {
     if(err) {
       res.status(404);
-      res.json({'ERROR': err});
+      res.json(err);
       intel.error("ERROR ", err);
     } else {
       res.json(articles);
-      intel.info("Take all articles ", articles);
+      intel.info("Get all articles ", articles);
     }
   });
 }
 
 // *** get SINGLE article by id *** //
 function findArticleById(req, res) {
-  Article.findById(req.params.id, function(err, article) {
+  Article.findById(req.params.id)
+    .populate('comments')
+    .populate('category')
+    .exec(function(err, article) {
     if(err) {
       res.status(400);
-      res.json({'ERROR': err});
+      res.json(err);
       intel.error("ERROR ", err);
     } else {
       res.json(article);
@@ -74,11 +80,11 @@ function findAllArticlesByCategory(req, res) {
   Article.find({'category':req.params.category}, function(err, articles){
     if(err) {
       res.status(400);
-      res.json({'ERROR': err});
+      res.json(err);
       intel.error("ERROR ", err);
     } else {
       res.json(articles);
-      intel.info("Take all articles by category" + req.params.category, articles);
+      intel.info("Get all articles by category" + req.params.category, articles);
     }
   });
 }
@@ -88,7 +94,7 @@ function addArticle(req, res) {
   upload(req, res, function (err) {
     if (err) {
       res.status(400);
-      res.json({'ERROR': err});
+      res.json(err);
       intel.error("ERROR ", err);
       return
     } else {
@@ -104,13 +110,13 @@ function addArticle(req, res) {
         newArticle.category = req.body.category;
         newArticle.confirmation = req.body.confirmation;
         newArticle.status = req.body.status;
+        newArticle.category = req.params.category_id;
         newArticle.save(function(err, newArticle) {
           if (err) {
             res.sendStatus(400);
             res.json({'ERROR': err});
             intel.error("ERROR ", err);
           } else { 
-            // res.json({'SUCCESS': newArticle});
             res.json(newArticle);
             intel.info('Added new article ', newArticle);
           }
@@ -127,10 +133,9 @@ function addArticle(req, res) {
         newArticle.save(function(err, newArticle) {
           if (err) {
             res.status(400);
-            res.json({'ERROR': err});
+            res.json(err);
             intel.error("ERROR ", err);
           } else { 
-            // res.json({'SUCCESS': newArticle});
             res.json(newArticle);
             intel.info('Added new article ', newArticle);
           }
@@ -146,7 +151,7 @@ function updateArticle(req, res) {
     console.log(req);
     if (err) {
       res.status(400);
-      res.json({'ERROR': err});
+      res.json(err);
       intel.error("ERROR ", err);
       return
     } else {
@@ -166,10 +171,9 @@ function updateArticle(req, res) {
           article.save(function(err) {
             if(err) {
               res.status(400);
-              res.json({'ERROR': err});
+              res.json(err);
               intel.error("ERROR ", err);
             } else {
-              // res.json({'UPDATED': article});
               res.json(article);
               intel.info('Updated article ', article);
             }
@@ -189,10 +193,9 @@ function updateArticle(req, res) {
           article.save(function(err) {
             if(err) {
               res.status(400);
-              res.json({'ERROR': err});
+              res.json(err);
               intel.error("ERROR ", err);
             } else {
-              // res.json({'UPDATED': article});
               res.json(article);
               intel.info('Updated article ', article);
             }
@@ -212,10 +215,9 @@ function deleteArticle(req, res) {
     } else {
       article.remove(function(err){
         if(err) {
-          res.json({'ERROR': err});
+          res.json(err);
           intel.error("ERROR ", err);
         } else {
-          // res.json({'REMOVED': article});
           res.json(article);
           intel.info('Deleted article ', article);
         }

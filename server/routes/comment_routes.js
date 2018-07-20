@@ -59,9 +59,6 @@ function addComment(req, res) {
       if(err) {
         res.json(err);
         intel.error("ERROR", err);
-      } else {
-        res.json(article);
-        intel.info('Updated comment ', article);
       }
     });
   }));

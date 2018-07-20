@@ -130,6 +130,7 @@ function addArticle(req, res) {
         newArticle.category = req.body.category;
         newArticle.confirmation = req.body.confirmation;
         newArticle.status = req.body.status;
+        newArticle.category = req.params.category_id;
         newArticle.save(function(err, newArticle) {
           if (err) {
             res.status(400);
@@ -168,6 +169,7 @@ function updateArticle(req, res) {
           article.confirmation = req.body.confirmation;
           article.status = req.body.status;
           article.comments = req.body.comments;
+          newArticle.category = req.params.category_id;
           article.save(function(err) {
             if(err) {
               res.status(400);
@@ -190,6 +192,7 @@ function updateArticle(req, res) {
           article.confirmation = req.body.confirmation;
           article.status = req.body.status;
           article.comments = req.body.comments;
+          newArticle.category = req.params.category_id;
           article.save(function(err) {
             if(err) {
               res.status(400);

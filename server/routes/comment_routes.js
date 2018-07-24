@@ -93,19 +93,15 @@ function updateComment(req, res) {
   });
 }
 
-// *** delete SINGLE article *** //
+// *** delete SINGLE comment *** //
 function deleteComment(req, res) {
-  Comment.findByIdAndDelete(req.params.id, function(err, article) {
+  Comment.findByIdAndDelete(req.params.id, function(err, comment) {
     if(err) {
       res.json(err);
     } else {
-      if(err) {
-          res.json(err);
-          intel.error("ERROR ", err);
-        } else {
-          res.json(article);
+        res.json(comment);
+        intel.info('Deleted comment ', comment);
       }
-    }
   });
 }
 

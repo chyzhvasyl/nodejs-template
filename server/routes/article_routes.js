@@ -38,7 +38,7 @@ router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
 router.get('/articles/:category_id', findAllArticlesByCategory);
 router.post('/article/:category_id', addArticle);
-router.put('/article/:id/:category_id', updateArticle);
+router.put('/article/:id/:category_id?', updateArticle);
 router.delete('/article/:id', deleteArticle);
 
 // *** get ALL articles *** //
@@ -50,7 +50,7 @@ function findAllArticles(req, res) {
     if(err) {
       res.status(404);
       res.json(err);
-      intel.error("ERROR ", err);
+      intel.error(err);
     } else {
       res.json(articles);
       intel.info("Get all articles ", articles);
@@ -67,7 +67,7 @@ function findArticleById(req, res) {
     if(err) {
       res.status(400);
       res.json(err);
-      intel.error("ERROR ", err);
+      intel.error(err);
     } else {
       res.json(article);
       intel.info('Get single article by id ', article);
@@ -84,7 +84,7 @@ function findAllArticlesByCategory(req, res) {
     if(err) {
       res.status(400);
       res.json(err);
-      intel.error("ERROR ", err);
+      intel.error(err);
     } else {
       res.json(articles);
       intel.info("Get all articles by category" + req.params.category, articles);
@@ -98,53 +98,33 @@ function addArticle(req, res) {
     if (err) {
       res.status(400);
       res.json(err);
-      intel.error("ERROR ", err);
+      intel.error(err);
       return
     } else {
-      if (req.file != undefined) {
-        const newArticle = new Article();
-        newArticle.title = req.body.title;
-        newArticle.body = req.body.body;
+      const newArticle = new Article();
+      newArticle.title = req.body.title;
+      newArticle.body = req.body.body;
+      if (req.file) {
         newArticle.img.name = req.file.filename;
         newArticle.img.data = fs.readFileSync(req.file.path);
         newArticle.img.contentType = req.file.mimetype;
-        newArticle.timeOfCreation = req.body.timeOfCreation;
-        newArticle.timeOfPublication = req.body.timeOfPublication;
-        newArticle.category = req.body.category;
-        newArticle.confirmation = req.body.confirmation;
-        newArticle.status = req.body.status;
-        newArticle.category = req.params.category_id;
-        newArticle.save(function(err, newArticle) {
-          if (err) {
-            res.sendStatus(400);
-            res.json(err);
-            intel.error("ERROR ", err);
-          } else { 
-            res.json(newArticle);
-            intel.info('Added new article ', newArticle);
-          }
-        }); 
-      } else {
-        const newArticle = new Article();
-        newArticle.title = req.body.title;
-        newArticle.body = req.body.body;
-        newArticle.timeOfCreation = req.body.timeOfCreation;
-        newArticle.timeOfPublication = req.body.timeOfPublication;
-        newArticle.category = req.body.category;
-        newArticle.confirmation = req.body.confirmation;
-        newArticle.status = req.body.status;
-        newArticle.category = req.params.category_id;
-        newArticle.save(function(err, newArticle) {
-          if (err) {
-            res.status(400);
-            res.json(err);
-            intel.error("ERROR ", err);
-          } else { 
-            res.json(newArticle);
-            intel.info('Added new article ', newArticle);
-          }
-        }); 
-      }
+      } 
+      newArticle.timeOfCreation = req.body.timeOfCreation;
+      newArticle.timeOfPublication = req.body.timeOfPublication;
+      newArticle.category = req.body.category;
+      newArticle.confirmation = req.body.confirmation;
+      newArticle.status = req.body.status;
+      newArticle.category = req.params.category_id;
+      newArticle.save(function(err, newArticle) {
+        if (err) {
+          res.sendStatus(400);
+          res.json(err);
+          intel.error(err);
+        } else { 
+          res.json(newArticle);
+          intel.info('Added new article ', newArticle);
+        }
+      }); 
     } 
   });
 };  
@@ -155,79 +135,61 @@ function updateArticle(req, res) {
     if (err) {
       res.status(400);
       res.json(err);
-      intel.error("ERROR ", err);
+      intel.error(err);
       return
     } else {
-      if (req.file != undefined) {
-        Article.findById(req.params.id, function(err, article) {
+      Article.findById(req.params.id, function(err, article) {
+        console.log(req.body);        
+        if (req.body.title) {
           article.title = req.body.title;
-          article.body = req.body.body;
+        }
+        if (req.body.body) {
+           article.title = req.body.body;
+        }
+        if (req.file) {
           article.img.name = req.file.filename,
           article.img.data = fs.readFileSync(req.file.path);
           article.img.contentType = req.file.mimetype;
+        }
+        if (req.body.timeOfCreation) {
           article.timeOfCreation = req.body.timeOfCreation;
+        }
+        if (req.body.timeOfPublication) {
           article.timeOfPublication = req.body.timeOfPublication;
-          article.category = req.body.category;
+        }
+        if (req.body.confirmation) {
           article.confirmation = req.body.confirmation;
+        }
+        if (req.body.status) {
           article.status = req.body.status;
-          article.comments = req.body.comments;
+        }
+        if (req.params.category_id) {
           article.category = req.params.category_id;
-          article.save(function(err) {
-            if(err) {
-              res.status(400);
-              res.json(err);
-              intel.error("ERROR ", err);
-            } else {
-              res.json(article);
-              intel.info('Updated article ', article);
-            }
-          });
+        }
+        article.save(function(err) {
+          if(err) {
+            res.status(400);
+            res.json(err);
+            intel.error(err);
+          } else {
+            res.json(article);
+            intel.info('Updated article ', article);
+          }
         });
-      } else {
-        Article.findById(req.params.id, function(err, article) {
-          article.title = req.body.title;
-          article.body = req.body.body;
-          article.img = undefined;
-          article.timeOfCreation = req.body.timeOfCreation;
-          article.timeOfPublication = req.body.timeOfPublication;
-          article.category = req.body.category;
-          article.confirmation = req.body.confirmation;
-          article.status = req.body.status;
-          article.comments = req.body.comments;
-          article.category = req.params.category_id;
-          article.save(function(err) {
-            if(err) {
-              res.status(400);
-              res.json(err);
-              intel.error("ERROR ", err);
-            } else {
-              res.json(article);
-              intel.info('Updated article ', article);
-            }
-          });
-        });
-      }
+      });
     }
   });
 }
 
 // *** delete SINGLE article *** //
 function deleteArticle(req, res) {
-  Article.findById(req.params.id, function(err, article) {
+  Article.findByIdAndDelete(req.params.id, function(err, article) {
     if(err) {
-      res.status(400);
-      res.json({'ERROR': err});
+      res.json(err);
     } else {
-      article.remove(function(err){
-        if(err) {
-          res.json(err);
-          intel.error("ERROR ", err);
-        } else {
-          res.json(article);
-          intel.info('Deleted article ', article);
-        }
-      });
-    }
+        res.json(article);
+        intel.info('Deleted article ', article);
+      }
   });
 }
 

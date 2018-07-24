@@ -18,7 +18,7 @@ function findAllComments(req, res) {
   .exec(function(err, comments) {
     if(err) {
       res.json(err);
-      intel.error("ERROR ", err);
+      intel.error(err);
     } else {
       res.json(comments);
       intel.info("Get all comments ", comments);
@@ -33,7 +33,7 @@ function findCommentById(req, res) {
   .exec(function(err, comment) {
     if(err) {
       res.json(err);
-      intel.error("ERROR ", err);
+      intel.error(err);
     } else {
       res.json(comment);
       intel.info('Get single comment by id ', comment);
@@ -57,7 +57,7 @@ function addComment(req, res) {
     article.save(function(err) {
       if(err) {
         res.json(err);
-        intel.error("ERROR", err);
+        intel.error(err);
       }
     });
   }));
@@ -65,7 +65,7 @@ function addComment(req, res) {
   newComment.save(function(err, newComment) {
     if(err) {
       res.json(err);
-      intel.error("ERROR ", err);
+      intel.error(err);
     } else {
       res.json(newComment);
       intel.info('Added new comment ', newComment);
@@ -76,15 +76,25 @@ function addComment(req, res) {
 // *** update SINGLE comment *** //
 function updateComment(req, res) {
   Comment.findById(req.params.id, function(err, comment) {
-    comment.email = req.body.email;
-    comment.telephone = req.body.telephone;
-    comment.body = req.body.body;
-    comment.confirmation = req.body.confirmation;
-    comment.time = req.body.time;
+    if (req.body.email) {
+      comment.email = req.body.email;
+    }
+    if (req.body.telephone) {
+      comment.telephone = req.body.telephone;
+    }
+    if (req.body.body) {
+      comment.email = req.body.body;
+    }
+    if (req.body.confirmation) {
+      comment.confirmation = req.body.confirmation;
+    }
+    if (req.body.time) {
+      comment.time = req.body.time;
+    }
     comment.save(function(err) {
       if(err) {
         res.json(err);
-        intel.error("ERROR", err);
+        intel.error(err);
       } else {
         res.json(comment);
         intel.info('Updated comment ', comment);

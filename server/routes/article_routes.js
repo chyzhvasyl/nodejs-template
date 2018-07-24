@@ -144,7 +144,7 @@ function updateArticle(req, res) {
           article.title = req.body.title;
         }
         if (req.body.body) {
-           article.title = req.body.body;
+           article.body = req.body.body;
         }
         if (req.file) {
           article.img.name = req.file.filename,

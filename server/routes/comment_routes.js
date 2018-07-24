@@ -35,7 +35,6 @@ function findCommentById(req, res) {
       res.json(err);
       intel.error("ERROR ", err);
     } else {
-      // console.log(comment.article.body);
       res.json(comment);
       intel.info('Get single comment by id ', comment);
     }
@@ -98,13 +97,13 @@ function updateComment(req, res) {
 function deleteComment(req, res) {
   Comment.findByIdAndDelete(req.params.id, function(err, article) {
     if(err) {
-      res.json({'ERROR': err});
+      res.json(err);
     } else {
       if(err) {
-          res.json({'ERROR': err});
+          res.json(err);
           intel.error("ERROR ", err);
         } else {
-          res.json({'REMOVED': article});
+          res.json(article);
       }
     }
   });

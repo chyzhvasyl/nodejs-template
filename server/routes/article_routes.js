@@ -38,7 +38,7 @@ router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
 router.get('/articles/:category_id', findAllArticlesByCategory);
 router.post('/article/:category_id', addArticle);
-router.put('/article/:id', updateArticle);
+router.put('/article/:id/:category_id', updateArticle);
 router.delete('/article/:id', deleteArticle);
 
 // *** get ALL articles *** //
@@ -105,7 +105,7 @@ function addArticle(req, res) {
         const newArticle = new Article();
         newArticle.title = req.body.title;
         newArticle.body = req.body.body;
-        newArticle.img.name = req.file.filename,
+        newArticle.img.name = req.file.filename;
         newArticle.img.data = fs.readFileSync(req.file.path);
         newArticle.img.contentType = req.file.mimetype;
         newArticle.timeOfCreation = req.body.timeOfCreation;
@@ -117,7 +117,7 @@ function addArticle(req, res) {
         newArticle.save(function(err, newArticle) {
           if (err) {
             res.sendStatus(400);
-            res.json({'ERROR': err});
+            res.json(err);
             intel.error("ERROR ", err);
           } else { 
             res.json(newArticle);
@@ -152,7 +152,6 @@ function addArticle(req, res) {
 // *** update SINGLE article *** //
 function updateArticle(req, res) {
   upload(req, res, function (err) {
-    console.log(req);
     if (err) {
       res.status(400);
       res.json(err);
@@ -172,7 +171,7 @@ function updateArticle(req, res) {
           article.confirmation = req.body.confirmation;
           article.status = req.body.status;
           article.comments = req.body.comments;
-          newArticle.category = req.params.category_id;
+          article.category = req.params.category_id;
           article.save(function(err) {
             if(err) {
               res.status(400);
@@ -195,7 +194,7 @@ function updateArticle(req, res) {
           article.confirmation = req.body.confirmation;
           article.status = req.body.status;
           article.comments = req.body.comments;
-          newArticle.category = req.params.category_id;
+          article.category = req.params.category_id;
           article.save(function(err) {
             if(err) {
               res.status(400);

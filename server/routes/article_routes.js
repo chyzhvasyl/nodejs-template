@@ -36,7 +36,7 @@ function checkFileType(file, cb){
 // *** api routes *** //
 router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
-router.get('/articles/:category', findAllArticlesByCategory);
+router.get('/articles/:category_id', findAllArticlesByCategory);
 router.post('/article/:category_id', addArticle);
 router.put('/article/:id', updateArticle);
 router.delete('/article/:id', deleteArticle);
@@ -77,7 +77,10 @@ function findArticleById(req, res) {
 
 // *** get All articles by category *** //
 function findAllArticlesByCategory(req, res) {  
-  Article.find({'category':req.params.category}, function(err, articles){
+  Article.find({'category':req.params.category_id})
+  .populate('comments')
+  .populate('category')
+  .exec(function(err, articles){
     if(err) {
       res.status(400);
       res.json(err);

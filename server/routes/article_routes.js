@@ -138,8 +138,7 @@ function updateArticle(req, res) {
       intel.error(err);
       return
     } else {
-      Article.findById(req.params.id, function(err, article) {
-        console.log(req.body);        
+      Article.findById(req.params.id, function(err, article) {      
         if (req.body.title) {
           article.title = req.body.title;
         }

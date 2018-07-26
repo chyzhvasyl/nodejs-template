@@ -5,13 +5,13 @@ const articleSchema = new Schema({
   title: {
     type: String,
     required: true,
-    maxlength: 100,
+    // maxlength: 100,
     trim: true
   },
   body: {
     type: String,
     required: true,
-    maxlength: 250,
+    // maxlength: 250,
     trim: true
   },
   img: { 
@@ -25,7 +25,8 @@ const articleSchema = new Schema({
     default: Date.now 
   },
   timeOfPublication: {
-    type: Date
+    type: Date,
+    default: Date.now 
   },
   confirmation: {
     type: Boolean,

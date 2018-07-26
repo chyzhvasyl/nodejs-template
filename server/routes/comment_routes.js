@@ -53,6 +53,9 @@ function addComment(req, res) {
   });
 
   Article.findById(req.params.article_id, (function(err, article) {
+    if (article.comments == null) {
+      article.comments = [];
+    }
     article.comments.push(newComment._id);
     article.save(function(err) {
       if(err) {
@@ -83,7 +86,7 @@ function updateComment(req, res) {
       comment.telephone = req.body.telephone;
     }
     if (req.body.body) {
-      comment.email = req.body.body;
+      comment.body = req.body.body;
     }
     if (req.body.confirmation) {
       comment.confirmation = req.body.confirmation;

@@ -54,10 +54,10 @@ server.use('/', commentRoutes);
 server.use('/', categoryRoutes);
 
 // *** server config *** //
-const hostname = '192.168.0.123';
+// const hostname = '192.168.0.123';
 const port = 3000; 
 
-server.listen(port, hostname, () => {
+server.listen(port, () => {
     console.log(`Server started on port + ${port}`);
     intel.info(`Server started on port , ${port}`);
 });

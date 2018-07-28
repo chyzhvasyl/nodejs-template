@@ -14,11 +14,6 @@ const articleSchema = new Schema({
     // maxlength: 250,
     trim: true
   },
-  img: { 
-    name: String,
-    data: Buffer,
-    contentType: String
-  },
   timeOfCreation: {
     type: Date,
     // required: true,
@@ -43,6 +38,7 @@ const articleSchema = new Schema({
     default: 0
   },
   category: { type: Schema.Types.ObjectId, ref: 'category' },
+  image: { type: Schema.Types.ObjectId, ref: 'image' },
   comments: [{ type: Schema.Types.ObjectId, ref: 'comment' }],
   user: { type: Schema.Types.ObjectId, ref: 'user' }
 });

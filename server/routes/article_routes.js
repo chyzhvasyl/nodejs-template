@@ -39,6 +39,7 @@ router.get('/article/:id', findArticleById);
 router.get('/articles/:category_id', findAllArticlesByCategory);
 router.post('/article/:category_id', addArticle);
 router.put('/article/:id/:category_id?', updateArticle);
+router.put('/article/:id/like/:is_liked', likeArticle);
 router.delete('/article/:id', deleteArticle);
 
 // *** get ALL articles *** //
@@ -162,6 +163,11 @@ function updateArticle(req, res) {
         if (req.body.status) {
           article.status = req.body.status;
         }
+        if (req.params.is_liked == false) {
+          article.likes++;
+        } else {
+          article.likes--;
+        }
         if (req.params.category_id) {
           article.category = req.params.category_id;
         }
@@ -178,6 +184,26 @@ function updateArticle(req, res) {
       });
     }
   });
+}
+
+function likeArticle(req, res) {
+  console.log(req.params);
+  let likeAction;
+  if(req.params.is_liked == 'false') {
+    likeAction = { $inc: { likes: 1 }};
+  } else {
+    likeAction = { $inc: { likes: -1 }};
+  }
+  console.log(likeAction);
+  Article.findOneAndUpdate(req.params.id, likeAction, function(err, article) {
+    if (err) {
+      res.status(400);
+      res.json(err);
+      intel.error(err);
+     } else {
+      res.json(article);
+     }
+  })
 }
 
 // *** delete SINGLE article *** //

@@ -40,7 +40,8 @@ router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
 router.get('/articles/:category_id', findAllArticlesByCategory);
 router.post('/article/:category_id', addArticle);
-router.put('/article/:id/:category_id?', updateArticle);
+router.put('/article/:id', updateArticle);
+router.put('/article/:id/categoty/:category_id', updateArticle);
 router.post('/article/:id/image/', saveImage);
 router.get('/image/:id/', findImageById);
 router.put('/article/:id/like/:is_liked', likeArticle);
@@ -48,7 +49,8 @@ router.delete('/article/:id', deleteArticle);
 
 function addImageUrl(article, req) {
     if (article && article.image && article.image._id) {
-        article['imgUrl'] = req.protocol + "://" + req.get('host') + '/image/' + article.image._id;
+        const url = req.protocol + "://" + req.get('host') + '/image/' + article.image._id;
+        article['_doc']['imgUrl'] = url;
     }
     return article;
 }
@@ -164,6 +166,8 @@ function findImageById(req, res) {
 
 // *** add SINGLE article  *** //
 function addArticle(req, res) {
+  upload(req, res, function (err) {
+  
     if (err) {
       res.status(400);
       res.json(err);
@@ -184,12 +188,45 @@ function addArticle(req, res) {
         res.json(err);
         intel.error(err);
       } else {
-        newArticle = addImageUrl(newArticle, req);
-        res.json(newArticle);
-        intel.info('Added new article ', newArticle);
+
+        if (req.file) {
+          let newImage = new Img();
+            newImage.filename = req.file.filename;
+            newImage.originalname = req.file.originalname;
+            newImage.contentType = req.file.mimetype;
+            if (newImage) {
+                newImage.article = newArticle._id;
+                newImage.save(function (err, newImage) {
+                    if (err) {
+                        res.sendStatus(400);
+                        res.json(err);
+                        intel.error(err);
+                    }
+                    Article.findOneAndUpdate(newArticle._id, {image: newImage._id}, function (err, article) {
+                        if (err) {
+                            res.sendStatus(400);
+                            res.json({id: newImage._id});
+                            intel.error(err);
+                        }
+                        article = addImageUrl(article, req);
+                      
+                        res.json(article);
+                        intel.info('Added new article ', article);
+                       
+                    });
+    
+                });
+            }
+        }
+
+       
       }
       }); 
     } 
+    
+    
+});
+   
 }
 // *** update SINGLE article *** //
 function updateArticle(req, res) {

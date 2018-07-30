@@ -1,0 +1,13 @@
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const imageSchema = new Schema({
+    filename: String,
+    originalname: String,
+    contentType: String,
+    created: {type: Date, default: Date.now()},
+    article: { type: Schema.Types.ObjectId, ref: 'article' }
+});
+
+const Img = mongoose.model('image', imageSchema);
+module.exports = Img;

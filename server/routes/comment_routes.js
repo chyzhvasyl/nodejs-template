@@ -44,7 +44,7 @@ function findCommentById(req, res) {
 // *** add SINGLE comment *** //
 function addComment(req, res) {
   var newComment = new Comment({
-    emailOrTelephore: req.body.emailOrTelephore,
+    emailOrTelephone: req.body.emailOrTelephone,
     body: req.body.body,
     confirmation: req.body.confirmation,
     time: req.body.time,
@@ -78,8 +78,8 @@ function addComment(req, res) {
 // *** update SINGLE comment *** //
 function updateComment(req, res) {
   Comment.findById(req.params.id, function(err, comment) {
-    if (req.body.emailOrTelephore) {
-      comment.emailOrTelephore = req.body.emailOrTelephore;
+    if (req.body.emailOrTelephone) {
+      comment.emailOrTelephone = req.body.emailOrTelephone;
     }
     if (req.body.body) {
       comment.body = req.body.body;

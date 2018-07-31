@@ -24,7 +24,7 @@ let upload = multer({
     }
 }).single('img');
 
-function checkFileType(file, cb){
+function checkFileType(file, cb) {
   const filetypes = /jpeg|jpg|png|gif/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = filetypes.test(file.mimetype);
@@ -40,7 +40,8 @@ router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
 router.get('/articles/:category_id', findAllArticlesByCategory);
 router.post('/article/:category_id', addArticle);
-router.put('/article/:id/:category_id?', updateArticle);
+router.put('/article/:id', updateArticle);
+router.put('/article/:id/categoty/:category_id', updateArticle);
 router.post('/article/:id/image/', saveImage);
 router.get('/image/:id/', findImageById);
 router.put('/article/:id/like/:is_liked', likeArticle);
@@ -209,7 +210,7 @@ function updateArticle(req, res) {
           article.title = req.body.title;
         }
         if (req.body.body) {
-           article.body = req.body.body;
+          article.body = req.body.body;
         }
           if (req.body.timeOfCreation) {
           article.timeOfCreation = req.body.timeOfCreation;
@@ -223,16 +224,11 @@ function updateArticle(req, res) {
         if (req.body.status) {
           article.status = req.body.status;
         }
-        if (req.params.is_liked == false) {
-          article.likes++;
-        } else {
-          article.likes--;
-        }
         if (req.params.category_id) {
           article.category = req.params.category_id;
         }
-        article.save(function(err) {
-          if(err) {
+        article.save(function (err) {
+          if (err) {
             res.status(400);
             res.json(err);
             intel.error(err);
@@ -247,34 +243,32 @@ function updateArticle(req, res) {
 }
 
 function likeArticle(req, res) {
-  console.log(req.params);
   let likeAction;
-  if(req.params.is_liked == 'false') {
-    likeAction = { $inc: { likes: 1 }};
+  if (req.params.is_liked == 'false') {
+    likeAction = { $inc: { likes: 1 } };
   } else {
-    likeAction = { $inc: { likes: -1 }};
+    likeAction = { $inc: { likes: -1 } };
   }
-  console.log(likeAction);
-  Article.findOneAndUpdate(req.params.id, likeAction, function(err, article) {
+  Article.findOneAndUpdate(req.params.id, likeAction, function (err, article) {
     if (err) {
       res.status(400);
       res.json(err);
       intel.error(err);
-     } else {
+    } else {
       res.json(article);
-     }
+    }
   })
 }
 
 // *** delete SINGLE article *** //
 function deleteArticle(req, res) {
-  Article.findByIdAndDelete(req.params.id, function(err, article) {
-    if(err) {
+  Article.findByIdAndDelete(req.params.id, function (err, article) {
+    if (err) {
       res.json(err);
     } else {
-        res.json(article);
-        intel.info('Deleted article ', article);
-      }
+      res.json(article);
+      intel.info('Deleted article ', article);
+    }
   });
 }
 

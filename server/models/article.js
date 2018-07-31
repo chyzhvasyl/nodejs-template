@@ -43,6 +43,10 @@ const articleSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'user' }
 });
 
+articleSchema.methods.toJSONObject = function (instance) {
+    return this.toObject();
+};
+
 
 const Article  = mongoose.model('article', articleSchema);
 module.exports = Article;

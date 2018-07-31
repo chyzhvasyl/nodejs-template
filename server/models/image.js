@@ -6,7 +6,6 @@ const imageSchema = new Schema({
     originalname: String,
     contentType: String,
     created: {type: Date, default: Date.now()},
-    article: { type: Schema.Types.ObjectId, ref: 'article' }
 });
 
 const Img = mongoose.model('image', imageSchema);

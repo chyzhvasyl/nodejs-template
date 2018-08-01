@@ -7,13 +7,17 @@ const templateSchema = new Schema({
         backgroundColor: String,
     },
     articleStyles: {
+        shortBody: {
+            length: String,
+            fontSize: String 
+        },
         body: {
-            fontSize: String,
-            bgColor: String 
+            length: String,
+            fontSize: String 
         },
         title: { 
-            fontSize: String,
-            bgColor: String 
+            length: String,
+            fontSize: String 
         },
     },
     article: { type: Schema.Types.ObjectId, ref: 'article' }

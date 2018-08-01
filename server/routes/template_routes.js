@@ -46,13 +46,17 @@ function addTemplate(req, res) {
       backgroundColor: req.body.generalStyles.backgroundColor,
     },
     articleStyles: {
+      shortBody: {
+        length: req.body.articleStyles.shortBody.length,
+        fontSize: req.body.articleStyles.shortBody.fontSize
+      },
       body: {
-        fontSize: req.body.articleStyles.body.fontSize,
-        bgColor: req.body.articleStyles.body.bgColor
+        length: req.body.articleStyles.body.length,
+        fontSize: req.body.articleStyles.body.fontSize
       },
       title: { 
-        fontSize: req.body.articleStyles.title.fontSize,
-        bgColor: req.body.articleStyles.title.bgColor
+        length: req.body.articleStyles.title.length,
+        fontSize: req.body.articleStyles.title.fontSize
       }
     }
   });
@@ -78,17 +82,23 @@ function updateTemplate(req, res) {
     if (req.body.generalStyles.backgroundColor) {
       template.generalStyles.backgroundColor = req.body.generalStyles.backgroundColor;
     }
-    if (req.body.articleStyles.body.fontSize) {
-      template.articleStyles.body.fontSize = req.body.articleStyles.body.bgColor;
+    if (req.body.articleStyles.shortBody.length) {
+      template.articleStyles.shortBody.length = req.body.articleStyles.shortBody.length;
     }
-    if (req.body.articleStyles.body.bgColor) {
-      template.articleStyles.body.bgColor = req.body.articleStyles.body.bgColor;
+    if (req.body.articleStyles.shortBody.fontSize) {
+      template.articleStyles.shortBody.fontSize = req.body.articleStyles.shortBody.fontSize;
+    }
+    if (req.body.articleStyles.body.length) {
+      template.articleStyles.body.length = req.body.articleStyles.body.length;
+    }
+    if (req.body.articleStyles.body.fontSize) {
+      template.articleStyles.body.fontSize = req.body.articleStyles.body.fontSize;
+    }
+    if (req.body.articleStyles.title.length) {
+      template.articleStyles.title.length = req.body.articleStyles.title.length;
     }
     if (req.body.articleStyles.title.fontSize) {
-      template.articleStyles.title.fontSize = req.body.articleStyles.body.bgColor;
-    }
-    if (req.body.articleStyles.title.bgColor) {
-      template.articleStyles.title.bgColor = req.body.articleStyles.body.bgColor;
+      template.articleStyles.title.fontSize = req.body.articleStyles.title.fontSize;
     }
     template.save(function(err) {
       if(err) {

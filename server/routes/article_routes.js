@@ -144,7 +144,6 @@ function saveImage(req, res) {
                         }
                         res.sendStatus(201);
                     });
-
                 });
             }
         }
@@ -218,13 +217,9 @@ function addArticle(req, res) {
                 });
             }
         }
-
-       
       }
       }); 
-    } 
-    
-    
+    }  
 });
    
 }

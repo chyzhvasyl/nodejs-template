@@ -2,30 +2,22 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const templateSchema = new Schema({
-    styles: [
-        {
-            name: "generalStyles",
-            values: {
-                "fontSizeMetric": string,
-                "backgroundColor": string,
-            }
+    generalStyles: {
+        fontSizeMetric: String,
+        backgroundColor: String,
+    },
+    articleStyles: {
+        body: {
+            fontSize: String,
+            bgColor: String 
         },
-        {
-            name: "articleStyles",
-            values: {
-                "body": {
-                    "fontSize": string,
-                    "bgColor" : string 
-                },
-                "title": {
-                    "fontSize": string,
-                    "bgColor" : string 
-                },
-            }
-        }
-    ],
+        title: { 
+            fontSize: String,
+            bgColor: String 
+        },
+    },
     article: { type: Schema.Types.ObjectId, ref: 'article' }
-});
+}, { versionKey: false });
 
 const Template = mongoose.model('template', templateSchema);
 module.exports = Template;

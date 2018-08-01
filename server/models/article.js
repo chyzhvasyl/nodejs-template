@@ -43,6 +43,5 @@ const articleSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'user' }
 });
 
-
 const Article  = mongoose.model('article', articleSchema);
 module.exports = Article;

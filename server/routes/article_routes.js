@@ -150,50 +150,34 @@ function createArticleModel(req, imageId) {
 // *** add SINGLE article  *** //
 function addArticle(req, res) {
     upload(req, res, function (err) {
+        if (err) {
+            res.sendStatus(400);
+            res.json(err);
+            intel.error(err);
+        }
         if (req.file) {
-            if (err) {
-                res.sendStatus(400);
-                res.json(err);
-                intel.error(err);
-            }
-            if (req.file) {
-                let newImage = new Img();
-                newImage.filename = req.file.filename;
-                newImage.originalname = req.file.originalname;
-                newImage.contentType = req.file.mimetype;
-                newImage.save(function (err, newImage) {
-                    if (err) {
-                        res.sendStatus(400);
-                        res.json(err);
-                        intel.error(err);
-                    }
-                    let articleModel = createArticleModel(req, newImage._id);
-                    articleModel.save(function (err, article) {
-                        if (err) {
-                            res.sendStatus(400);
-                            intel.error('Can\'t save article ', err);
-                        } else {
-                            let articleResponse = addImageUrl(articleModel.toJSONObject(), req);
-                            res.status(201);
-                            res.json(articleResponse);
-                            intel.info('Added new article ', newArticle);
-                        }
-                    });
-
-                });
-            }
-        } else {
-            let articleModel = createArticleModel(req);
-            articleModel.save(function(err, article) {
+            let newImage = new Img();
+            newImage.filename = req.file.filename;
+            newImage.originalname = req.file.originalname;
+            newImage.contentType = req.file.mimetype;
+            newImage.save(function (err, newImage) {
                 if (err) {
                     res.sendStatus(400);
-                    intel.error('Can\'t save article ', err);
-                } else {
-
-                    res.status(201);
-                    res.json(articleModel);
-                    intel.info('Added new article ', newArticle);
+                    res.json(err);
+                    intel.error(err);
                 }
+                let articleModel = createArticleModel(req, newImage._id);
+                articleModel.save(function (err, article) {
+                    if (err) {
+                        res.sendStatus(400);
+                        intel.error('Can\'t save article ', err);
+                    } else {
+                        let articleResponse = addImageUrl(articleModel.toJSONObject(), req);
+                        res.status(201);
+                        res.json(articleResponse);
+                        intel.info('Added new article ', newArticle);
+                    }
+                });
             });
         }
     });

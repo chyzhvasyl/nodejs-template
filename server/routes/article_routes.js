@@ -49,8 +49,7 @@ router.delete('/article/:id', deleteArticle);
 
 function addImageUrl(article, req) {
     if (article && article.image && article.image._id) {
-        const url = req.protocol + "://" + req.get('host') + '/image/' + article.image._id;
-        article['_doc']['imgUrl'] = url;
+        article['imgUrl'] = req.protocol + "://" + req.get('host') + '/image/' + article.image._id;
     }
     return article;
 }
@@ -116,38 +115,7 @@ function findAllArticlesByCategory(req, res) {
 
 // *** save or update SINGLE article's image  *** //
 function saveImage(req, res) {
-    upload(req, res, function (err) {
-        if (err) {
-            res.sendStatus(400);
-            res.json(err);
-            intel.error(err);
-        }
-        let newImage;
-        if (req.file) {
-            newImage = new Img();
-            newImage.filename = req.file.filename;
-            newImage.originalname = req.file.originalname;
-            newImage.contentType = req.file.mimetype;
-            if (newImage) {
-                newImage.article = req.params.id;
-                newImage.save(function (err, newImage) {
-                    if (err) {
-                        res.sendStatus(400);
-                        res.json(err);
-                        intel.error(err);
-                    }
-                    Article.findOneAndUpdate(req.params.id, {image: newImage._id}, function (err) {
-                        if (err) {
-                            res.sendStatus(400);
-                            res.json({id: newImage._id});
-                            intel.error(err);
-                        }
-                        res.sendStatus(201);
-                    });
-                });
-            }
-        }
-    });
+
 }
 
 function findImageById(req, res) {
@@ -163,65 +131,56 @@ function findImageById(req, res) {
   });
 }
 
+function createArticleModel(req, imageId) {
+    const newArticle = new Article();
+    newArticle.title = req.body.title;
+    newArticle.body = req.body.body;
+    newArticle.timeOfCreation = req.body.timeOfCreation;
+    newArticle.timeOfPublication = req.body.timeOfPublication;
+    newArticle.category = req.body.category;
+    newArticle.confirmation = req.body.confirmation;
+    newArticle.status = req.body.status;
+    newArticle.category = req.params.category_id;
+    if (imageId) {
+        newArticle.image = imageId;
+    }
+    return newArticle
+}
+
 // *** add SINGLE article  *** //
 function addArticle(req, res) {
-  upload(req, res, function (err) {
-  
-    if (err) {
-      res.status(400);
-      res.json(err);
-      intel.error(err);
-    } else {
-      const newArticle = new Article();
-      newArticle.title = req.body.title;
-      newArticle.body = req.body.body;
-      newArticle.timeOfCreation = req.body.timeOfCreation;
-      newArticle.timeOfPublication = req.body.timeOfPublication;
-      newArticle.category = req.body.category;
-      newArticle.confirmation = req.body.confirmation;
-      newArticle.status = req.body.status;
-      newArticle.category = req.params.category_id;
-      newArticle.save(function(err, newArticle) {
-      if (err) {
-        res.sendStatus(400);
-        res.json(err);
-        intel.error(err);
-      } else {
-
+    upload(req, res, function (err) {
+        if (err) {
+            res.sendStatus(400);
+            res.json(err);
+            intel.error(err);
+        }
         if (req.file) {
-          let newImage = new Img();
+            let newImage = new Img();
             newImage.filename = req.file.filename;
             newImage.originalname = req.file.originalname;
             newImage.contentType = req.file.mimetype;
-            if (newImage) {
-                newImage.article = newArticle._id;
-                newImage.save(function (err, newImage) {
+            newImage.save(function (err, newImage) {
+                if (err) {
+                    res.sendStatus(400);
+                    res.json(err);
+                    intel.error(err);
+                }
+                let articleModel = createArticleModel(req, newImage._id);
+                articleModel.save(function (err, article) {
                     if (err) {
                         res.sendStatus(400);
-                        res.json(err);
-                        intel.error(err);
+                        intel.error('Can\'t save article ', err);
+                    } else {
+                        let articleResponse = addImageUrl(articleModel.toJSONObject(), req);
+                        res.status(201);
+                        res.json(articleResponse);
+                        intel.info('Added new article ', newArticle);
                     }
-                    Article.findOneAndUpdate(newArticle._id, {image: newImage._id}, function (err, article) {
-                        if (err) {
-                            res.sendStatus(400);
-                            res.json({id: newImage._id});
-                            intel.error(err);
-                        }
-                        article = addImageUrl(article, req);
-                      
-                        res.json(article);
-                        intel.info('Added new article ', article);
-                       
-                    });
-    
                 });
-            }
+            });
         }
-      }
-      }); 
-    }  
-});
-   
+    });
 }
 // *** update SINGLE article *** //
 function updateArticle(req, res) {
@@ -237,7 +196,7 @@ function updateArticle(req, res) {
         if (req.body.body) {
           article.body = req.body.body;
         }
-          if (req.body.timeOfCreation) {
+        if (req.body.timeOfCreation) {
           article.timeOfCreation = req.body.timeOfCreation;
         }
         if (req.body.timeOfPublication) {

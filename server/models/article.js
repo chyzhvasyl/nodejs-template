@@ -43,7 +43,7 @@ const articleSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'user' }
 });
 
-articleSchema.methods.toJSONObject = function (instance) {
+articleSchema.methods.toJSONObject = function () {
     return this.toObject();
 };
 

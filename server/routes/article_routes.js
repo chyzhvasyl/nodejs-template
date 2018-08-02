@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const Article = require('../models/article');
-const Img = require('../models/image');
+const multer = require('multer');
 const intel = require('intel');
 const fs = require('fs');
-const multer = require('multer');
 const path = require('path');
+const Article = require('../models/article');
+const Comment = require('../models/comment');
+const Img = require('../models/image');
 const UPLOAD_PATH = './server/uploads';
 
 // *** multer configuration *** //
@@ -42,8 +43,6 @@ router.get('/articles/:category_id', findAllArticlesByCategory);
 router.post('/article/:category_id', addArticle);
 router.put('/article/:id', updateArticle);
 router.put('/article/:id/categoty/:category_id', updateArticle);
-router.post('/article/:id/image/', saveImage);
-router.get('/image/:id/', findImageById);
 router.put('/article/:id/like/:is_liked', likeArticle);
 router.delete('/article/:id', deleteArticle);
 
@@ -113,40 +112,6 @@ function findAllArticlesByCategory(req, res) {
   });
 }
 
-// *** save or update SINGLE article's image  *** //
-function saveImage(req, res) {
-
-}
-
-function findImageById(req, res) {
-  let imgId = req.params.id;
-  Img.findById(imgId, (err, img) => {
-      if (err) {
-          res.sendStatus(400);
-          res.json(err);
-          intel.error(err);
-      }
-      res.setHeader('Content-Type', img.contentType);
-      fs.createReadStream(path.join(UPLOAD_PATH, img.filename)).pipe(res);
-  });
-}
-
-function createArticleModel(req, imageId) {
-    const newArticle = new Article();
-    newArticle.title = req.body.title;
-    newArticle.body = req.body.body;
-    newArticle.timeOfCreation = req.body.timeOfCreation;
-    newArticle.timeOfPublication = req.body.timeOfPublication;
-    newArticle.category = req.body.category;
-    newArticle.confirmation = req.body.confirmation;
-    newArticle.status = req.body.status;
-    newArticle.category = req.params.category_id;
-    if (imageId) {
-        newArticle.image = imageId;
-    }
-    return newArticle
-}
-
 // *** add SINGLE article  *** //
 function addArticle(req, res) {
     upload(req, res, function (err) {
@@ -156,10 +121,7 @@ function addArticle(req, res) {
             intel.error(err);
         }
         if (req.file) {
-            let newImage = new Img();
-            newImage.filename = req.file.filename;
-            newImage.originalname = req.file.originalname;
-            newImage.contentType = req.file.mimetype;
+            let newImage = createImageModel(req);
             newImage.save(function (err, newImage) {
                 if (err) {
                     res.sendStatus(400);
@@ -172,58 +134,62 @@ function addArticle(req, res) {
                         res.sendStatus(400);
                         intel.error('Can\'t save article ', err);
                     } else {
-                        let articleResponse = addImageUrl(articleModel.toJSONObject(), req);
+                        let articleResponse = addImageUrl(article.toJSONObject(), req);
                         res.status(201);
                         res.json(articleResponse);
-                        intel.info('Added new article ', newArticle);
+                        intel.info('Added new article ', articleResponse);
                     }
                 });
             });
         }
     });
 }
+
 // *** update SINGLE article *** //
 function updateArticle(req, res) {
-    if (err) {
-      res.status(400);
-      res.json(err);
-      intel.error(err);
-    } else {
-      Article.findById(req.params.id, function(err, article) {
-        if (req.body.title) {
-          article.title = req.body.title;
-        }
-        if (req.body.body) {
-          article.body = req.body.body;
-        }
-          if (req.body.timeOfCreation) {
-          article.timeOfCreation = req.body.timeOfCreation;
-        }
-        if (req.body.timeOfPublication) {
-          article.timeOfPublication = req.body.timeOfPublication;
-        }
-        if (req.body.confirmation) {
-          article.confirmation = req.body.confirmation;
-        }
-        if (req.body.status) {
-          article.status = req.body.status;
-        }
-        if (req.params.category_id) {
-          article.category = req.params.category_id;
-        }
-        article.save(function (err) {
-          if (err) {
+    upload(req, res, function (err) {
+        if (err) {
             res.status(400);
             res.json(err);
             intel.error(err);
-          } else {
-            article = addImageUrl(article, req);
-            res.json(article);
-            intel.info('Updated article ', article);
-          }
-        });
-      });
-    }
+        } else {
+            if (req.file) {
+                const articleId = req.params.id;
+                if (req.body.image) {
+                    const oldImage = req.body.image;
+                    fs.unlink(path.join(UPLOAD_PATH, oldImage.filename), function (err) {
+                        if (err) {
+                            intel.error(`Something went wrong when deleting file for article[${articleId}]`)
+                        } else {
+                            intel.info(`Deleted image for article[${articleId}]`);
+                        }
+                    });
+                }
+                const imageModel = createImageModel(req);
+                imageModel.update(function (err, updatedImage) {
+                    if (err) {
+                        res.status(400);
+                        res.json(err);
+                        intel.error(err);
+                    } else {
+                        const articleToUpdate = createArticleModel(req, req.body.image);
+                        articleToUpdate.update(function (err, updatedArticle) {
+                            if (err) {
+                                res.status(400);
+                                res.json(err);
+                                intel.error(err);
+                            } else {
+                                updatedArticle = addImageUrl(updatedArticle.toJSONObject(), req);
+                                res.json(updatedArticle);
+                                intel.info('Updated article ', updatedArticle);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    });
+
 }
 
 function likeArticle(req, res) {
@@ -250,10 +216,62 @@ function deleteArticle(req, res) {
     if (err) {
       res.json(err);
     } else {
+        Comment.deleteMany({article: req.params.id}, function (err) {
+            intel.info(`Comments deleted for article[${req.params.id}]`);
+        });
       res.json(article);
       intel.info('Deleted article ', article);
     }
   });
+}
+
+//helper functions
+function createArticleModel(req, imageId) {
+    const newArticle = new Article();
+    if (req.body.title) {
+        article.title = req.body.title;
+    }
+    if (req.body.body) {
+        article.body = req.body.body;
+    }
+    if (req.body.timeOfCreation) {
+        article.timeOfCreation = req.body.timeOfCreation;
+    }
+    if (req.body.timeOfPublication) {
+        article.timeOfPublication = req.body.timeOfPublication;
+    }
+    if (req.body.confirmation) {
+        article.confirmation = req.body.confirmation;
+    }
+    if (req.body.status) {
+        article.status = req.body.status;
+    }
+    if (req.params.category_id) {
+        article.category = req.params.category_id;
+    }
+    if (imageId) {
+        newArticle.image = imageId;
+    }
+    return newArticle;
+}
+
+function createImageModel(req) {
+    const newImage = new Img();
+    if (req.body.image) {
+        if (req.body.image._id) {
+            newImage._id = req.body.image._id;
+        }
+    }
+    if (req.file.filename) {
+        newImage.filename = req.file.filename;
+    }
+    if (req.file.originalname) {
+        newImage.originalname = req.file.originalname;
+    }
+    if (req.file.mimetype) {
+        newImage.contentType = req.file.mimetype;
+    }
+    return newImage;
 }
 
 module.exports = router;

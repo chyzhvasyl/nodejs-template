@@ -40,10 +40,13 @@ router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
 router.get('/articles/:category_id', findAllArticlesByCategory);
 router.get('/articles/:confirmation', findAllArticlesByConfirmation);
+
+
 router.post('/article/:category_id', addArticle);
+router.post('/article/:id/image/', saveImage);
+
 router.put('/article/:id', updateArticle);
 router.put('/article/:id/categoty/:category_id', updateArticle);
-router.post('/article/:id/image/', saveImage);
 router.get('/image/:id/', findImageById);
 router.put('/article/:id/like/:is_liked', likeArticle);
 router.delete('/article/:id', deleteArticle);

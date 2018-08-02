@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
 
-});
+}, { versionKey: false });
 
 const User = mongoose.model('user', userSchema);
 module.exports = User;

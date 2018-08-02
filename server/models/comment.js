@@ -23,7 +23,7 @@ const commentSchema = new Schema({
     },
     article: { type: Schema.Types.ObjectId, ref: 'article' },
     user: { type: Schema.Types.ObjectId, ref: 'user'}
-});
+}, { versionKey: false });
 
 const Comment = mongoose.model('comment', commentSchema);
 module.exports = Comment;

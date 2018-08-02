@@ -20,6 +20,7 @@ intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
 const articleRoutes = require('./routes/article_routes.js');
 const commentRoutes = require('./routes/comment_routes.js');
 const categoryRoutes = require('./routes/category_routes');
+const templateRoutes = require('./routes/template_routes.js');
 const imageRoutes = require('./routes/image_routes');
 
 // *** mongodb config *** //
@@ -54,6 +55,7 @@ server.use('/', articleRoutes);
 server.use('/', commentRoutes);
 server.use('/', categoryRoutes);
 server.use('/', imageRoutes);
+server.use('/', templateRoutes);
 
 // *** server config *** //
 // const hostname = '192.168.0.123';

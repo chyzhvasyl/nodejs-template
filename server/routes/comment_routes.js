@@ -7,6 +7,7 @@ const intel = require('intel');
 // *** api routes *** //
 router.get('/comments', findAllComments);
 router.get('/comment/:id', findCommentById);
+router.get('/comment/:confirmation', findCommentByConfir);
 router.post('/comment/:article_id', addComment);
 router.put('/comment/:id', updateComment);
 router.delete('/comment/:id', deleteComment);

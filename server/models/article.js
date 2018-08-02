@@ -8,6 +8,11 @@ const articleSchema = new Schema({
     // maxlength: 100,
     trim: true
   },
+  shortBody: {
+    type: String,
+    required: true,
+    trim: true
+  },
   body: {
     type: String,
     required: true,
@@ -41,12 +46,11 @@ const articleSchema = new Schema({
   image: { type: Schema.Types.ObjectId, ref: 'image' },
   comments: [{ type: Schema.Types.ObjectId, ref: 'comment' }],
   user: { type: Schema.Types.ObjectId, ref: 'user' }
-});
+}, { versionKey: false });
 
 articleSchema.methods.toJSONObject = function () {
     return this.toObject();
 };
-
 
 const Article  = mongoose.model('article', articleSchema);
 module.exports = Article;

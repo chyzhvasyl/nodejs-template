@@ -40,6 +40,9 @@ function checkFileType(file, cb) {
 router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
 router.get('/articles/:category_id', findAllArticlesByCategory);
+router.get('/articles/:confirmation', findAllArticlesByConfirmation);
+
+
 router.post('/article/:category_id', addArticle);
 router.put('/article/:id', updateArticle);
 router.put('/article/:id/categoty/:category_id', updateArticle);
@@ -110,6 +113,20 @@ function findAllArticlesByCategory(req, res) {
         intel.info("Get all articles by category" + req.params.category, articles);
     }
   });
+}
+// *** get All articles by confirmation *** //
+function findAllArticlesByConfirmation(req, res) {
+    Article.find({'confirmation':req.params.confirmation}, function(err, articles){
+        if(err) {
+            res.status(400);
+            res.json(err);
+            intel.error(err);
+        } else {
+            articles = articles.map(a => addImageUrl(a, req));
+            res.json();
+            intel.info("Get all articles by confirmation" + req.params.confirmation, articles);
+        }
+    });
 }
 
 // *** add SINGLE article  *** //
@@ -189,7 +206,6 @@ function updateArticle(req, res) {
             }
         }
     });
-
 }
 
 function likeArticle(req, res) {

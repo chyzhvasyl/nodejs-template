@@ -245,28 +245,31 @@ function deleteArticle(req, res) {
 function createArticleModel(req, imageId) {
     const newArticle = new Article();
     if (req.body.title) {
-        article.title = req.body.title;
+        newArticle.title = req.body.title;
     }
+    if (req.body.shortBody) {
+      newArticle.shortBody = req.body.shortBody;
+  }
     if (req.body.body) {
-        article.body = req.body.body;
+        newArticle.body = req.body.body;
     }
     if (req.body.timeOfCreation) {
-        article.timeOfCreation = req.body.timeOfCreation;
+        newArticle.timeOfCreation = req.body.timeOfCreation;
     }
     if (req.body.timeOfPublication) {
-        article.timeOfPublication = req.body.timeOfPublication;
+        newArticle.timeOfPublication = req.body.timeOfPublication;
     }
     if (req.body.confirmation) {
-        article.confirmation = req.body.confirmation;
+        newArticle.confirmation = req.body.confirmation;
     }
     if (req.body.status) {
-        article.status = req.body.status;
+        newArticle.status = req.body.status;
     }
     if (req.params.category_id) {
-        article.category = req.params.category_id;
+        newArticle.category = req.params.category_id;
     }
     if (imageId) {
-        newArticle.image = imageId;
+      newArticle.image = imageId;
     }
     return newArticle;
 }

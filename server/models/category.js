@@ -7,7 +7,7 @@ const categorySchema = new Schema({
         required: true,
     },
     article: { type: Schema.Types.ObjectId, ref: 'article' }
-});
+}, { versionKey: false });
 
 const Category = mongoose.model('category', categorySchema);
 module.exports = Category;

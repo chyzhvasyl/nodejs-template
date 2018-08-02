@@ -8,16 +8,16 @@ const templateSchema = new Schema({
     },
     articleStyles: {
         shortBody: {
-            length: String,
-            fontSize: String 
+            length: Number,
+            fontSize: Number
         },
         body: {
-            length: String,
-            fontSize: String 
+            length: Number,
+            fontSize: Number
         },
         title: { 
-            length: String,
-            fontSize: String 
+            length: Number,
+            fontSize: Number 
         },
     },
     article: { type: Schema.Types.ObjectId, ref: 'article' }

@@ -39,6 +39,7 @@ function checkFileType(file, cb) {
 router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
 router.get('/articles/:category_id', findAllArticlesByCategory);
+router.get('/articles/:confirmation', findAllArticlesByConfirmation);
 router.post('/article/:category_id', addArticle);
 router.put('/article/:id', updateArticle);
 router.put('/article/:id/categoty/:category_id', updateArticle);
@@ -49,7 +50,7 @@ router.delete('/article/:id', deleteArticle);
 
 function addImageUrl(article, req) {
     if (article && article.image && article.image._id) {
-        article['imgUrl'] = req.protocol + "://" + req.get('host') + '/image/' + article.image._id;
+      article['imgUrl'] = req.protocol + "://" + req.get('host') + '/image/' + article.image._id;
     }
     return article;
 }
@@ -62,15 +63,15 @@ function findAllArticles(req, res) {
     .populate('image')
     .lean()
     .exec(function(err, articles) {
-        if(err) {
-            res.status(400);
-            res.json(err);
-            intel.error(err);
-        } else {
-            articles = articles.map(a => addImageUrl(a, req));
-            res.json(articles);
-            intel.info("Get all articles ", articles);
-        }
+      if(err) {
+        res.status(400);
+        res.json(err);
+        intel.error(err);
+      } else {
+        articles = articles.map(a => addImageUrl(a, req));
+        res.json(articles);
+        intel.info("Get all articles ", articles);
+      }
   });
 }
 
@@ -82,15 +83,15 @@ function findArticleById(req, res) {
     .populate('image')
     .lean()
     .exec(function(err, article) {
-        if(err) {
-            res.status(400);
-            res.json(err);
-            intel.error(err);
-        } else {
-            article = addImageUrl(article, req);
-            res.json(article);
-            intel.info('Get single article by id ', article);
-        }
+      if(err) {
+        res.status(400);
+        res.json(err);
+        intel.error(err);
+      } else {
+        article = addImageUrl(article, req);
+        res.json(article);
+        intel.info('Get single article by id ', article);
+      }
   });
 }
 
@@ -106,9 +107,24 @@ function findAllArticlesByCategory(req, res) {
       res.json(err);
       intel.error(err);
     } else {
-        articles = articles.map(a => addImageUrl(a, req));
-        res.json(articles);
-        intel.info("Get all articles by category" + req.params.category, articles);
+      articles = articles.map(a => addImageUrl(a, req));
+      res.json(articles);
+      intel.info("Get all articles by category" + req.params.category, articles);
+    }
+  });
+}
+
+// *** get All articles by confirmation *** //
+function findAllArticlesByConfirmation(req, res) {  
+  Article.find({'confirmation':req.params.confirmation}, function(err, articles){
+    if(err) {
+      res.status(400);
+      res.json(err);
+      intel.error(err);
+    } else {
+      articles = articles.map(a => addImageUrl(a, req));
+      res.json();
+      intel.info("Get all articles by confirmation" + req.params.confirmation, articles);
     }
   });
 }
@@ -134,6 +150,7 @@ function findImageById(req, res) {
 function createArticleModel(req, imageId) {
     const newArticle = new Article();
     newArticle.title = req.body.title;
+    newArticle.shortBody = req.body.shortBody;
     newArticle.body = req.body.body;
     newArticle.timeOfCreation = req.body.timeOfCreation;
     newArticle.timeOfPublication = req.body.timeOfPublication;
@@ -144,7 +161,7 @@ function createArticleModel(req, imageId) {
     if (imageId) {
         newArticle.image = imageId;
     }
-    return newArticle
+    return newArticle;
 }
 
 // *** add SINGLE article  *** //
@@ -192,6 +209,9 @@ function updateArticle(req, res) {
       Article.findById(req.params.id, function(err, article) {
         if (req.body.title) {
           article.title = req.body.title;
+        }
+        if (req.body.shortBody) {
+          article.shortBody = req.body.shortBody;
         }
         if (req.body.body) {
           article.body = req.body.body;

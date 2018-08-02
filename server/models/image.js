@@ -6,7 +6,7 @@ const imageSchema = new Schema({
     originalname: String,
     contentType: String,
     created: {type: Date, default: Date.now()},
-});
+}, { versionKey: false });
 
 const Img = mongoose.model('image', imageSchema);
 module.exports = Img;

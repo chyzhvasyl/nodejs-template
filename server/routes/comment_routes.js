@@ -7,12 +7,12 @@ const intel = require('intel');
 // *** api routes *** //
 router.get('/comments', findAllComments);
 router.get('/comment/:id', findCommentById);
-// router.get('/comment/:confirmation', findCommentByConfirmation);
+router.get('/comment/:confirmation', findCommentByConfirmation);
 router.post('/comment/:article_id', addComment);
 router.put('/comment/:id', updateComment);
 router.delete('/comment/:id', deleteComment);
 
-// *** get ALL articles *** //
+// *** get ALL comments *** //
 function findAllComments(req, res) {
   Comment.find()
   .populate('article')
@@ -27,7 +27,7 @@ function findAllComments(req, res) {
   });
 }
 
-// *** get SINGLE article *** //
+// *** get SINGLE comment *** //
 function findCommentById(req, res) {
   Comment.findById(req.params.id)
   .populate('article')
@@ -38,6 +38,21 @@ function findCommentById(req, res) {
     } else {
       res.json(comment);
       intel.info('Get single comment by id ', comment);
+    }
+  });
+}
+
+// *** get SINGLE comment *** //
+function findCommentByConfirmation(req, res) {
+  Article.find({'confirmation':req.params.confirmation})
+  .populate('article')
+  .exec(function(err, comments) {
+    if(err) {
+      res.json(err);
+      intel.error(err);
+    } else {
+      res.json(comments);
+      intel.info('Get comments by confirmation ', comments);
     }
   });
 }

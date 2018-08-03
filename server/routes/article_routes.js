@@ -1,4 +1,4 @@
-const express = require('express');
+    const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const intel = require('intel');
@@ -41,7 +41,6 @@ router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
 router.get('/articles/:category_id', findAllArticlesByCategory);
 router.get('/articles/:confirmation', findAllArticlesByConfirmation);
-
 
 router.post('/article/:category_id', addArticle);
 router.put('/article/:id', updateArticle);

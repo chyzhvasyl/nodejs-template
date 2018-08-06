@@ -44,8 +44,8 @@ const accessLogStream = fs.createWriteStream(path.join(__dirname, './logs/access
 server.use(express.static(path.join(__dirname, 'public')));
 server.use(express.static(path.join(__dirname, 'uploads')));
 server.use(cors(corsOptions));
-server.use(bodyParser.json());
-server.use(bodyParser.urlencoded({extended: false}));
+server.use(bodyParser.json({limit: "50mb"}));
+server.use({limit: "50mb", extended: true, parameterLimit:50000});
 server.use(morgan(':method :url :status :res[content-length] - :response-time ms :date[clf] :http-version', {stream: accessLogStream}));
 // server.use(forceSsl);
 // enother middlewares

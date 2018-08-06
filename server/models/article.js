@@ -10,7 +10,8 @@ const articleSchema = new Schema({
   },
   shortBody: {
     type: String,
-    trim: true
+    trim: true,
+    required: true
   },
   body: {
     type: String,

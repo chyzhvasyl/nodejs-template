@@ -10,7 +10,6 @@ const Comment = require('../models/comment');
 const Img = require('../models/image');
 const UPLOAD_PATH = './server/uploads';
 
-
 // *** multer configuration *** //
 let storage = multer.diskStorage({
     destination: UPLOAD_PATH,
@@ -45,9 +44,11 @@ router.get('/articles/:category_id', findAllArticlesByCategory);
 router.get('/articles/:confirmation', findAllArticlesByConfirmation);
 
 router.post('/article/:category_id', addArticle);
-router.put('/article/:id', updateArticle);
-router.put('/article/:id/categoty/:category_id', updateArticle);
+router.put('/article/:id/:category_id?', updateArticle);
+
+// router.put('/article/:id/categoty/:category_id', updateArticle);
 router.put('/article/:id/like/:is_liked', likeArticle);
+
 router.delete('/article/:id', deleteArticle);
 
 function addImageUrl(article, req) {
@@ -132,33 +133,12 @@ function findAllArticlesByConfirmation(req, res) {
     });
 }
 
-    function saveFile(file, prefix) {
-        if (file) {
-            const decodedImg = decodeBase64Image(file);
-            const imageBuffer = decodedImg.data;
-            const type = decodedImg.type;
-            const extension = mime.getExtension(type);
-            const fileName = `${prefix}-${Date.now()}.${extension}`;
-            try {
-                fs.writeFileSync(UPLOAD_PATH + '/' + fileName, imageBuffer, 'utf8');
-                return {
-                    fileName: fileName,
-                    extension: extension
-                };
-            } catch (err) {
-                console.error(err);
-                res.status(400);
-                res.json(err);
-            }
-        }
-        return {};
-    }
-
 // *** add SINGLE article  *** //
 function addArticle(req, res) {
     if (req.body && req.body.fileBase64 && req.body.fileBase64Small) {
-        const fileMeta = saveFile(req.body.fileBase64, 'img');
-        const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img');
+        const curentDate = Date.now();
+        const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
+        const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
         const newImage = new Img();
         newImage.filename = fileMeta.fileName;
         newImage.contentType = mime.getType(fileMeta.extension);
@@ -168,22 +148,52 @@ function addArticle(req, res) {
                 res.json(err);
                 intel.error(err);
             }
-            let articleModel = createArticleModel(req, newImage._id);
-            articleModel.save(saveCallback(req, smallFileMeta, fileMeta, res));
+            const newArticle = new Article();
+            newArticle.title = req.body.title;
+            newArticle.shortBody = req.body.shortBody;
+            newArticle.body = req.body.body;
+            newArticle.timeOfCreation = req.body.timeOfCreation;
+            newArticle.timeOfPublication = req.body.timeOfPublication;
+            newArticle.confirmation = req.body.confirmation;
+            newArticle.status = req.body.status;
+            newArticle.category = req.params.category_id;
+            newArticle.image = newImage._id;
+            newArticle.save(saveCallback(req, res));
         });
     }
-    console.log('Error');
     //TODO Error 
 }
 
- function saveCallback( req, smallFileMeta, fileMeta, res) {
+function saveFile(file, prefix, curentDate) {
+    if (file) {
+        const decodedImg = decodeBase64Image(file);
+        const imageBuffer = decodedImg.data;
+        const type = decodedImg.type;
+        const extension = mime.getExtension(type);
+        const fileName = `${prefix}-${curentDate}.${extension}`;
+        try {
+            fs.writeFileSync(UPLOAD_PATH + '/' + fileName, imageBuffer, 'utf8');
+            return {
+                fileName: fileName,
+                extension: extension
+            };
+        } catch (err) {
+            console.error(err);
+            res.status(400);
+            res.json(err);
+        }
+    }
+    return {};
+}
+
+function saveCallback( req, res) {
     return function (err, article) {
         if (err) {
             res.status(400);
             res.json(err);
             intel.error('Can\'t save article ', err);
         } else {
-            let articleResponse = addImageUrl(article.toJSONObject(), req, fileMeta, smallFileMeta);
+            let articleResponse = addImageUrl(article.toJSONObject(), req);
             res.status(201);
             res.json(articleResponse);
             intel.info('Added new article ', articleResponse);
@@ -191,52 +201,142 @@ function addArticle(req, res) {
     }
 }
 
-// *** update SINGLE article *** //
-function updateArticle(req, res) {
-    upload(req, res, function (err) {
-        if (err) {
-            res.status(400);
-            res.json(err);
-            intel.error(err);
-        } else {
-            if (req.file) {
-                const articleId = req.params.id;
-                if (req.body.image) {
-                    const oldImage = req.body.image;
-                    fs.unlink(path.join(UPLOAD_PATH, oldImage.filename), function (err) {
-                        if (err) {
-                            intel.error(`Something went wrong when deleting file for article[${articleId}]`)
-                        } else {
-                            intel.info(`Deleted image for article[${articleId}]`);
-                        }
-                    });
-                }
-                const imageModel = createImageModel(req);
-                imageModel.update(function (err, updatedImage) {
-                    if (err) {
-                        res.status(400);
-                        res.json(err);
-                        intel.error(err);
-                    } else {
-                        const articleToUpdate = createArticleModel(req, req.body.image);
-                        articleToUpdate.update(function (err, updatedArticle) {
-                            if (err) {
-                                res.status(400);
-                                res.json(err);
-                                intel.error(err);
-                            } else {
-                                updatedArticle = addImageUrl(updatedArticle.toJSONObject(), req);
-                                res.json(updatedArticle);
-                                intel.info('Updated article ', updatedArticle);
-                            }
-                        });
-                    }
-                });
-            }
-        }
-    });
+//helper functions
+// function createArticleModel(req, imageId) {
+//     const newArticle = new Article();
+//     if (req.body.title) {
+//         newArticle.title = req.body.title;
+//     }
+//     if (req.body.shortBody) {
+//         newArticle.shortBody = req.body.shortBody;
+//     }
+//     if (req.body.body) {
+//         newArticle.body = req.body.body;
+//     }
+//     if (req.body.timeOfCreation) {
+//         newArticle.timeOfCreation = req.body.timeOfCreation;
+//     }
+//     if (req.body.timeOfPublication) {
+//         newArticle.timeOfPublication = req.body.timeOfPublication;
+//     }
+//     if (req.body.confirmation) {
+//         newArticle.confirmation = req.body.confirmation;
+//     }
+//     if (req.body.status) {
+//         newArticle.status = req.body.status;
+//     }
+//     if (req.params.category_id) {
+//         newArticle.category = req.params.category_id;
+//     }
+//     if (imageId) {
+//         newArticle.image = imageId;
+//     }
+//     return newArticle;
+// }
+
+
+function decodeBase64Image(dataString) {
+    const matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
+        response = {};
+
+    if (matches.length !== 3) {
+        return new Error('Invalid input string');
+    }
+
+    response.type = matches[1];
+    response.data = new Buffer(matches[2], 'base64');
+
+    return response;
 }
 
+// *** update SINGLE article *** //
+function updateArticle(req, res) {
+    if (req.body && req.body.fileBase64 && req.body.fileBase64Small) {
+        const curentDate = Date.now();
+        //TODO remove old file images
+        const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
+        const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
+        const newImage = new Img();
+        newImage.filename = fileMeta.fileName;
+        newImage.contentType = mime.getType(fileMeta.extension);
+        newImage.save(function (err, newImage) {
+            if (err) {
+                res.sendStatus(400);
+                res.json(err);
+                intel.error(err);
+            }
+            Article.findById(req.params.id, function(err, article) {
+                if (req.body.title) {
+                    article.title = req.body.title;
+                }
+                if (req.body.shortBody) {
+                    article.shortBody = req.body.shortBody;
+                }
+                if (req.body.body) {
+                    article.body = req.body.body;
+                }
+                if (req.body.timeOfCreation) {
+                    article.timeOfCreation = req.body.timeOfCreation;
+                }
+                if (req.body.timeOfPublication) {
+                    article.timeOfPublication = req.body.timeOfPublication;
+                }
+                if (req.body.confirmation) {
+                    article.confirmation = req.body.confirmation;
+                }
+                if (req.body.status) {
+                    article.status = req.body.status;
+                }
+                if (req.params.category_id) {
+                    article.category = req.params.category_id;
+                }
+                if (newImage) {
+                    article.image = newImage._id;
+                }
+                article.save(saveCallback(req, res));
+              });
+        });
+    } else {
+        Article.findById(req.params.id, function(err, article) {
+            if (req.body.title) {
+                article.title = req.body.title;
+            }
+            if (req.body.shortBody) {
+                article.shortBody = req.body.shortBody;
+            }
+            if (req.body.body) {
+                article.body = req.body.body;
+            }
+            if (req.body.timeOfCreation) {
+                article.timeOfCreation = req.body.timeOfCreation;
+            }
+            if (req.body.timeOfPublication) {
+                article.timeOfPublication = req.body.timeOfPublication;
+            }
+            if (req.body.confirmation) {
+                article.confirmation = req.body.confirmation;
+            }
+            if (req.body.status) {
+                article.status = req.body.status;
+            }
+            if (req.params.category_id) {
+                article.category = req.params.category_id;
+            }
+            article.save(function(err, article) {
+                if(err) {
+                  res.json(err);
+                  intel.error(err);
+                } else {
+                  res.json(article);
+                  intel.info('Updated article ', article);
+                }
+              });
+          });
+    }
+}
+
+
+// *** add or remove article like *** //
 function likeArticle(req, res) {
   let likeAction;
   if (req.params.is_liked == 'false') {
@@ -268,54 +368,6 @@ function deleteArticle(req, res) {
       intel.info('Deleted article ', article);
     }
   });
-}
-
-//helper functions
-function createArticleModel(req, imageId) {
-    const newArticle = new Article();
-    if (req.body.title) {
-        newArticle.title = req.body.title;
-    }
-    if (req.body.shortBody) {
-      newArticle.shortBody = req.body.shortBody;
-  }
-    if (req.body.body) {
-        newArticle.body = req.body.body;
-    }
-    if (req.body.timeOfCreation) {
-        newArticle.timeOfCreation = req.body.timeOfCreation;
-    }
-    if (req.body.timeOfPublication) {
-        newArticle.timeOfPublication = req.body.timeOfPublication;
-    }
-    if (req.body.confirmation) {
-        newArticle.confirmation = req.body.confirmation;
-    }
-    if (req.body.status) {
-        newArticle.status = req.body.status;
-    }
-    if (req.params.category_id) {
-        newArticle.category = req.params.category_id;
-    }
-    if (imageId) {
-      newArticle.image = imageId;
-    }
-    return newArticle;
-}
-
-
-function decodeBase64Image(dataString) {
-    const matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
-        response = {};
-
-    if (matches.length !== 3) {
-        return new Error('Invalid input string');
-    }
-
-    response.type = matches[1];
-    response.data = new Buffer(matches[2], 'base64');
-
-    return response;
 }
 
 module.exports = router;

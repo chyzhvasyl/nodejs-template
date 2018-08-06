@@ -6,8 +6,21 @@ const fs = require('fs');
 const path = require('path');
 const UPLOAD_PATH = './server/uploads';
 
+router.get('/images', findAllImages);
 router.get('/image/:id', findImageById);
 router.get('/image-small/:id', findImageSmallById);
+
+function findAllImages(req, res) {
+    Img.find(function(err, images) {
+        if (err) {
+            res.sendStatus(400);
+            res.json(err);
+            intel.error(err);
+        }
+        res.json(images);
+        intel.info("Get all images ", images);
+    });
+}
 
 function findImageById(req, res) {
     Img.findById(req.params.id, (err, img) => {

@@ -53,6 +53,7 @@ router.delete('/article/:id', deleteArticle);
 function addImageUrl(article, req) {
     if (article && article.image && article.image._id) {
         article['imgUrl'] = req.protocol + "://" + req.get('host') + '/image/' + article.image._id;
+        article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/image-small/' + article.image._id;
     }
     return article;
 }
@@ -98,7 +99,7 @@ function findArticleById(req, res) {
 }
 
 // *** get All articles by category *** //
-function findAllArticlesByCategory(req, res) {  
+function findAllArticlesByCategory(req, res) {
   Article.find({'category':req.params.category_id})
   .populate('comments')
   .populate('category')
@@ -115,6 +116,7 @@ function findAllArticlesByCategory(req, res) {
     }
   });
 }
+
 // *** get All articles by confirmation *** //
 function findAllArticlesByConfirmation(req, res) {
     Article.find({'confirmation':req.params.confirmation}, function(err, articles){
@@ -152,11 +154,11 @@ function findAllArticlesByConfirmation(req, res) {
         return {};
     }
 
-    // *** add SINGLE article  *** //
+// *** add SINGLE article  *** //
 function addArticle(req, res) {
-    if (req.body && req.body.fileBase64) {
+    if (req.body && req.body.fileBase64 && req.body.fileBase64Small) {
         const fileMeta = saveFile(req.body.fileBase64, 'img');
-        const smallFileMeta = saveFile(req.body.fileBase64Small, 'img-small');
+        const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img');
         const newImage = new Img();
         newImage.filename = fileMeta.fileName;
         newImage.contentType = mime.getType(fileMeta.extension);
@@ -167,12 +169,14 @@ function addArticle(req, res) {
                 intel.error(err);
             }
             let articleModel = createArticleModel(req, newImage._id);
-            articleModel.save(saveCallback(req, smallFileMeta, fileMeta));
+            articleModel.save(saveCallback(req, smallFileMeta, fileMeta, res));
         });
     }
+    console.log('Error');
+    //TODO Error 
 }
 
- function saveCallback( req, smallFileMeta, fileMeta) {
+ function saveCallback( req, smallFileMeta, fileMeta, res) {
     return function (err, article) {
         if (err) {
             res.status(400);

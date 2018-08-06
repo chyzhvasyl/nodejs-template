@@ -7,10 +7,10 @@ const path = require('path');
 const UPLOAD_PATH = './server/uploads';
 
 router.get('/image/:id', findImageById);
+router.get('/image-small/:id', findImageSmallById);
 
 function findImageById(req, res) {
-    let imgId = req.params.id;
-    Img.findById(imgId, (err, img) => {
+    Img.findById(req.params.id, (err, img) => {
         if (err) {
             res.sendStatus(400);
             res.json(err);
@@ -18,6 +18,18 @@ function findImageById(req, res) {
         }
         res.setHeader('Content-Type', img.contentType);
         fs.createReadStream(path.join(UPLOAD_PATH, img.filename)).pipe(res);
+    });
+}
+
+function findImageSmallById(req, res) {
+    Img.findById(req.params.id, (err, img) => {
+        if (err) {
+            res.sendStatus(400);
+            res.json(err);
+            intel.error(err);
+        }
+        res.setHeader('Content-Type', img.contentType); 
+        fs.createReadStream(path.join(UPLOAD_PATH, 'small-' + img.filename)).pipe(res);
     });
 }
 

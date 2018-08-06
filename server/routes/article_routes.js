@@ -1,13 +1,15 @@
-    const express = require('express');
+const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const intel = require('intel');
 const fs = require('fs');
+const mime = require('mime');
 const path = require('path');
 const Article = require('../models/article');
 const Comment = require('../models/comment');
 const Img = require('../models/image');
 const UPLOAD_PATH = './server/uploads';
+
 
 // *** multer configuration *** //
 let storage = multer.diskStorage({
@@ -128,37 +130,61 @@ function findAllArticlesByConfirmation(req, res) {
     });
 }
 
-// *** add SINGLE article  *** //
+    function saveFile(file, prefix) {
+        if (file) {
+            const decodedImg = decodeBase64Image(file);
+            const imageBuffer = decodedImg.data;
+            const type = decodedImg.type;
+            const extension = mime.getExtension(type);
+            const fileName = `${prefix}-${Date.now()}.${extension}`;
+            try {
+                fs.writeFileSync(UPLOAD_PATH + '/' + fileName, imageBuffer, 'utf8');
+                return {
+                    fileName: fileName,
+                    extension: extension
+                };
+            } catch (err) {
+                console.error(err);
+                res.status(400);
+                res.json(err);
+            }
+        }
+        return {};
+    }
+
+    // *** add SINGLE article  *** //
 function addArticle(req, res) {
-    upload(req, res, function (err) {
+    if (req.body && req.body.fileBase64) {
+        const fileMeta = saveFile(req.body.fileBase64, 'img');
+        const smallFileMeta = saveFile(req.body.fileBase64Small, 'img-small');
+        const newImage = new Img();
+        newImage.filename = fileMeta.fileName;
+        newImage.contentType = mime.getType(fileMeta.extension);
+        newImage.save(function (err, newImage) {
+            if (err) {
+                res.sendStatus(400);
+                res.json(err);
+                intel.error(err);
+            }
+            let articleModel = createArticleModel(req, newImage._id);
+            articleModel.save(saveCallback(req, smallFileMeta, fileMeta));
+        });
+    }
+}
+
+ function saveCallback( req, smallFileMeta, fileMeta) {
+    return function (err, article) {
         if (err) {
-            res.sendStatus(400);
+            res.status(400);
             res.json(err);
-            intel.error(err);
+            intel.error('Can\'t save article ', err);
+        } else {
+            let articleResponse = addImageUrl(article.toJSONObject(), req, fileMeta, smallFileMeta);
+            res.status(201);
+            res.json(articleResponse);
+            intel.info('Added new article ', articleResponse);
         }
-        if (req.file) {
-            let newImage = createImageModel(req);
-            newImage.save(function (err, newImage) {
-                if (err) {
-                    res.sendStatus(400);
-                    res.json(err);
-                    intel.error(err);
-                }
-                let articleModel = createArticleModel(req, newImage._id);
-                articleModel.save(function (err, article) {
-                    if (err) {
-                        res.sendStatus(400);
-                        intel.error('Can\'t save article ', err);
-                    } else {
-                        let articleResponse = addImageUrl(article.toJSONObject(), req);
-                        res.status(201);
-                        res.json(articleResponse);
-                        intel.info('Added new article ', articleResponse);
-                    }
-                });
-            });
-        }
-    });
+    }
 }
 
 // *** update SINGLE article *** //
@@ -273,23 +299,19 @@ function createArticleModel(req, imageId) {
     return newArticle;
 }
 
-function createImageModel(req) {
-    const newImage = new Img();
-    if (req.body.image) {
-        if (req.body.image._id) {
-            newImage._id = req.body.image._id;
-        }
+
+function decodeBase64Image(dataString) {
+    const matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
+        response = {};
+
+    if (matches.length !== 3) {
+        return new Error('Invalid input string');
     }
-    if (req.file.filename) {
-        newImage.filename = req.file.filename;
-    }
-    if (req.file.originalname) {
-        newImage.originalname = req.file.originalname;
-    }
-    if (req.file.mimetype) {
-        newImage.contentType = req.file.mimetype;
-    }
-    return newImage;
+
+    response.type = matches[1];
+    response.data = new Buffer(matches[2], 'base64');
+
+    return response;
 }
 
 module.exports = router;

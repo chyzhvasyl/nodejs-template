@@ -218,55 +218,62 @@ function decodeBase64Image(dataString) {
 // *** update SINGLE article *** //
 function updateArticle(req, res) {
     Article.findById(req.params.id, function(err, article) {
-    if (req.body.title) {
-        article.title = req.body.title;
-    }
-    if (req.body.shortBody) {
-        article.shortBody = req.body.shortBody;
-    }
-    if (req.body.body) {
-        article.body = req.body.body;
-    }
-    if (req.body.timeOfCreation) {
-        article.timeOfCreation = req.body.timeOfCreation;
-    }
-    if (req.body.timeOfPublication) {
-        article.timeOfPublication = req.body.timeOfPublication;
-    }
-    if (req.body.confirmation) {
-        article.confirmation = req.body.confirmation;
-    }
-    if (req.body.status) {
-        article.status = req.body.status;
-    }
-    if (req.params.category_id) {
-        article.category = req.params.category_id;
-    }
-    if (req.body.fileBase64 && req.body.fileBase64Small) {
-        const curentDate = Date.now();
-        //TODO remove old file images
-        const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
-        const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
-        Img.findById(article.image._id, function(err, image) {
-            image.filename = fileMeta.fileName;
-            image.contentType = mime.getType(fileMeta.extension);
-            image.save(function (err, image) {
-                if (err) {
-                    res.sendStatus(400);
-                    res.json(err);
-                    intel.error(err);
-                } else {
-                    article.save(saveCallback(req, res));
-                }
-            }
+        if (req.body.title) {
+            article.title = req.body.title;
         }
-    }
-    
-});
-
-
-
-
+        if (req.body.shortBody) {
+            article.shortBody = req.body.shortBody;
+        }
+        if (req.body.body) {
+            article.body = req.body.body;
+        }
+        if (req.body.timeOfCreation) {
+            article.timeOfCreation = req.body.timeOfCreation;
+        }
+        if (req.body.timeOfPublication) {
+            article.timeOfPublication = req.body.timeOfPublication;
+        }
+        if (req.body.confirmation) {
+            article.confirmation = req.body.confirmation;
+            console.log(article.confirmation);
+        }
+        if (req.body.status) {
+            article.status = req.body.status;
+        }
+        if (req.params.category_id) {
+            article.category = req.params.category_id;
+        }
+        if (req.body.fileBase64 && req.body.fileBase64Small) {
+            //TODO remove old file images
+            const curentDate = Date.now();
+            const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
+            const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
+            Img.findById(article.image._id, function(err, image) {
+                image.filename = fileMeta.fileName;
+                image.contentType = mime.getType(fileMeta.extension);
+                image.save(function (err, image){
+                    if (err) {
+                        res.sendStatus(400);
+                        res.json(err);
+                        intel.error(err);
+                    } else {
+                        article.save(saveCallback(req, res));
+                    }
+                })
+            })
+        } 
+        article.save(function(err, article) {
+            if(err) {
+            res.json(err);
+            intel.error(err);
+            } else {
+                res.json(article);
+                intel.info('Updated article ', article);
+            }
+        });
+    });
+        
+}; 
 
 // *** add or remove article like *** //
 function likeArticle(req, res) {

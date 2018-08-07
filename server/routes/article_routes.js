@@ -42,13 +42,9 @@ router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
 router.get('/articles/:category_id', findAllArticlesByCategory);
 router.get('/articles/:confirmation', findAllArticlesByConfirmation);
-
 router.post('/article/:category_id', addArticle);
 router.put('/article/:id/:category_id?', updateArticle);
-
-// router.put('/article/:id/categoty/:category_id', updateArticle);
 router.put('/article/:id/like/:is_liked', likeArticle);
-
 router.delete('/article/:id', deleteArticle);
 
 function addImageUrl(article, req) {
@@ -217,7 +213,9 @@ function decodeBase64Image(dataString) {
 
 // *** update SINGLE article *** //
 function updateArticle(req, res) {
-    Article.findById(req.params.id, function(err, article) {
+    Article.findById(req.params.id)
+        .populate('image')
+        .exec(function(err, article) {
         if (req.body.title) {
             article.title = req.body.title;
         }
@@ -233,9 +231,8 @@ function updateArticle(req, res) {
         if (req.body.timeOfPublication) {
             article.timeOfPublication = req.body.timeOfPublication;
         }
-        if (req.body.confirmation) {
+        if (req.body.confirmation != undefined) {
             article.confirmation = req.body.confirmation;
-            console.log(article.confirmation);
         }
         if (req.body.status) {
             article.status = req.body.status;
@@ -244,10 +241,21 @@ function updateArticle(req, res) {
             article.category = req.params.category_id;
         }
         if (req.body.fileBase64 && req.body.fileBase64Small) {
-            //TODO remove old file images
             const curentDate = Date.now();
             const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
             const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
+            fs.unlink(UPLOAD_PATH + '/' + article.image.filename, (err) => {
+                if (err) {
+                    intel.error(err);
+                };
+                intel.info(article.image.filename + ' was deleted.');
+            });
+            fs.unlink(UPLOAD_PATH + '/small-' + article.image.filename, (err) => {
+                if (err) {
+                    intel.error(err);
+                };
+                intel.info('small-' + article.image.filename + ' was deleted.');
+            });
             Img.findById(article.image._id, function(err, image) {
                 image.filename = fileMeta.fileName;
                 image.contentType = mime.getType(fileMeta.extension);
@@ -261,18 +269,18 @@ function updateArticle(req, res) {
                     }
                 })
             })
-        } 
-        article.save(function(err, article) {
-            if(err) {
-            res.json(err);
-            intel.error(err);
-            } else {
-                res.json(article);
-                intel.info('Updated article ', article);
-            }
-        });
-    });
-        
+        } else {
+            article.save(function(err, article) {
+                if(err) {
+                res.json(err);
+                intel.error(err);
+                } else {
+                    res.json(article);
+                    intel.info('Updated article ', article);
+                }
+            });
+        }
+    });    
 }; 
 
 // *** add or remove article like *** //

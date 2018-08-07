@@ -100,7 +100,7 @@ function updateComment(req, res) {
     if (req.body.body) {
       comment.body = req.body.body;
     }
-    if (req.body.confirmation) {
+    if (req.body.confirmation != undefined) {
       comment.confirmation = req.body.confirmation;
     }
     if (req.body.time) {

@@ -201,40 +201,6 @@ function saveCallback( req, res) {
     }
 }
 
-//helper functions
-// function createArticleModel(req, imageId) {
-//     const newArticle = new Article();
-//     if (req.body.title) {
-//         newArticle.title = req.body.title;
-//     }
-//     if (req.body.shortBody) {
-//         newArticle.shortBody = req.body.shortBody;
-//     }
-//     if (req.body.body) {
-//         newArticle.body = req.body.body;
-//     }
-//     if (req.body.timeOfCreation) {
-//         newArticle.timeOfCreation = req.body.timeOfCreation;
-//     }
-//     if (req.body.timeOfPublication) {
-//         newArticle.timeOfPublication = req.body.timeOfPublication;
-//     }
-//     if (req.body.confirmation) {
-//         newArticle.confirmation = req.body.confirmation;
-//     }
-//     if (req.body.status) {
-//         newArticle.status = req.body.status;
-//     }
-//     if (req.params.category_id) {
-//         newArticle.category = req.params.category_id;
-//     }
-//     if (imageId) {
-//         newArticle.image = imageId;
-//     }
-//     return newArticle;
-// }
-
-
 function decodeBase64Image(dataString) {
     const matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
         response = {};
@@ -251,89 +217,55 @@ function decodeBase64Image(dataString) {
 
 // *** update SINGLE article *** //
 function updateArticle(req, res) {
-    if (req.body && req.body.fileBase64 && req.body.fileBase64Small) {
+    Article.findById(req.params.id, function(err, article) {
+    if (req.body.title) {
+        article.title = req.body.title;
+    }
+    if (req.body.shortBody) {
+        article.shortBody = req.body.shortBody;
+    }
+    if (req.body.body) {
+        article.body = req.body.body;
+    }
+    if (req.body.timeOfCreation) {
+        article.timeOfCreation = req.body.timeOfCreation;
+    }
+    if (req.body.timeOfPublication) {
+        article.timeOfPublication = req.body.timeOfPublication;
+    }
+    if (req.body.confirmation) {
+        article.confirmation = req.body.confirmation;
+    }
+    if (req.body.status) {
+        article.status = req.body.status;
+    }
+    if (req.params.category_id) {
+        article.category = req.params.category_id;
+    }
+    if (req.body.fileBase64 && req.body.fileBase64Small) {
         const curentDate = Date.now();
         //TODO remove old file images
         const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
         const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
-        const newImage = new Img();
-        newImage.filename = fileMeta.fileName;
-        newImage.contentType = mime.getType(fileMeta.extension);
-        newImage.save(function (err, newImage) {
-            if (err) {
-                res.sendStatus(400);
-                res.json(err);
-                intel.error(err);
-            }
-            Article.findById(req.params.id, function(err, article) {
-                if (req.body.title) {
-                    article.title = req.body.title;
-                }
-                if (req.body.shortBody) {
-                    article.shortBody = req.body.shortBody;
-                }
-                if (req.body.body) {
-                    article.body = req.body.body;
-                }
-                if (req.body.timeOfCreation) {
-                    article.timeOfCreation = req.body.timeOfCreation;
-                }
-                if (req.body.timeOfPublication) {
-                    article.timeOfPublication = req.body.timeOfPublication;
-                }
-                if (req.body.confirmation) {
-                    article.confirmation = req.body.confirmation;
-                }
-                if (req.body.status) {
-                    article.status = req.body.status;
-                }
-                if (req.params.category_id) {
-                    article.category = req.params.category_id;
-                }
-                if (newImage) {
-                    article.image = newImage._id;
-                }
-                article.save(saveCallback(req, res));
-              });
-        });
-    } else {
-        Article.findById(req.params.id, function(err, article) {
-            if (req.body.title) {
-                article.title = req.body.title;
-            }
-            if (req.body.shortBody) {
-                article.shortBody = req.body.shortBody;
-            }
-            if (req.body.body) {
-                article.body = req.body.body;
-            }
-            if (req.body.timeOfCreation) {
-                article.timeOfCreation = req.body.timeOfCreation;
-            }
-            if (req.body.timeOfPublication) {
-                article.timeOfPublication = req.body.timeOfPublication;
-            }
-            if (req.body.confirmation) {
-                article.confirmation = req.body.confirmation;
-            }
-            if (req.body.status) {
-                article.status = req.body.status;
-            }
-            if (req.params.category_id) {
-                article.category = req.params.category_id;
-            }
-            article.save(function(err, article) {
-                if(err) {
-                  res.json(err);
-                  intel.error(err);
+        Img.findById(article.image._id, function(err, image) {
+            image.filename = fileMeta.fileName;
+            image.contentType = mime.getType(fileMeta.extension);
+            image.save(function (err, image) {
+                if (err) {
+                    res.sendStatus(400);
+                    res.json(err);
+                    intel.error(err);
                 } else {
-                  res.json(article);
-                  intel.info('Updated article ', article);
+                    article.save(saveCallback(req, res));
                 }
-              });
-          });
+            }
+        }
     }
-}
+    
+});
+
+
+
 
 
 // *** add or remove article like *** //

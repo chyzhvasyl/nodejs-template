@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const imageSchema = new Schema({
+    fileType: String,
     filename: String,
     contentType: String,
     created: {type: Date, default: Date.now()},

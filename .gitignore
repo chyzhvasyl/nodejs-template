@@ -4,3 +4,4 @@ node_modules/
 server/uploads
 server/logs/**
 package-lock.json
+.editorconfig

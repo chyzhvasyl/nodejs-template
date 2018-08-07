@@ -57,7 +57,7 @@ function addImageUrl(article, req) {
 
 // *** get ALL articles *** //
 function findAllArticles(req, res) {
-  Article.find({}, '-__v')
+  Article.find()
     .populate('comments')
     .populate('category')
     .populate('image')
@@ -72,7 +72,7 @@ function findAllArticles(req, res) {
             res.json(articles);
             intel.info("Get all articles ", articles);
         }
-  });
+  });   
 }
 
 // *** get SINGLE article by id *** //
@@ -180,7 +180,7 @@ function saveFile(file, prefix, curentDate) {
         }
     }
     return {};
-}
+}   
 
 function saveCallback( req, res) {
     return function (err, article) {
@@ -270,15 +270,16 @@ function updateArticle(req, res) {
                 })
             })
         } else {
-            article.save(function(err, article) {
-                if(err) {
-                res.json(err);
-                intel.error(err);
-                } else {
-                    res.json(article);
-                    intel.info('Updated article ', article);
-                }
-            });
+            // article.save(function(err, article) {
+            //     if(err) {
+            //     res.json(err);
+            //     intel.error(err);
+            //     } else {
+            //         res.json(article);
+            //         intel.info('Updated article ', article);
+            //     }
+            // });
+            article.save(saveCallback(req, res));
         }
     });    
 }; 

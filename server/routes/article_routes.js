@@ -24,13 +24,14 @@ let upload = multer({
     fileFilter: function (req, file, cb) {
         checkFileType(file, cb);
     }
-}).single('img');
+}).single('video');
 
 function checkFileType(file, cb) {
-  const filetypes = /jpeg|jpg|png|gif/;
+//   const filetypes = /jpeg|jpg|png|gif|mkv|mp4/;
+  const filetypes = /jpeg|jpg|png|gif|mkv|mp4/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = filetypes.test(file.mimetype);
-  if (extname && mimetype) {
+  if (mimetype) {
     return cb(null, true);
   } else {
     cb('Error: Images only!');
@@ -131,14 +132,15 @@ function findAllArticlesByConfirmation(req, res) {
 
 // *** add SINGLE article  *** //
 function addArticle(req, res) {
-    if (req.body && req.body.fileBase64 && req.body.fileBase64Small) {
+    if ((req.body.fileBase64 && req.body.fileBase64Small) || req.body.videoBase64) {
         const curentDate = Date.now();
-        const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
-        const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
-        const newImage = new Img();
-        newImage.filename = fileMeta.fileName;
-        newImage.contentType = mime.getType(fileMeta.extension);
-        newImage.save(function (err, newImage) {
+        if (req.body.fileBase64 && req.body.fileBase64Small) {
+            const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
+            const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
+            const newImage = new Img();
+            newImage.filename = fileMeta.fileName;
+            newImage.contentType = mime.getType(fileMeta.extension);
+            newImage.save(function (err, newImage) {
             if (err) {
                 res.sendStatus(400);
                 res.json(err);
@@ -148,16 +150,37 @@ function addArticle(req, res) {
             newArticle.title = req.body.title;
             newArticle.shortBody = req.body.shortBody;
             newArticle.body = req.body.body;
-            newArticle.timeOfCreation = req.body.timeOfCreation;
-            newArticle.timeOfPublication = req.body.timeOfPublication;
             newArticle.confirmation = req.body.confirmation;
             newArticle.status = req.body.status;
             newArticle.category = req.params.category_id;
             newArticle.image = newImage._id;
             newArticle.save(saveCallback(req, res));
         });
+        }
+        if (req.body.videoBase64) {
+            const videoMeta = saveFile(req.body.videoBase64, 'video', curentDate);
+            const newImage = new Img();
+            newImage.filename = videoMeta.fileName;
+            newImage.contentType = mime.getType(videoMeta.extension);
+            newImage.save(function (err, newImage) {
+            if (err) {
+                res.sendStatus(400);
+                res.json(err);
+                intel.error(err);
+            }
+            const newArticle = new Article();
+            newArticle.title = req.body.title;
+            newArticle.shortBody = req.body.shortBody;
+            newArticle.body = req.body.body;
+            newArticle.confirmation = req.body.confirmation;
+            newArticle.status = req.body.status;
+            newArticle.category = req.params.category_id;
+            newArticle.image = newImage._id;
+            newArticle.save(saveCallback(req, res));
+        });
+        } 
     }
-    //TODO Error 
+    //TODO Error    
 }
 
 function saveFile(file, prefix, curentDate) {

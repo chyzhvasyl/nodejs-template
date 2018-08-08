@@ -41,8 +41,8 @@ function checkFileType(file, cb) {
 // *** api routes *** //
 router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
-router.get('/articles/:category_id', findAllArticlesByCategory);
-router.get('/articles/:confirmation', findAllArticlesByConfirmation);
+router.get('/articles/category/:category_id', findAllArticlesByCategory);
+router.get('/articles/confirmation/:confirmation', findAllArticlesByConfirmation);
 router.post('/article/:category_id', addArticle);
 router.put('/article/:id/:category_id?', updateArticle);
 router.put('/article/:id/like/:is_liked', likeArticle);
@@ -102,6 +102,7 @@ function findAllArticlesByCategory(req, res) {
   .populate('comments')
   .populate('category')
   .populate('image')
+  .lean()
   .exec(function(err, articles){
     if(err) {
       res.status(400);
@@ -117,18 +118,23 @@ function findAllArticlesByCategory(req, res) {
 
 // *** get All articles by confirmation *** //
 function findAllArticlesByConfirmation(req, res) {
-    Article.find({'confirmation':req.params.confirmation}, function(err, articles){
-        if(err) {
-            res.status(400);
-            res.json(err);
-            intel.error(err);
-        } else {
-            articles = articles.map(a => addImageUrl(a, req));
-            res.json();
-            intel.info("Get all articles by confirmation" + req.params.confirmation, articles);
-        }
+    Article.find({'confirmation':req.params.confirmation})
+    .populate('comments')
+    .populate('category')
+    .populate('image')
+    .lean()
+    .exec(function(err, articles){
+      if(err) {
+        res.status(400);
+        res.json(err);
+        intel.error(err);
+      } else {
+          articles = articles.map(a => addImageUrl(a, req));
+          res.json(articles);
+          intel.info("Get all articles by confirmation " + req.params.category, articles);
+      }
     });
-}
+  }
 
 // *** add SINGLE article  *** //
 function addArticle(req, res) {

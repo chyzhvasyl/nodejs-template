@@ -49,23 +49,6 @@ router.put('/article/:id/:category_id?', updateArticle);
 router.put('/article/:id/like/:is_liked', likeArticle);
 router.delete('/article/:id', deleteArticle);
 
-function addImageUrl(article, req) {
-    if (article && article.image && article.image._id) {
-        const imagefFiletypes =  /image\/jpeg|image\/png|image\/gif/;
-        const videoFfiletypes = /video\/pm4|video\/webm|video\/ogg/;
-        const isImage = imagefFiletypes.test(article.image.contentType);
-        const isVideo = videoFfiletypes.test(article.image.contentType);
-        if (isImage) {
-            article['imgUrl'] = req.protocol + "://" + req.get('host') + '/image/' + article.image._id;
-            article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/image-small/' + article.image._id;
-        }
-        if (isVideo) {
-            console.log("It's video");
-        }
-    }
-    return article;
-}
-
 // *** get ALL articles *** //
 function findAllArticles(req, res) {
   Article.find()
@@ -184,7 +167,7 @@ function addArticle(req, res) {
                 newArticle.status = req.body.status;
                 newArticle.category = req.params.category_id;
                 newArticle.image = newImage._id;
-                newArticle.save(saveCallback(req, res));
+                newArticle.save(saveCallback(req, res, newImage));
             });
         }
         }   
@@ -213,19 +196,36 @@ function saveFile(file, prefix, curentDate) {
     return {};
 }   
 
-function saveCallback( req, res) {
+function saveCallback( req, res, file) {
     return function (err, article) {
         if (err) {
             res.status(400);
             res.json(err);
             intel.error('Can\'t save article ', err);
         } else {
-            let articleResponse = addImageUrl(article.toJSONObject(), req);
+            let articleResponse = addImageUrl(article.toJSONObject(), file, req);
             res.status(201);
             res.json(articleResponse);
             intel.info('Added new article ', articleResponse);
         }
     }
+}
+
+function addImageUrl(article, file, req) {
+    if (article && file && file._id) {
+        const imagefFiletypes =  /image\/jpeg|image\/png|image\/gif/;
+        const videoFfiletypes = /video\/pm4|video\/webm|video\/ogg/;
+        const isImage = imagefFiletypes.test(file.contentType);
+        const isVideo = videoFfiletypes.test(file.contentType);
+        if (isImage) {
+            article['imgUrl'] = req.protocol + "://" + req.get('host') + '/image/' + file._id;
+            article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/image-small/' + file._id;
+        }
+        if (isVideo) {
+            console.log("It's video");
+        }
+    }
+    return article;
 }
 
 function decodeBase64Image(dataString) {
@@ -297,7 +297,7 @@ function updateArticle(req, res) {
                         res.json(err);
                         intel.error(err);
                     } else {
-                        article.save(saveCallback(req, res));
+                        article.save(saveCallback(req, res, image));
                     }
                 })
             })
@@ -311,7 +311,8 @@ function updateArticle(req, res) {
             //         intel.info('Updated article ', article);
             //     }
             // });
-            article.save(saveCallback(req, res));
+            //TODO review
+            article.save(saveCallback(req,  res));
         }
     }); 
     }   

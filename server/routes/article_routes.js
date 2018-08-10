@@ -9,10 +9,12 @@ const Article = require('../models/article');
 const Comment = require('../models/comment');
 const Img = require('../models/image');
 const UPLOAD_PATH = './server/uploads';
+const UPLOAD_PATH_IMAGES = UPLOAD_PATH + '/images';
+const UPLOAD_PATH_VIDEOS = UPLOAD_PATH + '/videos';
 
 // *** multer configuration *** //
 let storage = multer.diskStorage({
-    destination: UPLOAD_PATH,
+    destination: UPLOAD_PATH_VIDEOS,
     filename: function (req, file, cb) {
         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
     }
@@ -20,18 +22,17 @@ let storage = multer.diskStorage({
 
 let upload = multer({
     storage: storage,
-    limits: {fileSize: 10 * 1024 * 1024},
+    limits: {fileSize: 100 * 1024 * 1024},
     fileFilter: function (req, file, cb) {
         checkFileType(file, cb);
     }
 }).single('video');
 
 function checkFileType(file, cb) {
-//   const filetypes = /jpeg|jpg|png|gif|mkv|mp4/;
-  const filetypes = /jpeg|jpg|png|gif|mkv|mp4/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
-  if (mimetype) {
+  const filetypes = /.jpeg|.jpg|.png|.gif|.mkv|.mp4/;
+  const extname = path.extname(file.originalname).toLowerCase();
+  const isValidExtension = filetypes.test(extname);
+  if (isValidExtension) {
     return cb(null, true);
   } else {
     cb('Error: Images only!');
@@ -50,8 +51,17 @@ router.delete('/article/:id', deleteArticle);
 
 function addImageUrl(article, req) {
     if (article && article.image && article.image._id) {
-        article['imgUrl'] = req.protocol + "://" + req.get('host') + '/image/' + article.image._id;
-        article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/image-small/' + article.image._id;
+        const imagefFiletypes =  /image\/jpeg|image\/png|image\/gif/;
+        const videoFfiletypes = /video\/pm4|video\/webm|video\/ogg/;
+        const isImage = imagefFiletypes.test(article.image.contentType);
+        const isVideo = videoFfiletypes.test(article.image.contentType);
+        if (isImage) {
+            article['imgUrl'] = req.protocol + "://" + req.get('host') + '/image/' + article.image._id;
+            article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/image-small/' + article.image._id;
+        }
+        if (isVideo) {
+            console.log("It's video");
+        }
     }
     return article;
 }
@@ -138,7 +148,21 @@ function findAllArticlesByConfirmation(req, res) {
 
 // *** add SINGLE article  *** //
 function addArticle(req, res) {
-    if ((req.body.fileBase64 && req.body.fileBase64Small) || req.body.videoBase64) {
+    if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
+        upload(req, res, function (err) {
+            if (err) {
+                res.send(err);
+              // An error occurred when uploading
+              return
+            } else {
+                console.log(req);
+            }
+         
+            // Everything went fine
+          })
+    } 
+    if (req.headers['content-type'].indexOf('application/json') !== -1) {
+        if (req.body.fileBase64 && req.body.fileBase64Small) {
         const curentDate = Date.now();
         if (req.body.fileBase64 && req.body.fileBase64Small) {
             const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
@@ -147,46 +171,24 @@ function addArticle(req, res) {
             newImage.filename = fileMeta.fileName;
             newImage.contentType = mime.getType(fileMeta.extension);
             newImage.save(function (err, newImage) {
-            if (err) {
-                res.sendStatus(400);
-                res.json(err);
-                intel.error(err);
-            }
-            const newArticle = new Article();
-            newArticle.title = req.body.title;
-            newArticle.shortBody = req.body.shortBody;
-            newArticle.body = req.body.body;
-            newArticle.confirmation = req.body.confirmation;
-            newArticle.status = req.body.status;
-            newArticle.category = req.params.category_id;
-            newArticle.image = newImage._id;
-            newArticle.save(saveCallback(req, res));
-        });
+                if (err) {
+                    res.sendStatus(400);
+                    res.json(err);
+                    intel.error(err);
+                }
+                const newArticle = new Article();
+                newArticle.title = req.body.title;
+                newArticle.shortBody = req.body.shortBody;
+                newArticle.body = req.body.body;
+                newArticle.confirmation = req.body.confirmation;
+                newArticle.status = req.body.status;
+                newArticle.category = req.params.category_id;
+                newArticle.image = newImage._id;
+                newArticle.save(saveCallback(req, res));
+            });
         }
-        if (req.body.videoBase64) {
-            const videoMeta = saveFile(req.body.videoBase64, 'video', curentDate);
-            const newImage = new Img();
-            newImage.filename = videoMeta.fileName;
-            newImage.contentType = mime.getType(videoMeta.extension);
-            newImage.save(function (err, newImage) {
-            if (err) {
-                res.sendStatus(400);
-                res.json(err);
-                intel.error(err);
-            }
-            const newArticle = new Article();
-            newArticle.title = req.body.title;
-            newArticle.shortBody = req.body.shortBody;
-            newArticle.body = req.body.body;
-            newArticle.confirmation = req.body.confirmation;
-            newArticle.status = req.body.status;
-            newArticle.category = req.params.category_id;
-            newArticle.image = newImage._id;
-            newArticle.save(saveCallback(req, res));
-        });
-        } 
-    }
-    //TODO Error    
+        }   
+    } 
 }
 
 function saveFile(file, prefix, curentDate) {
@@ -197,7 +199,7 @@ function saveFile(file, prefix, curentDate) {
         const extension = mime.getExtension(type);
         const fileName = `${prefix}-${curentDate}.${extension}`;
         try {
-            fs.writeFileSync(UPLOAD_PATH + '/' + fileName, imageBuffer, 'utf8');
+            fs.writeFile(UPLOAD_PATH_IMAGES + '/' + fileName, imageBuffer, 'utf8');
             return {
                 fileName: fileName,
                 extension: extension
@@ -242,7 +244,8 @@ function decodeBase64Image(dataString) {
 
 // *** update SINGLE article *** //
 function updateArticle(req, res) {
-    Article.findById(req.params.id)
+    if (req.headers['content-type'].indexOf('application/json') !== -1) {
+        Article.findById(req.params.id)
         .populate('image')
         .exec(function(err, article) {
         if (req.body.title) {
@@ -273,13 +276,13 @@ function updateArticle(req, res) {
             const curentDate = Date.now();
             const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
             const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
-            fs.unlink(UPLOAD_PATH + '/' + article.image.filename, (err) => {
+            fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.image.filename, (err) => {
                 if (err) {
                     intel.error(err);
                 };
                 intel.info(article.image.filename + ' was deleted.');
             });
-            fs.unlink(UPLOAD_PATH + '/small-' + article.image.filename, (err) => {
+            fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.image.filename, (err) => {
                 if (err) {
                     intel.error(err);
                 };
@@ -310,7 +313,8 @@ function updateArticle(req, res) {
             // });
             article.save(saveCallback(req, res));
         }
-    });    
+    }); 
+    }   
 }; 
 
 // *** add or remove article like *** //

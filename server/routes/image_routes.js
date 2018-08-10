@@ -30,7 +30,7 @@ function findImageById(req, res) {
             intel.error(err);
         }
         res.setHeader('Content-Type', img.contentType);
-        fs.createReadStream(path.join(UPLOAD_PATH, img.filename)).pipe(res);
+        fs.createReadStream(path.join(UPLOAD_PATH + '/images/', img.filename)).pipe(res);
     });
 }
 
@@ -42,7 +42,7 @@ function findImageSmallById(req, res) {
             intel.error(err);
         }
         res.setHeader('Content-Type', img.contentType); 
-        fs.createReadStream(path.join(UPLOAD_PATH, 'small-' + img.filename)).pipe(res);
+        fs.createReadStream(path.join(UPLOAD_PATH + '/images/', 'small-' + img.filename)).pipe(res);
     });
 }
 

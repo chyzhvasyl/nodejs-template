@@ -138,16 +138,33 @@ function addArticle(req, res) {
               // An error occurred when uploading
               return
             } else {
-                console.log(req);
+                if (req.file) { 
+                    const newImage = new Img();
+                    newImage.filename = req.file.filename.substring(0, req.file.filename.lastIndexOf('.'));
+                    newImage.contentType = req.file.mimetype;
+                    newImage.save(function (err, newImage) {
+                        if (err) {
+                            res.sendStatus(400);
+                            res.json(err);
+                            intel.error(err);
+                        }
+                        const newArticle = new Article();
+                        newArticle.title = req.body.title;
+                        newArticle.shortBody = req.body.shortBody;
+                        newArticle.body = req.body.body;
+                        newArticle.confirmation = req.body.confirmation;
+                        newArticle.status = req.body.status;
+                        newArticle.category = req.params.category_id;
+                        newArticle.image = newImage._id;
+                        newArticle.save(saveCallback(req, res, newImage));
+                    });
+                }
             }
-         
-            // Everything went fine
-          })
+        })
     } 
     if (req.headers['content-type'].indexOf('application/json') !== -1) {
         if (req.body.fileBase64 && req.body.fileBase64Small) {
-        const curentDate = Date.now();
-        if (req.body.fileBase64 && req.body.fileBase64Small) {
+            const curentDate = Date.now();
             const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
             const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
             const newImage = new Img();
@@ -169,7 +186,6 @@ function addArticle(req, res) {
                 newArticle.image = newImage._id;
                 newArticle.save(saveCallback(req, res, newImage));
             });
-        }
         }   
     } 
 }
@@ -214,7 +230,8 @@ function saveCallback( req, res, file) {
 function addImageUrl(article, file, req) {
     if (article && file && file._id) {
         const imagefFiletypes =  /image\/jpeg|image\/png|image\/gif/;
-        const videoFfiletypes = /video\/pm4|video\/webm|video\/ogg/;
+        // const videoFfiletypes = /video\/pm4|video\/webm|video\/ogg|video\/x-matroska/;
+        const videoFfiletypes = /video/;
         const isImage = imagefFiletypes.test(file.contentType);
         const isVideo = videoFfiletypes.test(file.contentType);
         if (isImage) {
@@ -222,7 +239,7 @@ function addImageUrl(article, file, req) {
             article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/image-small/' + file._id;
         }
         if (isVideo) {
-            console.log("It's video");
+            article['videoMKVUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mkv';
         }
     }
     return article;

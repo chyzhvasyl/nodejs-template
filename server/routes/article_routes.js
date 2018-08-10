@@ -62,7 +62,7 @@ function findAllArticles(req, res) {
             res.json(err);
             intel.error(err);
         } else {
-            articles = articles.map(a => addImageUrl(a, req));
+            articles = articles.map(a => addImageUrl(a, a.image, req));
             res.json(articles);
             intel.info("Get all articles ", articles);
         }
@@ -82,7 +82,7 @@ function findArticleById(req, res) {
             res.json(err);
             intel.error(err);
         } else {
-            article = addImageUrl(article, req);
+            article = addImageUrl(article, article.image, req);
             res.json(article);
             intel.info('Get single article by id ', article);
         }
@@ -102,7 +102,7 @@ function findAllArticlesByCategory(req, res) {
       res.json(err);
       intel.error(err);
     } else {
-        articles = articles.map(a => addImageUrl(a, req));
+        articles = articles.map(a => addImageUrl(a, a.image, req));
         res.json(articles);
         intel.info("Get all articles by category" + req.params.category, articles);
     }
@@ -122,7 +122,7 @@ function findAllArticlesByConfirmation(req, res) {
         res.json(err);
         intel.error(err);
       } else {
-          articles = articles.map(a => addImageUrl(a, req));
+          articles = articles.map(a => addImageUrl(a, a.image, req));
           res.json(articles);
           intel.info("Get all articles by confirmation " + req.params.category, articles);
       }
@@ -239,7 +239,9 @@ function addImageUrl(article, file, req) {
             article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/image-small/' + file._id;
         }
         if (isVideo) {
-            article['videoMKVUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mkv';
+            article['videoMkvUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mkv';
+            article['videoMP4Url'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mp4';
+            article['videoWebmUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/webm';
         }
     }
     return article;

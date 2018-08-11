@@ -11,6 +11,8 @@ const Img = require('../models/image');
 const UPLOAD_PATH = './server/uploads';
 const UPLOAD_PATH_IMAGES = UPLOAD_PATH + '/images';
 const UPLOAD_PATH_VIDEOS = UPLOAD_PATH + '/videos';
+const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
+const ffmpeg = require('fluent-ffmpeg');
 
 // *** multer configuration *** //
 let storage = multer.diskStorage({
@@ -37,6 +39,28 @@ function checkFileType(file, cb) {
   } else {
     cb('Error: Images only!');
   }
+} 
+
+// *** convert configuration *** //
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+console.log(ffmpegInstaller.path, ffmpegInstaller.version);
+/**
+ *    input - string, path of input file
+ *    output - string, path of output file
+ *    callback - function, node-style callback fn (error, result)        
+ */
+function convert(input, callback) {
+    ffmpeg(input)
+        .output(UPLOAD_PATH_VIDEOS + '/ddd.mp4')
+        .output(UPLOAD_PATH_VIDEOS + '/ddd.webm')
+        .output(UPLOAD_PATH_VIDEOS + '/ddd.ogv')
+        .on('end', function() {                    
+            console.log('conversion ended');
+            callback(null);
+        }).on('error', function(err){
+            console.log('error: ', err.code, err.msg);
+            callback(err);
+        }).run();
 }
 
 // *** api routes *** //
@@ -66,7 +90,7 @@ function findAllArticles(req, res) {
             res.json(articles);
             intel.info("Get all articles ", articles);
         }
-  });   
+  }); 
 }
 
 // *** get SINGLE article by id *** //
@@ -87,6 +111,13 @@ function findArticleById(req, res) {
             intel.info('Get single article by id ', article);
         }
   });
+
+  convert(UPLOAD_PATH_VIDEOS + '/video-1533910654354.mkv', function(err){
+    if(!err) {
+        console.log('conversion complete');
+        //...
+    }
+ });
 }
 
 // *** get All articles by category *** //
@@ -239,6 +270,7 @@ function addImageUrl(article, file, req) {
             article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/image-small/' + file._id;
         }
         if (isVideo) {
+     
             article['videoMkvUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mkv';
             article['videoMP4Url'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mp4';
             article['videoWebmUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/webm';
@@ -246,6 +278,8 @@ function addImageUrl(article, file, req) {
     }
     return article;
 }
+
+
 
 function decodeBase64Image(dataString) {
     const matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),

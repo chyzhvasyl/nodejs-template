@@ -61,7 +61,8 @@ function findVideoById(req, res) {
         } else if (req.params.format === 'webm') {
             res.setHeader('Content-Type', 'video/webm'); 
         }
-        fs.createReadStream(path.join(UPLOAD_PATH + '/videos/', img.filename + '.' + req.params.format)).pipe(res);
+        fs.createReadStream(path.join(UPLOAD_PATH + '/videos/', img.filename)).pipe(res);
+        // + '.' + req.params.format
     });
 }
 

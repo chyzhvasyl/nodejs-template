@@ -42,26 +42,26 @@ function checkFileType(file, cb) {
 } 
 
 // *** convert configuration *** //
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
-console.log(ffmpegInstaller.path, ffmpegInstaller.version);
+// ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+// console.log(ffmpegInstaller.path, ffmpegInstaller.version);
 /**
  *    input - string, path of input file
  *    output - string, path of output file
  *    callback - function, node-style callback fn (error, result)        
  */
-function convert(input, callback) {
-    ffmpeg(input)
-        .output(UPLOAD_PATH_VIDEOS + '/ddd.mp4')
-        .output(UPLOAD_PATH_VIDEOS + '/ddd.webm')
-        .output(UPLOAD_PATH_VIDEOS + '/ddd.ogv')
-        .on('end', function() {                    
-            console.log('conversion ended');
-            callback(null);
-        }).on('error', function(err){
-            console.log('error: ', err.code, err.msg);
-            callback(err);
-        }).run();
-}
+// function convert(input, filename, callback) {
+//     ffmpeg(input)
+//         .output(UPLOAD_PATH_VIDEOS + '/' + filename.substring(0, filename.lastIndexOf('.')) + '.mp4')
+//         .output(UPLOAD_PATH_VIDEOS + '/' + filename.substring(0, filename.lastIndexOf('.')) + '.ogv')
+//         .output(UPLOAD_PATH_VIDEOS + '/' + filename.substring(0, filename.lastIndexOf('.')) + '.webm')
+//         .on('end', function() {                    
+//             console.log('conversion ended');
+//             callback(null);
+//         }).on('error', function(err){
+//             console.log('error: ', err.code, err.msg);
+//             callback(err);
+//         }).run();
+// }
 
 // *** api routes *** //
 router.get('/articles', findAllArticles);
@@ -111,13 +111,6 @@ function findArticleById(req, res) {
             intel.info('Get single article by id ', article);
         }
   });
-
-  convert(UPLOAD_PATH_VIDEOS + '/video-1533910654354.mkv', function(err){
-    if(!err) {
-        console.log('conversion complete');
-        //...
-    }
- });
 }
 
 // *** get All articles by category *** //
@@ -171,7 +164,8 @@ function addArticle(req, res) {
             } else {
                 if (req.file) { 
                     const newImage = new Img();
-                    newImage.filename = req.file.filename.substring(0, req.file.filename.lastIndexOf('.'));
+                    // newImage.filename = req.file.filename.substring(0, req.file.filename.lastIndexOf('.'));
+                    newImage.filename = req.file.filename;
                     newImage.contentType = req.file.mimetype;
                     newImage.save(function (err, newImage) {
                         if (err) {
@@ -261,7 +255,7 @@ function saveCallback( req, res, file) {
 function addImageUrl(article, file, req) {
     if (article && file && file._id) {
         const imagefFiletypes =  /image\/jpeg|image\/png|image\/gif/;
-        // const videoFfiletypes = /video\/pm4|video\/webm|video\/ogg|video\/x-matroska/;
+        //TODO const videoFfiletypes = /video\/pm4|video\/webm|video\/ogg|video\/x-matroska/;
         const videoFfiletypes = /video/;
         const isImage = imagefFiletypes.test(file.contentType);
         const isVideo = videoFfiletypes.test(file.contentType);
@@ -270,7 +264,12 @@ function addImageUrl(article, file, req) {
             article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/image-small/' + file._id;
         }
         if (isVideo) {
-     
+            // TODO
+            // convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
+            //     if(!err) {
+            //         console.log('conversion complete');
+            //     }
+            //  });
             article['videoMkvUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mkv';
             article['videoMP4Url'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mp4';
             article['videoWebmUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/webm';

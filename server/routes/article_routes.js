@@ -42,26 +42,26 @@ function checkFileType(file, cb) {
 } 
 
 // *** convert configuration *** //
-// ffmpeg.setFfmpegPath(ffmpegInstaller.path);
-// console.log(ffmpegInstaller.path, ffmpegInstaller.version);
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+console.log(ffmpegInstaller.path, ffmpegInstaller.version);
 /**
  *    input - string, path of input file
  *    output - string, path of output file
  *    callback - function, node-style callback fn (error, result)        
  */
-// function convert(input, filename, callback) {
-//     ffmpeg(input)
-//         .output(UPLOAD_PATH_VIDEOS + '/' + filename.substring(0, filename.lastIndexOf('.')) + '.mp4')
-//         .output(UPLOAD_PATH_VIDEOS + '/' + filename.substring(0, filename.lastIndexOf('.')) + '.ogv')
-//         .output(UPLOAD_PATH_VIDEOS + '/' + filename.substring(0, filename.lastIndexOf('.')) + '.webm')
-//         .on('end', function() {                    
-//             console.log('conversion ended');
-//             callback(null);
-//         }).on('error', function(err){
-//             console.log('error: ', err.code, err.msg);
-//             callback(err);
-//         }).run();
-// }
+function convert(input, filename, callback) {
+    ffmpeg(input)
+        .output(UPLOAD_PATH_VIDEOS + '/' + filename.substring(0, filename.lastIndexOf('.')) + '_convert' + '.mp4')
+        .output(UPLOAD_PATH_VIDEOS + '/' + filename.substring(0, filename.lastIndexOf('.')) + '_convert' + '.ogv')
+        .output(UPLOAD_PATH_VIDEOS + '/' + filename.substring(0, filename.lastIndexOf('.')) + '_convert' + '.webm')
+        .on('end', function() {                    
+            console.log('conversion ended');
+            callback(null);
+        }).on('error', function(err){
+            console.log('error: ', err.code, err.msg);
+            callback(err);
+        }).run();
+}
 
 // *** api routes *** //
 router.get('/articles', findAllArticles);
@@ -245,6 +245,11 @@ function saveCallback( req, res, file) {
             intel.error('Can\'t save article ', err);
         } else {
             let articleResponse = addImageUrl(article.toJSONObject(), file, req);
+            convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
+                if(!err) {
+                    console.log('conversion complete');
+                }
+             });
             res.status(201);
             res.json(articleResponse);
             intel.info('Added new article ', articleResponse);
@@ -264,12 +269,6 @@ function addImageUrl(article, file, req) {
             article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/image-small/' + file._id;
         }
         if (isVideo) {
-            // TODO
-            // convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
-            //     if(!err) {
-            //         console.log('conversion complete');
-            //     }
-            //  });
             article['videoMkvUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mkv';
             article['videoMP4Url'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mp4';
             article['videoWebmUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/webm';

@@ -54,14 +54,14 @@ function findVideoById(req, res) {
             res.json(err);
             intel.error(err);
         }
-        if (req.params.format === 'mkv') {
-            res.setHeader('Content-Type', 'video/x-matroska'); 
+        if (req.params.format === 'ogv') {
+            res.setHeader('Content-Type', 'video/ogg'); 
         } else if (req.params.format === 'mp4') {
             res.setHeader('Content-Type', 'video/mp4'); 
         } else if (req.params.format === 'webm') {
             res.setHeader('Content-Type', 'video/webm'); 
         }
-        fs.createReadStream(path.join(UPLOAD_PATH + '/videos/', img.filename)).pipe(res);
+        fs.createReadStream(path.join(UPLOAD_PATH + '/videos/', 'convert_' + img.filename)).pipe(res);
         // + '.' + req.params.format
     });
 }

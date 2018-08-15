@@ -14,55 +14,6 @@ const UPLOAD_PATH_VIDEOS = UPLOAD_PATH + '/videos';
 const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
 const ffmpeg = require('fluent-ffmpeg');
 
-// *** multer configuration *** //
-let storage = multer.diskStorage({
-    destination: UPLOAD_PATH_VIDEOS,
-    filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-    }
-});
-
-let upload = multer({
-    storage: storage,
-    limits: {fileSize: 100 * 1024 * 1024},
-    fileFilter: function (req, file, cb) {
-        checkFileType(file, cb);
-    }
-}).single('video');
-
-function checkFileType(file, cb) {
-  const filetypes = /.jpeg|.jpg|.png|.gif|.mkv|.mp4/;
-  const extname = path.extname(file.originalname).toLowerCase();
-  const isValidExtension = filetypes.test(extname);
-  if (isValidExtension) {
-    return cb(null, true);
-  } else {
-    cb('Error: Images only!');
-  }
-} 
-
-// *** convert configuration *** //
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
-console.log(ffmpegInstaller.path, ffmpegInstaller.version);
-/**
- *    input - string, path of input file
- *    output - string, path of output file
- *    callback - function, node-style callback fn (error, result)        
- */
-function convert(input, filename, callback) {
-    ffmpeg(input)
-        .output(UPLOAD_PATH_VIDEOS + '/' + filename.substring(0, filename.lastIndexOf('.')) + '_convert' + '.mp4')
-        .output(UPLOAD_PATH_VIDEOS + '/' + filename.substring(0, filename.lastIndexOf('.')) + '_convert' + '.ogv')
-        .output(UPLOAD_PATH_VIDEOS + '/' + filename.substring(0, filename.lastIndexOf('.')) + '_convert' + '.webm')
-        .on('end', function() {                    
-            console.log('conversion ended');
-            callback(null);
-        }).on('error', function(err){
-            console.log('error: ', err.code, err.msg);
-            callback(err);
-        }).run();
-}
-
 // *** api routes *** //
 router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
@@ -269,15 +220,13 @@ function addImageUrl(article, file, req) {
             article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/image-small/' + file._id;
         }
         if (isVideo) {
-            article['videoMkvUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mkv';
+            article['videoOgvUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/ogv';
             article['videoMP4Url'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mp4';
             article['videoWebmUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/webm';
         }
     }
     return article;
 }
-
-
 
 function decodeBase64Image(dataString) {
     const matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
@@ -291,6 +240,55 @@ function decodeBase64Image(dataString) {
     response.data = new Buffer(matches[2], 'base64');
 
     return response;
+}
+
+// *** multer configuration *** //
+let storage = multer.diskStorage({
+    destination: UPLOAD_PATH_VIDEOS,
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    }
+});
+
+let upload = multer({
+    storage: storage,
+    limits: {fileSize: 100 * 1024 * 1024},
+    fileFilter: function (req, file, cb) {
+        checkFileType(file, cb);
+    }
+}).single('video');
+
+function checkFileType(file, cb) {
+  const filetypes = /.jpeg|.jpg|.png|.gif|.mkv|.mp4/;
+  const extname = path.extname(file.originalname).toLowerCase();
+  const isValidExtension = filetypes.test(extname);
+  if (isValidExtension) {
+    return cb(null, true);
+  } else {
+    cb('Error: Images only!');
+  }
+} 
+
+// *** convert configuration *** //
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+console.log(ffmpegInstaller.path, ffmpegInstaller.version);
+/**
+ *    input - string, path of input file
+ *    output - string, path of output file
+ *    callback - function, node-style callback fn (error, result)        
+ */
+function convert(input, filename, callback) {
+    ffmpeg(input)
+        .output(UPLOAD_PATH_VIDEOS + '/' + 'convert_' + filename.substring(0, filename.lastIndexOf('.')) + '.mp4').format('mp4').size('640x480')
+        .output(UPLOAD_PATH_VIDEOS + '/' + 'convert_' + filename.substring(0, filename.lastIndexOf('.')) + '.ogv').format('ogv').size('640x480')
+        .output(UPLOAD_PATH_VIDEOS + '/' + 'convert_' + filename.substring(0, filename.lastIndexOf('.')) + '.webm').format('webm').size('640x480')
+        .on('end', function() {                    
+            console.log('conversion ended');
+            callback(null);
+        }).on('error', function(err){
+            console.log('error: ', err.code, err.msg);
+            callback(err);
+        }).run();
 }
 
 // *** update SINGLE article *** //
@@ -363,10 +361,82 @@ function updateArticle(req, res) {
             //     }
             // });
             //TODO review
-            article.save(saveCallback(req,  res));
+            article.save(saveCallback(req, res, article.image));
         }
     }); 
     }   
+    if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
+        Article.findById(req.params.id)
+        .populate('image')
+        .exec(function(err, article) {
+            if (req.body.title) {
+                article.title = req.body.title;
+            }
+            if (req.body.shortBody) {
+                article.shortBody = req.body.shortBody;
+            }
+            if (req.body.body) {
+                article.body = req.body.body;
+            }
+            if (req.body.timeOfCreation) {
+                article.timeOfCreation = req.body.timeOfCreation;
+            }
+            if (req.body.timeOfPublication) {
+                article.timeOfPublication = req.body.timeOfPublication;
+            }
+            if (req.body.confirmation != undefined) {
+                article.confirmation = req.body.confirmation;
+            }
+            if (req.body.status) {
+                article.status = req.body.status;
+            }
+            if (req.params.category_id) {
+                article.category = req.params.category_id;
+            }
+            if (req.body.fileBase64 && req.body.fileBase64Small) {
+                const curentDate = Date.now();
+                const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
+                const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
+                fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.image.filename, (err) => {
+                    if (err) {
+                        intel.error(err);
+                    };
+                    intel.info(article.image.filename + ' was deleted.');
+                });
+                fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.image.filename, (err) => {
+                    if (err) {
+                        intel.error(err);
+                    };
+                    intel.info('small-' + article.image.filename + ' was deleted.');
+                });
+                Img.findById(article.image._id, function(err, image) {
+                    image.filename = fileMeta.fileName;
+                    image.contentType = mime.getType(fileMeta.extension);
+                    image.save(function (err, image){
+                        if (err) {
+                            res.sendStatus(400);
+                            res.json(err);
+                            intel.error(err);
+                        } else {
+                            article.save(saveCallback(req, res, image));
+                        }
+                    })
+                })
+            } else {
+                // article.save(function(err, article) {
+                //     if(err) {
+                //     res.json(err);
+                //     intel.error(err);
+                //     } else {
+                //         res.json(article);
+                //         intel.info('Updated article ', article);
+                //     }
+                // });
+                //TODO review
+                article.save(saveCallback(req,  res));
+            }
+    }); 
+    }
 }; 
 
 // *** add or remove article like *** //

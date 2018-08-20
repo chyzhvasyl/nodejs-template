@@ -3,8 +3,7 @@ const Schema = mongoose.Schema;
 
 const fileSchema = new Schema({
     fileType: {
-        type: String,
-        required: true
+        type: String
     },
     filename: {
         type: String,
@@ -18,6 +17,7 @@ const fileSchema = new Schema({
         type: Date, 
         default: Date.now()
     },
+    article: { type: Schema.Types.ObjectId, ref: 'article' }
 }, { versionKey: false });
 
 const File = mongoose.model('file', fileSchema);

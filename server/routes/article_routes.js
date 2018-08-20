@@ -137,7 +137,9 @@ function addArticle(req, res) {
                         newArticle.file = newFile._id;
                         newArticle.category = req.params.category_id;
                         newArticle.template = req.params.template_id;
-                        newArticle.save(saveCallback(req, res, newFile));
+                        newArticle.save(function(err, newArticle) {
+                            saveCallback(req, res, newFile, newArticle);
+                        });
                     });
                 }
             }
@@ -166,7 +168,9 @@ function addArticle(req, res) {
                 newArticle.file = newFile._id;
                 newArticle.category = req.params.category_id;
                 newArticle.template = req.params.template_id;
-                newArticle.save(saveCallback(req, res, newFile));
+                newArticle.save(function(err, newArticle) {
+                    saveCallback(req, res, newFile, newArticle);
+                });
             });
         }   
     } 
@@ -194,26 +198,37 @@ function saveFile(file, prefix, curentDate) {
     return {};
 }   
 
-function saveCallback( req, res, file) {
-    return function (err, article) {
-        if (err) {
-            res.status(400);
-            res.json(err);
-            intel.error('Can\'t save article ', err);
+function saveCallback( req, res, file, article) {
+    File.findById(file._id, function(err, file) {
+        if(err) {
+          res.status(404);
+          res.json(err);
+          intel.error(err);
         } else {
-            let articleResponse = addImageUrl(article.toJSONObject(), file, req);
-            if (req.file) {
-                convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
-                    if(!err) {
-                        console.log('conversion complete');
-                    }
-                 });
+          file.article = article._id
+          file.save(function(err, file) {
+            if(err) {
+              res.status(400);
+              res.json(err);
+              intel.error(err);
+            } else {
+              intel.info('Added article id to file ', file);
+
+                let articleResponse = addImageUrl(article.toJSONObject(), file, req);
+                if (req.file) {
+                    convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
+                        if(!err) {
+                            console.log('conversion complete');
+                        }
+                     });
+                }
+                res.status(201);
+                res.json(articleResponse);
+                intel.info('Added new article ', articleResponse);
             }
-            res.status(201);
-            res.json(articleResponse);
-            intel.info('Added new article ', articleResponse);
+          });
         }
-    }
+      });
 }
 
 function addImageUrl(article, file, req) {
@@ -480,6 +495,9 @@ function deleteArticle(req, res) {
         Comment.deleteMany({article: req.params.id}, function (err) {
             intel.info(`Comments deleted for article[${req.params.id}]`);
         });
+        File.deleteOne({article: req.params.id}, function (err) {
+            intel.info(`File delete for article[${req.params.id}]`);
+          });
       res.json(article);
       intel.info('Deleted article ', article);
     }

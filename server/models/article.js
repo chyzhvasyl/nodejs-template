@@ -5,7 +5,6 @@ const articleSchema = new Schema({
   title: {
     type: String,
     required: true,
-    // maxlength: 100,
     trim: true
   },
   shortBody: {
@@ -16,12 +15,10 @@ const articleSchema = new Schema({
   body: {
     type: String,
     required: true,
-    // maxlength: 250,
     trim: true
   },
   timeOfCreation: {
     type: Date,
-    // required: true,
     default: Date.now 
   },
   timeOfPublication: {
@@ -43,9 +40,10 @@ const articleSchema = new Schema({
     default: 0
   },
   category: { type: Schema.Types.ObjectId, ref: 'category' },
-  image: { type: Schema.Types.ObjectId, ref: 'image' },
-  comments: [{ type: Schema.Types.ObjectId, ref: 'comment' }],
-  user: { type: Schema.Types.ObjectId, ref: 'user' }
+  file: { type: Schema.Types.ObjectId, ref: 'file' },
+  user: { type: Schema.Types.ObjectId, ref: 'user' },
+  template: { type: Schema.Types.ObjectId, ref: 'template' },
+  comments: [{ type: Schema.Types.ObjectId, ref: 'comment' }]
 }, { versionKey: false });
 
 articleSchema.methods.toJSONObject = function () {

@@ -1,47 +1,45 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors');
-const mongoose = require('mongoose');   
-const morgan = require('morgan');
+const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
-const intel = require('intel');
 const http = require('http');
 const https = require('https');
+const cors = require('cors');
+const morgan = require('morgan');
+const intel = require('intel');
 const forceSsl = require('express-force-ssl');
-
 const dbConfig = require('./config/database');
 const corsOptions = require('./config/cors');
 
-// *** logger *** //
-intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
-
-// *** routes *** //
-const articleRoutes = require('./routes/article_routes.js');
-const commentRoutes = require('./routes/comment_routes.js');
-const categoryRoutes = require('./routes/category_routes');
-const templateRoutes = require('./routes/template_routes.js');
-const imageRoutes = require('./routes/image_routes');
+// *** express instance *** //
+const server = express();
 
 // *** mongodb config *** //
-mongoose.connect(dbConfig.database, (err, res) => {
+mongoose.connect(dbConfig.database, (err) => {
     if(err) {
         console.log('Database error: ' + err);
-        intel.error("ERROR ", err);
+        intel.error(err);
     } else {
         console.log('Connected to database ' + dbConfig.database);
         intel.info('Connected to database %s', dbConfig.database);
     }
 });
 
-// *** express instance *** //
-const server = express();
+// *** routes *** //
+const articleRoutes = require('./routes/article_routes.js');
+const commentRoutes = require('./routes/comment_routes.js');
+const categoryRoutes = require('./routes/category_routes');
+const templateRoutes = require('./routes/template_routes.js');
+const fileRoutes = require('./routes/file_routes');
+
+// *** logger *** //
+intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
 
 // *** morgan stream *** //
 const accessLogStream = fs.createWriteStream(path.join(__dirname, './logs/access.log'), {flags: 'a'})
 
 // *** config middleware *** //
-server.use(express.static(path.join(__dirname, 'public')));
 server.use(express.static(path.join(__dirname, 'uploads')));
 server.use(cors(corsOptions));
 server.use(bodyParser.json({limit: "50mb"}));
@@ -49,12 +47,11 @@ server.use(bodyParser.raw({limit: "50mb", extended: true, parameterLimit:50000})
 server.use(morgan(':method :url :status :res[content-length] - :response-time ms :date[clf] :http-version', {stream: accessLogStream}));
 // server.use(forceSsl);
 // enother middlewares
-
-// *** main routes *** //
+// routes
 server.use('/', articleRoutes);
 server.use('/', commentRoutes);
 server.use('/', categoryRoutes);
-server.use('/', imageRoutes);
+server.use('/', fileRoutes);
 server.use('/', templateRoutes);
 
 // *** server config *** //

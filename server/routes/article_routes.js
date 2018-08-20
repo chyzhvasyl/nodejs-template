@@ -7,7 +7,7 @@ const mime = require('mime');
 const path = require('path');
 const Article = require('../models/article');
 const Comment = require('../models/comment');
-const Img = require('../models/image');
+const File = require('../models/file');
 const UPLOAD_PATH = './server/uploads';
 const UPLOAD_PATH_IMAGES = UPLOAD_PATH + '/images';
 const UPLOAD_PATH_VIDEOS = UPLOAD_PATH + '/videos';
@@ -19,7 +19,7 @@ router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
 router.get('/articles/category/:category_id', findAllArticlesByCategory);
 router.get('/articles/confirmation/:confirmation', findAllArticlesByConfirmation);
-router.post('/article/:category_id', addArticle);
+router.post('/article/:category_id/:template_id', addArticle);
 router.put('/article/:id/:category_id?', updateArticle);
 router.put('/article/:id/like/:is_liked', likeArticle);
 router.delete('/article/:id', deleteArticle);
@@ -29,7 +29,8 @@ function findAllArticles(req, res) {
   Article.find()
     .populate('comments')
     .populate('category')
-    .populate('image')
+    .populate('file')
+    .populate('template')
     .lean()
     .exec(function(err, articles) {
         if(err) {
@@ -37,7 +38,7 @@ function findAllArticles(req, res) {
             res.json(err);
             intel.error(err);
         } else {
-            articles = articles.map(a => addImageUrl(a, a.image, req));
+            articles = articles.map(a => addImageUrl(a, a.file, req));
             res.json(articles);
             intel.info("Get all articles ", articles);
         }
@@ -49,7 +50,8 @@ function findArticleById(req, res) {
   Article.findById(req.params.id)
     .populate('comments')
     .populate('category')
-    .populate('image')
+    .populate('file')
+    .populate('template')
     .lean()
     .exec(function(err, article) {
         if(err) {
@@ -57,7 +59,7 @@ function findArticleById(req, res) {
             res.json(err);
             intel.error(err);
         } else {
-            article = addImageUrl(article, article.image, req);
+            article = addImageUrl(article, article.file, req);
             res.json(article);
             intel.info('Get single article by id ', article);
         }
@@ -69,7 +71,8 @@ function findAllArticlesByCategory(req, res) {
   Article.find({'category':req.params.category_id})
   .populate('comments')
   .populate('category')
-  .populate('image')
+  .populate('file')
+  .populate('template')
   .lean()
   .exec(function(err, articles){
     if(err) {
@@ -77,7 +80,7 @@ function findAllArticlesByCategory(req, res) {
       res.json(err);
       intel.error(err);
     } else {
-        articles = articles.map(a => addImageUrl(a, a.image, req));
+        articles = articles.map(a => addImageUrl(a, a.file, req));
         res.json(articles);
         intel.info("Get all articles by category" + req.params.category, articles);
     }
@@ -89,7 +92,8 @@ function findAllArticlesByConfirmation(req, res) {
     Article.find({'confirmation':req.params.confirmation})
     .populate('comments')
     .populate('category')
-    .populate('image')
+    .populate('file')
+    .populate('template')
     .lean()
     .exec(function(err, articles){
       if(err) {
@@ -97,7 +101,7 @@ function findAllArticlesByConfirmation(req, res) {
         res.json(err);
         intel.error(err);
       } else {
-          articles = articles.map(a => addImageUrl(a, a.image, req));
+          articles = articles.map(a => addImageUrl(a, a.file, req));
           res.json(articles);
           intel.info("Get all articles by confirmation " + req.params.category, articles);
       }
@@ -114,11 +118,11 @@ function addArticle(req, res) {
               return
             } else {
                 if (req.file) { 
-                    const newImage = new Img();
-                    // newImage.filename = req.file.filename.substring(0, req.file.filename.lastIndexOf('.'));
-                    newImage.filename = req.file.filename;
-                    newImage.contentType = req.file.mimetype;
-                    newImage.save(function (err, newImage) {
+                    const newFile = new File();
+                    // newFile.filename = req.file.filename.substring(0, req.file.filename.lastIndexOf('.'));
+                    newFile.filename = req.file.filename;
+                    newFile.contentType = req.file.mimetype;
+                    newFile.save(function (err, newFile) {
                         if (err) {
                             res.sendStatus(400);
                             res.json(err);
@@ -130,9 +134,10 @@ function addArticle(req, res) {
                         newArticle.body = req.body.body;
                         newArticle.confirmation = req.body.confirmation;
                         newArticle.status = req.body.status;
+                        newArticle.file = newFile._id;
                         newArticle.category = req.params.category_id;
-                        newArticle.image = newImage._id;
-                        newArticle.save(saveCallback(req, res, newImage));
+                        newArticle.template = req.params.template_id;
+                        newArticle.save(saveCallback(req, res, newFile));
                     });
                 }
             }
@@ -143,10 +148,10 @@ function addArticle(req, res) {
             const curentDate = Date.now();
             const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
             const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
-            const newImage = new Img();
-            newImage.filename = fileMeta.fileName;
-            newImage.contentType = mime.getType(fileMeta.extension);
-            newImage.save(function (err, newImage) {
+            const newFile = new File();
+            newFile.filename = fileMeta.fileName;
+            newFile.contentType = mime.getType(fileMeta.extension);
+            newFile.save(function (err, newFile) {
                 if (err) {
                     res.sendStatus(400);
                     res.json(err);
@@ -158,9 +163,10 @@ function addArticle(req, res) {
                 newArticle.body = req.body.body;
                 newArticle.confirmation = req.body.confirmation;
                 newArticle.status = req.body.status;
+                newArticle.file = newFile._id;
                 newArticle.category = req.params.category_id;
-                newArticle.image = newImage._id;
-                newArticle.save(saveCallback(req, res, newImage));
+                newArticle.template = req.params.template_id;
+                newArticle.save(saveCallback(req, res, newFile));
             });
         }   
     } 
@@ -196,11 +202,13 @@ function saveCallback( req, res, file) {
             intel.error('Can\'t save article ', err);
         } else {
             let articleResponse = addImageUrl(article.toJSONObject(), file, req);
-            convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
-                if(!err) {
-                    console.log('conversion complete');
-                }
-             });
+            if (req.file) {
+                convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
+                    if(!err) {
+                        console.log('conversion complete');
+                    }
+                 });
+            }
             res.status(201);
             res.json(articleResponse);
             intel.info('Added new article ', articleResponse);
@@ -216,8 +224,8 @@ function addImageUrl(article, file, req) {
         const isImage = imagefFiletypes.test(file.contentType);
         const isVideo = videoFfiletypes.test(file.contentType);
         if (isImage) {
-            article['imgUrl'] = req.protocol + "://" + req.get('host') + '/image/' + file._id;
-            article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/image-small/' + file._id;
+            article['imgUrl'] = req.protocol + "://" + req.get('host') + '/file/' + file._id;
+            article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/file-small/' + file._id;
         }
         if (isVideo) {
             article['videoOgvUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/ogv';
@@ -295,7 +303,7 @@ function convert(input, filename, callback) {
 function updateArticle(req, res) {
     if (req.headers['content-type'].indexOf('application/json') !== -1) {
         Article.findById(req.params.id)
-        .populate('image')
+        .populate('file')
         .exec(function(err, article) {
         if (req.body.title) {
             article.title = req.body.title;
@@ -325,28 +333,28 @@ function updateArticle(req, res) {
             const curentDate = Date.now();
             const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
             const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
-            fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.image.filename, (err) => {
+            fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
                 if (err) {
                     intel.error(err);
                 };
-                intel.info(article.image.filename + ' was deleted.');
+                intel.info(article.file.filename + ' was deleted.');
             });
-            fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.image.filename, (err) => {
+            fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
                 if (err) {
                     intel.error(err);
                 };
-                intel.info('small-' + article.image.filename + ' was deleted.');
+                intel.info('small-' + article.file.filename + ' was deleted.');
             });
-            Img.findById(article.image._id, function(err, image) {
-                image.filename = fileMeta.fileName;
-                image.contentType = mime.getType(fileMeta.extension);
-                image.save(function (err, image){
+            File.findById(article.file._id, function(err, file) {
+                file.filename = fileMeta.fileName;
+                file.contentType = mime.getType(fileMeta.extension);
+                file.save(function (err, file){
                     if (err) {
                         res.sendStatus(400);
                         res.json(err);
                         intel.error(err);
                     } else {
-                        article.save(saveCallback(req, res, image));
+                        article.save(saveCallback(req, res, file));
                     }
                 })
             })
@@ -361,13 +369,13 @@ function updateArticle(req, res) {
             //     }
             // });
             //TODO review
-            article.save(saveCallback(req, res, article.image));
+            article.save(saveCallback(req, res, article.file));
         }
     }); 
     }   
     if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
         Article.findById(req.params.id)
-        .populate('image')
+        .populate('file')
         .exec(function(err, article) {
             if (req.body.title) {
                 article.title = req.body.title;
@@ -393,32 +401,37 @@ function updateArticle(req, res) {
             if (req.params.category_id) {
                 article.category = req.params.category_id;
             }
-            if (req.body.fileBase64 && req.body.fileBase64Small) {
+            if (req.body.videoOgvUrl && req.body.fvideoMP4Url && req.body.videoWebmUrl) {
                 const curentDate = Date.now();
-                const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
-                const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
-                fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.image.filename, (err) => {
+                if (req.file) {
+                    convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
+                        if(!err) {
+                            console.log('conversion complete');
+                        }
+                     });
+                }
+                fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
                     if (err) {
                         intel.error(err);
                     };
-                    intel.info(article.image.filename + ' was deleted.');
+                    intel.info(article.file.filename + ' was deleted.');
                 });
-                fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.image.filename, (err) => {
+                fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
                     if (err) {
                         intel.error(err);
                     };
-                    intel.info('small-' + article.image.filename + ' was deleted.');
+                    intel.info('small-' + article.file.filename + ' was deleted.');
                 });
-                Img.findById(article.image._id, function(err, image) {
-                    image.filename = fileMeta.fileName;
-                    image.contentType = mime.getType(fileMeta.extension);
-                    image.save(function (err, image){
+                File.findById(article.file._id, function(err, file) {
+                    file.filename = fileMeta.fileName;
+                    file.contentType = mime.getType(fileMeta.extension);
+                    file.save(function (err, file){
                         if (err) {
                             res.sendStatus(400);
                             res.json(err);
                             intel.error(err);
                         } else {
-                            article.save(saveCallback(req, res, image));
+                            article.save(saveCallback(req, res, file));
                         }
                     })
                 })

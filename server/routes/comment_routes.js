@@ -7,7 +7,7 @@ const intel = require('intel');
 // *** api routes *** //
 router.get('/comments', findAllComments);
 router.get('/comment/:id', findCommentById);
-router.get('/comment/:confirmation', findCommentByConfirmation);
+router.get('/comments/:confirmation', findCommentsByConfirmation);
 router.post('/comment/:article_id', addComment);
 router.put('/comment/:id', updateComment);
 router.delete('/comment/:id', deleteComment);
@@ -42,9 +42,9 @@ function findCommentById(req, res) {
   });
 }
 
-// *** get SINGLE comment *** //
-function findCommentByConfirmation(req, res) {
-  Article.find({'confirmation':req.params.confirmation})
+// *** get All comments by confirmation *** //
+function findCommentsByConfirmation(req, res) {
+  Comment.find({'confirmation':req.params.confirmation})
   .populate('article')
   .exec(function(err, comments) {
     if(err) {
@@ -60,7 +60,6 @@ function findCommentByConfirmation(req, res) {
 // *** add SINGLE comment *** //
 function addComment(req, res) {
   var newComment = new Comment({
-    emailOrTelephone: req.body.emailOrTelephone,
     body: req.body.body,
     confirmation: req.body.confirmation,
     time: req.body.time,
@@ -94,9 +93,6 @@ function addComment(req, res) {
 // *** update SINGLE comment *** //
 function updateComment(req, res) {
   Comment.findById(req.params.id, function(err, comment) {
-    if (req.body.emailOrTelephone) {
-      comment.emailOrTelephone = req.body.emailOrTelephone;
-    }
     if (req.body.body) {
       comment.body = req.body.body;
     }

@@ -15,7 +15,7 @@ function findAllCategories(req, res) {
   Category.find(function(err, categories) {
     if(err) {
       res.json(err);
-      intel.error("ERROR ", err);
+      intel.error(err);
     } else {
       res.json(categories);
       intel.info("Take all categories ", categories);
@@ -27,9 +27,9 @@ function findAllCategories(req, res) {
 function findCategoryById(req, res) {
   Category.findById(req.params.id, function(err, category) {
     if(err) {
-      res.status(400);
+      res.status(404);
       res.json(err);
-      intel.error("ERROR ", err);
+      intel.error(err);
     } else {
       res.json(category);
       intel.info('Get single category by id ', category);
@@ -47,7 +47,7 @@ function addCategory(req, res) {
     if(err) {
       res.status(400);
       res.json(err);
-      intel.error("ERROR ", err);
+      intel.error(err);
     } else {
       res.json(newCategory);
       intel.info('Added new category ', newCategory);
@@ -63,7 +63,7 @@ function updateCategory(req, res) {
       if(err) {
         res.status(400);
         res.json(err);
-        intel.error("ERROR ", err);
+        intel.error(err);
       } else {
         res.json(category);
         intel.info('Updated category ', category);
@@ -74,22 +74,13 @@ function updateCategory(req, res) {
 
 // *** delete SINGLE category *** //
 function deleteCategory(req, res) {
-  Category.findById(req.params.id, function(err, category) {
+  Category.findByIdAndDelete(req.params.id, function(err, category) {
     if(err) {
-      res.status(400);
       res.json(err);
     } else {
-      category.remove(function(err){
-        if(err) {
-          res.status(400);
-          res.json( err);
-          intel.error("ERROR ", err);
-        } else {
-          res.json(category);
-          intel.info('Deleted category ', category);
-        }
-      });
-    }
+        res.json(category);
+        intel.info('Deleted category ', category);
+      }
   });
 }
 

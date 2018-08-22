@@ -38,7 +38,7 @@ function findAllArticles(req, res) {
             res.json(err);
             intel.error(err);
         } else {
-            articles = articles.map(a => addImageUrl(a, a.file, req));
+            articles = articles.map(a => addFileUrl(a, a.file, req));
             res.json(articles);
             intel.info("Get all articles ", articles);
         }
@@ -59,7 +59,7 @@ function findArticleById(req, res) {
             res.json(err);
             intel.error(err);
         } else {
-            article = addImageUrl(article, article.file, req);
+            article = addFileUrl(article, article.file, req);
             res.json(article);
             intel.info('Get single article by id ', article);
         }
@@ -80,7 +80,7 @@ function findAllArticlesByCategory(req, res) {
       res.json(err);
       intel.error(err);
     } else {
-        articles = articles.map(a => addImageUrl(a, a.file, req));
+        articles = articles.map(a => addFileUrl(a, a.file, req));
         res.json(articles);
         intel.info("Get all articles by category" + req.params.category, articles);
     }
@@ -101,7 +101,7 @@ function findAllArticlesByConfirmation(req, res) {
         res.json(err);
         intel.error(err);
       } else {
-          articles = articles.map(a => addImageUrl(a, a.file, req));
+          articles = articles.map(a => addFileUrl(a, a.file, req));
           res.json(articles);
           intel.info("Get all articles by confirmation " + req.params.category, articles);
       }
@@ -201,12 +201,7 @@ function saveCallback( req, res, file) {
             res.json(err);
             intel.error('Can\'t save article ', err);
         } else {
-            let articleResponse = addImageUrl(article.toJSONObject(), file, req);
-            convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
-                if(!err) {
-                    console.log('conversion complete');
-                }
-             });
+            let articleResponse = addFileUrl(article.toJSONObject(), file, req);
             res.status(201);
             res.json(articleResponse);
             intel.info('Added new article ', articleResponse);
@@ -214,9 +209,9 @@ function saveCallback( req, res, file) {
     }
  }
 
-function addImageUrl(article, file, req) {
+function addFileUrl(article, file, req) {
     if (article && file && file._id) {
-        const imageFileTypes =  /image\/jpeg|image\/png|image\/gif/;
+        const imageFileTypes =  /image/;
         //TODO const videoFfiletypes = /video\/pm4|video\/webm|video\/ogg|video\/x-matroska/;
         const videoFileTypes = /video/;
         const isImage = imageFileTypes.test(file.contentType);
@@ -226,6 +221,16 @@ function addImageUrl(article, file, req) {
             article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/file-small/' + file._id;
         }
         if (isVideo) {
+            // convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
+            //     if(!err) {
+            //         console.log('conversion complete');
+            //     }
+            // });
+            // getScreenshot(UPLOAD_PATH_VIDEOS + '/' + file.filename, UPLOAD_PATH_VIDEOS, function(err){
+            //     if(!err) {
+            //         console.log('conversion complete');
+            //     }
+            // });
             article['videoOgvUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/ogv';
             article['videoMP4Url'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mp4';
             article['videoWebmUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/webm';
@@ -300,20 +305,18 @@ function convert(input, filename, callback) {
 
 function getScreenshot(filePath, outputFolder, callback) {
     ffmpeg(filePath)
-    .screenshots({
-        timestamps: [30.5, '50%', '01:10.123'],
-        filename: 'thumbnail-at-%s-seconds.png',
-        folder: outputFolder,
-        size: '80x80'
-    })
-    .on('end', function() {                    
-        console.log('screenshot');
+    .on('filenames', function(filenames) {
+        console.log('Will generate ' + filenames.join(', '))
         callback(null)
-    })
-    .on('error', function(err){
-        console.log('error: ', err.code, err.msg);
+      })
+      .on('end', function() {
+        console.log('Screenshots taken');
         callback(err);
-    }).run();
+      })
+      .screenshots({
+        count: 1,
+        folder: outputFolder
+      });
 }
 
 // *** update SINGLE article *** //
@@ -504,7 +507,7 @@ function deleteArticle(req, res) {
             }
             intel.info(`Comments deleted for article[${article._id}]`);
         });
-        const imageFileTypes =  /image/;
+        const imageFileTypes = /image/;
         const videoFileTypes = /video/;
         const isImage = imageFileTypes.test(article.file.contentType);
         const isVideo = videoFileTypes.test(article.file.contentType);

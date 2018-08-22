@@ -19,7 +19,7 @@ router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
 router.get('/articles/category/:category_id', findAllArticlesByCategory);
 router.get('/articles/confirmation/:confirmation', findAllArticlesByConfirmation);
-router.post('/article/:category_id/:template_id', addArticle);
+router.post('/article/:category_id/:template_id?', addArticle);
 router.put('/article/:id/:category_id?', updateArticle);
 router.put('/article/:id/like/:is_liked', likeArticle);
 router.delete('/article/:id', deleteArticle);

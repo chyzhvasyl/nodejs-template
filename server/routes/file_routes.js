@@ -10,6 +10,7 @@ router.get('/files', findAllFiles);
 router.get('/file/:id', findFileById);
 router.get('/file-small/:id', findFileSmallById);
 router.get('/video/:id/:format', findVideoById);
+router.get('/screenshot/:id', findScreenshotById);
 
 function findAllFiles(req, res) {
     File.find(function(err, files) {
@@ -64,6 +65,18 @@ function findVideoById(req, res) {
             res.setHeader('Content-Type', 'video/webm'); 
         }
         fs.createReadStream(path.join(UPLOAD_PATH + '/videos/', 'convert_' + file.filename)).pipe(res);
+    });
+}
+
+function findScreenshotById(req, res) {
+    File.findById(req.params.id, (err, file) => {
+        if (err) {
+            res.sendStatus(400);
+            res.json(err);
+            intel.error(err);
+        }
+        res.setHeader('Content-Type', 'image/png');
+        fs.createReadStream(path.join(UPLOAD_PATH + '/videos/', 'screenshot_' + file.filename.substring(0, file.filename.lastIndexOf('.')) + '.png')).pipe(res);
     });
 }
 

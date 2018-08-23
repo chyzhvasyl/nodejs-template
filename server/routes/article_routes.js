@@ -201,10 +201,27 @@ function saveCallback( req, res, file) {
             res.json(err);
             intel.error('Can\'t save article ', err);
         } else {
-            let articleResponse = addFileUrl(article.toJSONObject(), file, req);
-            res.status(201);
-            res.json(articleResponse);
-            intel.info('Added new article ', articleResponse);
+            if (file.contentType == "video/mp4") {
+                convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
+                    if(!err) {
+                        console.log('conversion complete');
+                    }
+                });
+                getScreenshot(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, UPLOAD_PATH_VIDEOS, function(err){
+                    if(!err) {
+                        console.log('conversion complete');
+                    }
+                });
+                let articleResponse = addFileUrl(article.toJSONObject(), file, req);
+                res.status(201);
+                res.json(articleResponse);
+                intel.info('Added new article ', articleResponse);
+            } else {
+                let articleResponse = addFileUrl(article.toJSONObject(), file, req);
+                res.status(201);
+                res.json(articleResponse);
+                intel.info('Added new article ', articleResponse);
+            }
         }
     }
  }
@@ -221,19 +238,10 @@ function addFileUrl(article, file, req) {
             article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/file-small/' + file._id;
         }
         if (isVideo) {
-            // convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
-            //     if(!err) {
-            //         console.log('conversion complete');
-            //     }
-            // });
-            // getScreenshot(UPLOAD_PATH_VIDEOS + '/' + file.filename, UPLOAD_PATH_VIDEOS, function(err){
-            //     if(!err) {
-            //         console.log('conversion complete');
-            //     }
-            // });
             article['videoOgvUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/ogv';
             article['videoMP4Url'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mp4';
             article['videoWebmUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/webm';
+            article['screenshot'] = req.protocol + "://" + req.get('host') + '/screenshot/' + file._id;
         }
     }
     return article;
@@ -303,7 +311,7 @@ function convert(input, filename, callback) {
         }).run();
 }
 
-function getScreenshot(filePath, outputFolder, callback) {
+function getScreenshot(filePath, fileName, outputFolder, callback) {
     ffmpeg(filePath)
     .on('filenames', function(filenames) {
         console.log('Will generate ' + filenames.join(', '))
@@ -311,11 +319,13 @@ function getScreenshot(filePath, outputFolder, callback) {
       })
       .on('end', function() {
         console.log('Screenshots taken');
-        callback(err);
+        // callback(err);
       })
-      .screenshots({
+      .thumbnail({
         count: 1,
-        folder: outputFolder
+        folder: outputFolder,
+        filename: 'screenshot_' + fileName.substring(0, fileName.lastIndexOf('.')) + '.png',
+        size: '400x400'
       });
 }
 

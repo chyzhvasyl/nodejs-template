@@ -11,7 +11,8 @@ const intel = require('intel');
 const forceSsl = require('express-force-ssl');
 const dbConfig = require('./config/database');
 const corsOptions = require('./config/cors');
-
+var passport      = require('passport');
+var BasicStrategy = require('passport-http').BasicStrategy;
 // *** express instance *** //
 const server = express();
 
@@ -45,6 +46,22 @@ server.use(cors(corsOptions));
 server.use(bodyParser.json({limit: "50mb"}));
 server.use(bodyParser.raw({limit: "50mb", extended: true, parameterLimit:50000}));
 server.use(morgan(':method :url :status :res[content-length] - :response-time ms :date[clf] :http-version', {stream: accessLogStream}));
+passport.use(new BasicStrategy(
+    function(username, password, done) {
+      User.findOne({ username: username }, function (err, user) {
+        if (err) { return done(err); }
+        if (!user) { return done(null, false); }
+        if (!user.validPassword(password)) { return done(null, false); }
+        return done(null, user);
+      });
+    }
+  ));
+
+server.get('/api/me',
+  passport.authenticate('basic', { session: false }),
+  function(req, res) {
+    res.json(req.user);
+});  
 // server.use(forceSsl);
 // enother middlewares
 // routes

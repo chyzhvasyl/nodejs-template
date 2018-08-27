@@ -43,10 +43,11 @@ function findFileSmallById(req, res) {
             res.json(err);
             intel.error(err);
         }
-        
-        res.setHeader('Content-Type', 'image/png'); 
-        const fileName = file.filename.substring(0, file.filename.lastIndexOf('.')) + '.png';
-        fs.createReadStream(path.join(UPLOAD_PATH + '/images/', 'small-' + fileName)).pipe(res);
+        // res.setHeader('Content-Type', 'image/png'); 
+        // const fileName = file.filename.substring(0, file.filename.lastIndexOf('.')) + '.png';
+        // fs.createReadStream(path.join(UPLOAD_PATH + '/images/', 'small-' + fileName)).pipe(res);
+        res.setHeader('Content-Type', file.contentType); 
+        fs.createReadStream(path.join(UPLOAD_PATH + '/images/', 'small-' + file.filename)).pipe(res);
     });
 }
 

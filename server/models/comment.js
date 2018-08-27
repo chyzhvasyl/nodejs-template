@@ -9,7 +9,8 @@ const commentSchema = new Schema({
     },
     confirmation: {
         type: Boolean,
-        required: true
+        required: true,
+        default: false
     },
     time: {
         type: Date,

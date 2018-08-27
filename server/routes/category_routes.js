@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Category = require('../models/category');
+const Article = require('../models/article');
 const intel = require('intel');
 
 // *** api routes *** //
@@ -78,8 +79,13 @@ function deleteCategory(req, res) {
     if(err) {
       res.json(err);
     } else {
-        res.json(category);
-        intel.info('Deleted category ', category);
+        Article.where({ category : category.id }).updateMany({ $set: {category : '5b83a8c043bf5623488d0bc6'}}).exec(function(err){
+          if (err) {
+            res.json(err);
+          }
+          res.json(category);
+          intel.info('Deleted category ', category);
+        });
       }
   });
 }

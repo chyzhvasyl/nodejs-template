@@ -8,7 +8,6 @@ var Article = require('../server/models/article');
 var should = chai.should();
 chai.use(chaiHttp);
 
-
 describe('Articles', function() {
 
   Article.collection.drop();

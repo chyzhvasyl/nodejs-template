@@ -11,8 +11,14 @@ const intel = require('intel');
 const forceSsl = require('express-force-ssl');
 const dbConfig = require('./config/database');
 const corsOptions = require('./config/cors');
-var passport      = require('passport');
-var BasicStrategy = require('passport-http').BasicStrategy;
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const request = require('request');
+const User = require('./models/user');
+const flash = require('connect-flash');
+const session = require('express-session');
+const uuidv4 = require('uuid/v4');
+
 // *** express instance *** //
 const server = express();
 
@@ -27,13 +33,6 @@ mongoose.connect(dbConfig.database, (err) => {
     }
 });
 
-// *** routes *** //
-const articleRoutes = require('./routes/article_routes.js');
-const commentRoutes = require('./routes/comment_routes.js');
-const categoryRoutes = require('./routes/category_routes');
-const templateRoutes = require('./routes/template_routes.js');
-const fileRoutes = require('./routes/file_routes');
-
 // *** logger *** //
 intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
 
@@ -45,31 +44,81 @@ server.use(express.static(path.join(__dirname, 'uploads')));
 server.use(cors(corsOptions));
 server.use(bodyParser.json({limit: "50mb"}));
 server.use(bodyParser.raw({limit: "50mb", extended: true, parameterLimit:50000}));
+// server.use(session({ cookie: { maxAge: 60000 }, 
+//     secret: 'woot',
+//     resave: false, 
+//     saveUninitialized: false}));
 server.use(morgan(':method :url :status :res[content-length] - :response-time ms :date[clf] :http-version', {stream: accessLogStream}));
-passport.use(new BasicStrategy(
+server.use(flash());
+server.use(passport.initialize());
+// server.use(passport.session());
+passport.use(new LocalStrategy(
     function(username, password, done) {
-      User.findOne({ username: username }, function (err, user) {
+      User.findOne({ username: username }, function(err, user) {
         if (err) { return done(err); }
-        if (!user) { return done(null, false); }
-        if (!user.validPassword(password)) { return done(null, false); }
+        if (!user) {
+            request.post({uri:'http://194.88.150.43:8090', json:true, body: {"UserName": username, "Password": password}}, function optionalCallback(err, httpResponse, body) {
+            if (err) {
+                return console.error('upload failed:', err);
+            }
+            if (httpResponse.statusCode == 404) {
+                return done(null, false, { message: 'Incorrect username.' });
+            } 
+            else if (httpResponse.statusCode == 200) {
+                const newUser = new User({
+                    token: uuidv4(),
+                    login: httpResponse.login,
+                    firstName: httpResponse.firstName,
+                    lastName: httpResponse.lastName,
+                    secondaryName: httpResponse.secondaryName,
+                    roles: httpResponse.roles
+                });
+                    
+                newUser.save(function(err, newUser) {
+                    if(err) {
+                        res.status(400);
+                        res.json(err);
+                        intel.error(err);
+                    } else {
+                        intel.info('Added new user ', newUser);
+                        return done(null, newUser);
+                    }
+                });
+                // console.log('Server responded with:', body);
+                return done(null, user);
+                }
+            });
+          return done(null, false, { message: 'Incorrect username.' });
+        }
         return done(null, user);
       });
     }
-  ));
-
-server.get('/api/me',
-  passport.authenticate('basic', { session: false }),
-  function(req, res) {
-    res.json(req.user);
-});  
+));
 // server.use(forceSsl);
 // enother middlewares
-// routes
+
+// *** routes *** //
+const articleRoutes = require('./routes/article_routes.js');
+const commentRoutes = require('./routes/comment_routes.js');
+const categoryRoutes = require('./routes/category_routes');
+const templateRoutes = require('./routes/template_routes.js');
+const fileRoutes = require('./routes/file_routes');
+const userRoutes = require('./routes/user_routes');
+
 server.use('/', articleRoutes);
 server.use('/', commentRoutes);
 server.use('/', categoryRoutes);
 server.use('/', fileRoutes);
 server.use('/', templateRoutes);
+server.use('/', userRoutes);
+
+server.post('/login',
+  passport.authenticate('local', { session: false }, function(req, res) {
+    // If this function gets called, authentication was successful.
+    // `req.user` contains the authenticated user.
+    console.log(res);
+  }
+));
 
 // *** server config *** //
 const hostname = '192.168.0.123';

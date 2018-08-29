@@ -53,11 +53,11 @@ server.use(flash());
 server.use(passport.initialize());
 // server.use(passport.session());
 passport.use(new LocalStrategy(
-    function(username, password, done) {
-      User.findOne({ username: username }, function(err, user) {
+    function(login, password, done) {
+      User.findOne({ login: login }, function(err, user) {
         if (err) { return done(err); }
         if (!user) {
-            request.post({uri:'http://194.88.150.43:8090', json:true, body: {"UserName": username, "Password": password}}, function optionalCallback(err, httpResponse, body) {
+            request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {"UserName": login, "Password": password}}, function optionalCallback(err, httpResponse, body) {
             if (err) {
                 return console.error('upload failed:', err);
             }
@@ -67,20 +67,23 @@ passport.use(new LocalStrategy(
             else if (httpResponse.statusCode == 200) {
                 const newUser = new User({
                     token: uuidv4(),
-                    login: httpResponse.login,
-                    firstName: httpResponse.firstName,
-                    lastName: httpResponse.lastName,
-                    secondaryName: httpResponse.secondaryName,
-                    roles: httpResponse.roles
+                    login: login,
+                    firstName: body.FirstName,
+                    lastName: body.LastName,
+                    secondaryName: body.SecondName,
+                    roles: body.ListGroups
                 });
                     
                 newUser.save(function(err, newUser) {
                     if(err) {
-                        res.status(400);
-                        res.json(err);
+                        // res.status(400);
+                        // res.json(err);
                         intel.error(err);
+                        return done(null, false);
                     } else {
                         intel.info('Added new user ', newUser);
+                        JSON.stringify(newUser);
+                        newUser['isCookie'] = false;
                         return done(null, newUser);
                     }
                 });
@@ -88,7 +91,7 @@ passport.use(new LocalStrategy(
                 return done(null, user);
                 }
             });
-          return done(null, false, { message: 'Incorrect username.' });
+            return done(null, false, { message: 'Incorrect username.' });
         }
         return done(null, user);
       });
@@ -112,13 +115,23 @@ server.use('/', fileRoutes);
 server.use('/', templateRoutes);
 server.use('/', userRoutes);
 
-server.post('/login',
-  passport.authenticate('local', { session: false }, function(req, res) {
-    // If this function gets called, authentication was successful.
-    // `req.user` contains the authenticated user.
-    console.log(res);
-  }
-));
+server.post('/login', function(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+      if (err) { return next(err); }
+      if (user) {
+          console.log(user);
+          if (user.isCookie == false) {
+            res.cookie('user', user, {maxAge : 9999}); 
+            delete user['isCookie'];
+          }
+          return res.json(user); 
+        }
+    //   req.logIn(user, function(err) {
+    //     if (err) { return next(err); }
+    //     return res.redirect('/users/' + user.username);
+    //   });
+    })(req, res, next);
+});
 
 // *** server config *** //
 const hostname = '192.168.0.123';

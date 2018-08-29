@@ -14,17 +14,17 @@ const userSchema = new Schema({
     },
     firstName: {
         type: String,
-        required: true,
+        // required: true,
         trim: true
     },
     lastName: {
         type: String,
-        required: true,
+        // required: true,
         trim: true
     },
     secondaryName: {
         type: String,
-        required: true,
+        // required: true,
         trim: true
     },
     roles: [String]

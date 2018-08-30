@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+//TODO: Comments by editor, publisher
+
 const articleSchema = new Schema({
   title: {
     type: String,
@@ -33,7 +35,7 @@ const articleSchema = new Schema({
   status: {
     type: String,
     required: true,
-    enum: ['created', 'modified', 'published']
+    enum: ['created', 'modified', 'not approved by editor', 'not approved by publisher', 'published']
   },
   likes: {
     type: Number,

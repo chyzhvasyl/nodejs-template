@@ -25,11 +25,15 @@ router.put('/article/:id/:category_id?', updateArticle);
 router.put('/article/:id/like/:is_liked', likeArticle);
 router.delete('/article/:id', deleteArticle);
 
+// TODO: when add article save user id
+// TODO: get articles by user id
+// TODO: get all articles by several status values 
+
 // *** get ALL articles *** //
 function findAllArticles(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+        if (user && user.roles && user.roles.includes('CN=NEWS_Administrator')) { 
             Article.find()
                 .populate('comments')
                 .populate('category')
@@ -49,16 +53,18 @@ function findAllArticles(req, res, next) {
             });
         } else {
             // TODO: нормальные выводы ответов
-            return res.sendStatus(403);
+            res.status(403);
+            res.send('Access denied');
         }
       })(req, res, next);
 }
 
 // *** get SINGLE article by id *** //
+// TODO: by id and confirmation
 function findArticleById(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+        if (user && user.roles && user.roles.includes('CN=NEWS_Reader')) { 
             Article.findById(req.params.id)
             .populate('comments')
             .populate('category')
@@ -77,16 +83,18 @@ function findArticleById(req, res, next) {
                 }
             });
         } else {
-            return res.sendStatus(403);
+            res.status(403);
+            res.send('Access denied');
         }
       })(req, res, next);
 }
 
 // *** get All articles by category *** //
+// TODO: by category and confirmation
 function findAllArticlesByCategory(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+        if (user && user.roles && user.roles.includes('CN=NEWS_Reader')) { 
             Article.find({'category':req.params.category_id})
             .populate('comments')
             .populate('category')
@@ -105,7 +113,8 @@ function findAllArticlesByCategory(req, res, next) {
               }
             });
         } else {
-            return res.sendStatus(403);
+            res.status(403);
+            res.send('Access denied');
         }
       })(req, res, next);
 }
@@ -114,62 +123,78 @@ function findAllArticlesByCategory(req, res, next) {
 function findAllArticlesByConfirmation(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
-            Article.find({'category':req.params.category_id})
+        if (user && user.roles && user.roles.includes('CN=NEWS_Reader')) { 
+            Article.find({'confirmation':req.params.confirmation})
             .populate('comments')
             .populate('category')
             .populate('file')
             .populate('template')
             .lean()
             .exec(function(err, articles){
-              if(err) {
+            if(err) {
                 res.status(400);
                 res.json(err);
                 intel.error(err);
-              } else {
-                  articles = articles.map(a => addFileUrl(a, a.file, req));
-                  res.json(articles);
-                  intel.info("Get all articles by category" + req.params.category, articles);
-              }
+            } else {
+                articles = articles.map(a => addFileUrl(a, a.file, req));
+                res.json(articles);
+                intel.info("Get all articles by confirmation " + req.params.category, articles);
+            }
             });
         } else {
-            return res.sendStatus(403);
+            res.status(403);
+            res.send('Access denied');
         }
       })(req, res, next);
-    Article.find({'confirmation':req.params.confirmation})
-    .populate('comments')
-    .populate('category')
-    .populate('file')
-    .populate('template')
-    .lean()
-    .exec(function(err, articles){
-      if(err) {
-        res.status(400);
-        res.json(err);
-        intel.error(err);
-      } else {
-          articles = articles.map(a => addFileUrl(a, a.file, req));
-          res.json(articles);
-          intel.info("Get all articles by confirmation " + req.params.category, articles);
-      }
-    });
   }
 
 // *** add SINGLE article  *** //
 // FIXME: Add single article method
-function addArticle(req, res) {
-    if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
-        upload(req, res, function (err) {
-            if (err) {
-                res.send(err);
-                // TODO: An error occurred when uploading
-              return
-            } else {
-                if (req.file) { 
+function addArticle(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+            if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
+                upload(req, res, function (err) {
+                    if (err) {
+                        res.send(err);
+                        // TODO: An error occurred when uploading
+                      return
+                    } else {
+                        if (req.file) { 
+                            const newFile = new File();
+                            // newFile.filename = req.file.filename.substring(0, req.file.filename.lastIndexOf('.'));
+                            newFile.filename = req.file.filename;
+                            newFile.contentType = req.file.mimetype;
+                            newFile.save(function (err, newFile) {
+                                if (err) {
+                                    res.sendStatus(400);
+                                    res.json(err);
+                                    intel.error(err);
+                                }
+                                const newArticle = new Article();
+                                newArticle.title = req.body.title;
+                                newArticle.shortBody = req.body.shortBody;
+                                newArticle.body = req.body.body;
+                                newArticle.confirmation = req.body.confirmation;
+                                newArticle.status = req.body.status;
+                                newArticle.file = newFile._id;
+                                newArticle.category = req.params.category_id;
+                                newArticle.template = req.params.template_id;
+                                newArticle.save(saveCallback(req, res, newFile));
+                            });
+                        }
+                    }
+                })
+            } 
+            if (req.headers['content-type'].indexOf('application/json') !== -1) {
+                if (req.body.fileBase64 && req.body.fileBase64Small) {
+                    const currentDate = Date.now();
+                    const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate);
+                    const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate);
                     const newFile = new File();
-                    // newFile.filename = req.file.filename.substring(0, req.file.filename.lastIndexOf('.'));
-                    newFile.filename = req.file.filename;
-                    newFile.contentType = req.file.mimetype;
+                    newFile.filename = fileMeta.fileName;
+                    newFile.contentType = mime.getType(fileMeta.extension);
                     newFile.save(function (err, newFile) {
                         if (err) {
                             res.sendStatus(400);
@@ -187,37 +212,13 @@ function addArticle(req, res) {
                         newArticle.template = req.params.template_id;
                         newArticle.save(saveCallback(req, res, newFile));
                     });
-                }
-            }
-        })
-    } 
-    if (req.headers['content-type'].indexOf('application/json') !== -1) {
-        if (req.body.fileBase64 && req.body.fileBase64Small) {
-            const currentDate = Date.now();
-            const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate);
-            const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate);
-            const newFile = new File();
-            newFile.filename = fileMeta.fileName;
-            newFile.contentType = mime.getType(fileMeta.extension);
-            newFile.save(function (err, newFile) {
-                if (err) {
-                    res.sendStatus(400);
-                    res.json(err);
-                    intel.error(err);
-                }
-                const newArticle = new Article();
-                newArticle.title = req.body.title;
-                newArticle.shortBody = req.body.shortBody;
-                newArticle.body = req.body.body;
-                newArticle.confirmation = req.body.confirmation;
-                newArticle.status = req.body.status;
-                newArticle.file = newFile._id;
-                newArticle.category = req.params.category_id;
-                newArticle.template = req.params.template_id;
-                newArticle.save(saveCallback(req, res, newFile));
-            });
-        }   
-    } 
+                }   
+            } 
+        } else {
+            res.status(403);
+            res.send('Access denied');
+        }
+      })(req, res, next);
 }
 
 function saveFile(file, prefix, currentDate) {
@@ -375,179 +376,198 @@ function getScreenshot(filePath, fileName, outputFolder, callback) {
 
 // *** update SINGLE article *** //
 // FIXME: Update single article method
-function updateArticle(req, res) {
-    if (req.headers['content-type'].indexOf('application/json') !== -1) {
-        Article.findById(req.params.id)
-        .populate('file')
-        .exec(function(err, article) {
-        if (req.body.title) {
-            article.title = req.body.title;
-        }
-        if (req.body.shortBody) {
-            article.shortBody = req.body.shortBody;
-        }
-        if (req.body.body) {
-            article.body = req.body.body;
-        }
-        if (req.body.timeOfCreation) {
-            article.timeOfCreation = req.body.timeOfCreation;
-        }
-        if (req.body.timeOfPublication) {
-            article.timeOfPublication = req.body.timeOfPublication;
-        }
-        if (req.body.confirmation != undefined) {
-            article.confirmation = req.body.confirmation;
-        }
-        if (req.body.status) {
-            article.status = req.body.status;
-        }
-        if (req.params.category_id) {
-            article.category = req.params.category_id;
-        }
-        if (req.body.fileBase64 && req.body.fileBase64Small) {
-            const currentDate = Date.now();
-            const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate);
-            const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate);
-            fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
-                if (err) {
-                    intel.error(err);
-                };
-                intel.info(article.file.filename + ' was deleted.');
-            });
-            fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
-                if (err) {
-                    intel.error(err);
-                };
-                intel.info('small-' + article.file.filename + ' was deleted.');
-            });
-            File.findById(article.file._id, function(err, file) {
-                file.filename = fileMeta.fileName;
-                file.contentType = mime.getType(fileMeta.extension);
-                file.save(function (err, file){
-                    if (err) {
-                        res.sendStatus(400);
-                        res.json(err);
-                        intel.error(err);
-                    } else {
-                        article.save(saveCallback(req, res, file));
-                    }
-                })
-            })
-        } else {
-            // article.save(function(err, article) {
-            //     if(err) {
-            //     res.json(err);
-            //     intel.error(err);
-            //     } else {
-            //         res.json(article);
-            //         intel.info('Updated article ', article);
-            //     }
-            // });
-            article.save(saveCallback(req, res, article.file));
-        }
-    }); 
-    }   
-    if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
-        Article.findById(req.params.id)
-        .populate('file')
-        .exec(function(err, article) {
-            if (req.body.title) {
-                article.title = req.body.title;
-            }
-            if (req.body.shortBody) {
-                article.shortBody = req.body.shortBody;
-            }
-            if (req.body.body) {
-                article.body = req.body.body;
-            }
-            if (req.body.timeOfCreation) {
-                article.timeOfCreation = req.body.timeOfCreation;
-            }
-            if (req.body.timeOfPublication) {
-                article.timeOfPublication = req.body.timeOfPublication;
-            }
-            if (req.body.confirmation != undefined) {
-                article.confirmation = req.body.confirmation;
-            }
-            if (req.body.status) {
-                article.status = req.body.status;
-            }
-            if (req.params.category_id) {
-                article.category = req.params.category_id;
-            }
-            if (req.body.videoOgvUrl && req.body.videoMP4Url && req.body.videoWebmUrl) {
-                const currentDate = Date.now();
-                if (req.file) {
-                    videoFilePath = UPLOAD_PATH_VIDEOS + '/' + file.filename;
-                    convert(videoFilePath, file.filename, function(err){
-                        if(!err) {
-                            console.log('conversion complete');
-                        }
-                     });
+function updateArticle(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+            if (req.headers['content-type'].indexOf('application/json') !== -1) {
+                Article.findById(req.params.id)
+                .populate('file')
+                .exec(function(err, article) {
+                if (req.body.title) {
+                    article.title = req.body.title;
                 }
-                fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
-                    if (err) {
-                        intel.error(err);
-                    };
-                    intel.info(article.file.filename + ' was deleted.');
-                });
-                fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
-                    if (err) {
-                        intel.error(err);
-                    };
-                    intel.info('small-' + article.file.filename + ' was deleted.');
-                });
-                File.findById(article.file._id, function(err, file) {
-                    file.filename = fileMeta.fileName;
-                    file.contentType = mime.getType(fileMeta.extension);
-                    file.save(function (err, file){
+                if (req.body.shortBody) {
+                    article.shortBody = req.body.shortBody;
+                }
+                if (req.body.body) {
+                    article.body = req.body.body;
+                }
+                if (req.body.timeOfCreation) {
+                    article.timeOfCreation = req.body.timeOfCreation;
+                }
+                if (req.body.timeOfPublication) {
+                    article.timeOfPublication = req.body.timeOfPublication;
+                }
+                if (req.body.confirmation != undefined) {
+                    article.confirmation = req.body.confirmation;
+                }
+                if (req.body.status) {
+                    article.status = req.body.status;
+                }
+                if (req.params.category_id) {
+                    article.category = req.params.category_id;
+                }
+                if (req.body.fileBase64 && req.body.fileBase64Small) {
+                    const currentDate = Date.now();
+                    const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate);
+                    const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate);
+                    fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
                         if (err) {
-                            res.sendStatus(400);
-                            res.json(err);
                             intel.error(err);
-                        } else {
-                            article.save(saveCallback(req, res, file));
-                        }
+                        };
+                        intel.info(article.file.filename + ' was deleted.');
+                    });
+                    fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
+                        if (err) {
+                            intel.error(err);
+                        };
+                        intel.info('small-' + article.file.filename + ' was deleted.');
+                    });
+                    File.findById(article.file._id, function(err, file) {
+                        file.filename = fileMeta.fileName;
+                        file.contentType = mime.getType(fileMeta.extension);
+                        file.save(function (err, file){
+                            if (err) {
+                                res.sendStatus(400);
+                                res.json(err);
+                                intel.error(err);
+                            } else {
+                                article.save(saveCallback(req, res, file));
+                            }
+                        })
                     })
-                })
-            } else {
-                // article.save(function(err, article) {
-                //     if(err) {
-                //     res.json(err);
-                //     intel.error(err);
-                //     } else {
-                //         res.json(article);
-                //         intel.info('Updated article ', article);
-                //     }
-                // });
-                article.save(saveCallback(req, res));
+                } else {
+                    // article.save(function(err, article) {
+                    //     if(err) {
+                    //     res.json(err);
+                    //     intel.error(err);
+                    //     } else {
+                    //         res.json(article);
+                    //         intel.info('Updated article ', article);
+                    //     }
+                    // });
+                    article.save(saveCallback(req, res, article.file));
+                }
+            }); 
+            }   
+            if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
+                Article.findById(req.params.id)
+                .populate('file')
+                .exec(function(err, article) {
+                    if (req.body.title) {
+                        article.title = req.body.title;
+                    }
+                    if (req.body.shortBody) {
+                        article.shortBody = req.body.shortBody;
+                    }
+                    if (req.body.body) {
+                        article.body = req.body.body;
+                    }
+                    if (req.body.timeOfCreation) {
+                        article.timeOfCreation = req.body.timeOfCreation;
+                    }
+                    if (req.body.timeOfPublication) {
+                        article.timeOfPublication = req.body.timeOfPublication;
+                    }
+                    if (req.body.confirmation != undefined) {
+                        article.confirmation = req.body.confirmation;
+                    }
+                    if (req.body.status) {
+                        article.status = req.body.status;
+                    }
+                    if (req.params.category_id) {
+                        article.category = req.params.category_id;
+                    }
+                    if (req.body.videoOgvUrl && req.body.videoMP4Url && req.body.videoWebmUrl) {
+                        const currentDate = Date.now();
+                        if (req.file) {
+                            videoFilePath = UPLOAD_PATH_VIDEOS + '/' + file.filename;
+                            convert(videoFilePath, file.filename, function(err){
+                                if(!err) {
+                                    console.log('conversion complete');
+                                }
+                             });
+                        }
+                        fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
+                            if (err) {
+                                intel.error(err);
+                            };
+                            intel.info(article.file.filename + ' was deleted.');
+                        });
+                        fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
+                            if (err) {
+                                intel.error(err);
+                            };
+                            intel.info('small-' + article.file.filename + ' was deleted.');
+                        });
+                        File.findById(article.file._id, function(err, file) {
+                            file.filename = fileMeta.fileName;
+                            file.contentType = mime.getType(fileMeta.extension);
+                            file.save(function (err, file){
+                                if (err) {
+                                    res.sendStatus(400);
+                                    res.json(err);
+                                    intel.error(err);
+                                } else {
+                                    article.save(saveCallback(req, res, file));
+                                }
+                            })
+                        })
+                    } else {
+                        // article.save(function(err, article) {
+                        //     if(err) {
+                        //     res.json(err);
+                        //     intel.error(err);
+                        //     } else {
+                        //         res.json(article);
+                        //         intel.info('Updated article ', article);
+                        //     }
+                        // });
+                        article.save(saveCallback(req, res));
+                    }
+            }); 
             }
-    }); 
-    }
+        } else {
+            res.status(403);
+            res.send('Access denied');
+        }
+      })(req, res, next);
 }; 
 
 // *** add or remove article like *** //
-function likeArticle(req, res) {
-  let likeAction;
-  if (req.params.is_liked == 'false') {
-    likeAction = { $inc: { likes: 1 } };
-  } else {
-    likeAction = { $inc: { likes: -1 } };
-  }
-  Article.findOneAndUpdate(req.params.id, likeAction, function (err, article) {
-    if (err) {
-      res.status(400);
-      res.json(err);
-      intel.error(err);
-    } else {
-      res.json(article);
-    }
-  })
+function likeArticle(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+            let likeAction;
+            if (req.params.is_liked == 'false') {
+                likeAction = { $inc: { likes: 1 } };
+            } else {
+                likeAction = { $inc: { likes: -1 } };
+            }
+            Article.findOneAndUpdate(req.params.id, likeAction, function (err, article) {
+                if (err) {
+                res.status(400);
+                res.json(err);
+                intel.error(err);
+                } else {
+                res.json(article);
+                }
+            })
+        } else {
+            res.status(403);
+            res.send('Access denied');
+        }
+      })(req, res, next);
 }
 
 // *** delete SINGLE article *** //
-function deleteArticle(req, res) {
-  Article.findByIdAndDelete(req.params.id)
+function deleteArticle(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+            Article.findByIdAndDelete(req.params.id)
     .populate('file')
     .exec(function (err, article) {
     if (err) {
@@ -593,6 +613,11 @@ function deleteArticle(req, res) {
         intel.info('Deleted article ', article);
     }
   });
+        } else {
+            res.status(403);
+            res.send('Access denied');
+        }
+      })(req, res, next);
 }
 
 module.exports = router;

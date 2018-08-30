@@ -5,80 +5,129 @@ const intel = require('intel');
 const fs = require('fs');
 const path = require('path');
 const UPLOAD_PATH = './server/uploads';
+const passport = require('passport');
 
+// *** api routes *** //
 router.get('/files', findAllFiles);
 router.get('/file/:id', findFileById);
 router.get('/file-small/:id', findFileSmallById);
 router.get('/video/:id/:format', findVideoById);
 router.get('/screenshot/:id', findScreenshotById);
 
-function findAllFiles(req, res) {
-    File.find(function(err, files) {
-        if (err) {
-            res.sendStatus(400);
-            res.json(err);
-            intel.error(err);
+// TODO: Пересмотреть код и нейминг
+
+// *** get ALL files *** //
+function findAllFiles(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+            File.find(function(err, files) {
+                if (err) {
+                    res.sendStatus(400);
+                    res.json(err);
+                    intel.error(err);
+                }
+                res.json(files);
+                intel.info("Get all files ", files);
+            });
+        } else {
+            res.status(403);
+            res.send('Access denied');
         }
-        res.json(files);
-        intel.info("Get all files ", files);
-    });
+      })(req, res, next);
 }
 
-function findFileById(req, res) {
-    File.findById(req.params.id, (err, file) => {
-        if (err) {
-            res.sendStatus(400);
-            res.json(err);
-            intel.error(err);
+// *** get single file by ID *** //
+function findFileById(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+            File.findById(req.params.id, (err, file) => {
+                if (err) {
+                    res.sendStatus(400);
+                    res.json(err);
+                    intel.error(err);
+                }
+                res.setHeader('Content-Type', file.contentType);
+                fs.createReadStream(path.join(UPLOAD_PATH + '/images/', file.filename)).pipe(res);
+            });
+        } else {
+            res.status(403);
+            res.send('Access denied');
         }
-        res.setHeader('Content-Type', file.contentType);
-        fs.createReadStream(path.join(UPLOAD_PATH + '/images/', file.filename)).pipe(res);
-    });
+      })(req, res, next);
 }
 
-function findFileSmallById(req, res) {
-    File.findById(req.params.id, (err, file) => {
-        if (err) {
-            res.sendStatus(400);
-            res.json(err);
-            intel.error(err);
+// *** get single file-small by ID *** //
+function findFileSmallById(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+            File.findById(req.params.id, (err, file) => {
+                if (err) {
+                    res.sendStatus(400);
+                    res.json(err);
+                    intel.error(err);
+                }
+                // res.setHeader('Content-Type', 'image/png'); 
+                // const fileName = file.filename.substring(0, file.filename.lastIndexOf('.')) + '.png';
+                // fs.createReadStream(path.join(UPLOAD_PATH + '/images/', 'small-' + fileName)).pipe(res);
+                res.setHeader('Content-Type', file.contentType); 
+                fs.createReadStream(path.join(UPLOAD_PATH + '/images/', 'small-' + file.filename)).pipe(res);
+            });
+        } else {
+            res.status(403);
+            res.send('Access denied');
         }
-        // res.setHeader('Content-Type', 'image/png'); 
-        // const fileName = file.filename.substring(0, file.filename.lastIndexOf('.')) + '.png';
-        // fs.createReadStream(path.join(UPLOAD_PATH + '/images/', 'small-' + fileName)).pipe(res);
-        res.setHeader('Content-Type', file.contentType); 
-        fs.createReadStream(path.join(UPLOAD_PATH + '/images/', 'small-' + file.filename)).pipe(res);
-    });
+      })(req, res, next);
 }
 
-function findVideoById(req, res) {
-    File.findById(req.params.id, (err, file) => {
-        if (err) {
-            res.sendStatus(400);
-            res.json(err);
-            intel.error(err);
+// *** get single video by ID *** //
+function findVideoById(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+            File.findById(req.params.id, (err, file) => {
+                if (err) {
+                    res.sendStatus(400);
+                    res.json(err);
+                    intel.error(err);
+                }
+                if (req.params.format === 'ogv') {
+                    res.setHeader('Content-Type', 'video/ogg'); 
+                } else if (req.params.format === 'mp4') {
+                    res.setHeader('Content-Type', 'video/mp4'); 
+                } else if (req.params.format === 'webm') {
+                    res.setHeader('Content-Type', 'video/webm'); 
+                }
+                fs.createReadStream(path.join(UPLOAD_PATH + '/videos/', 'convert_' + file.filename)).pipe(res);
+            });
+        } else {
+            res.status(403);
+            res.send('Access denied');
         }
-        if (req.params.format === 'ogv') {
-            res.setHeader('Content-Type', 'video/ogg'); 
-        } else if (req.params.format === 'mp4') {
-            res.setHeader('Content-Type', 'video/mp4'); 
-        } else if (req.params.format === 'webm') {
-            res.setHeader('Content-Type', 'video/webm'); 
-        }
-        fs.createReadStream(path.join(UPLOAD_PATH + '/videos/', 'convert_' + file.filename)).pipe(res);
-    });
+      })(req, res, next);
 }
 
-function findScreenshotById(req, res) {
-    File.findById(req.params.id, (err, file) => {
-        if (err) {
-            res.sendStatus(400);
-            res.json(err);
-            intel.error(err);
+// *** get single screenshot by ID *** //
+function findScreenshotById(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+            File.findById(req.params.id, (err, file) => {
+                if (err) {
+                    res.sendStatus(400);
+                    res.json(err);
+                    intel.error(err);
+                }
+                res.setHeader('Content-Type', 'image/png');
+                fs.createReadStream(path.join(UPLOAD_PATH + '/videos/', 'screenshot_' + file.filename.substring(0, file.filename.lastIndexOf('.')) + '.png')).pipe(res);
+            });
+        } else {
+            res.status(403);
+            res.send('Access denied');
         }
-        res.setHeader('Content-Type', 'image/png');
-        fs.createReadStream(path.join(UPLOAD_PATH + '/videos/', 'screenshot_' + file.filename.substring(0, file.filename.lastIndexOf('.')) + '.png')).pipe(res);
-    });
+      })(req, res, next);
 }
 
 module.exports = router;

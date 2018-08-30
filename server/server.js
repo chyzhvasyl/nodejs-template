@@ -58,6 +58,7 @@ server.use(passport.initialize());
 // TODO: Secure all end-points
 passport.use(new LocalStrategy(
     function(login, password, done) {
+      // TODO: первый заход и последующие ищет по token(а летит пароль)
       User.findOne({ login: login, token: password }, function(err, user) {
         if (err) { return done(err); }
         if (!user) {
@@ -111,7 +112,7 @@ const templateRoutes = require('./routes/template_routes.js');
 const fileRoutes = require('./routes/file_routes');
 const userRoutes = require('./routes/user_routes');
 
-server.use('/',  articleRoutes);
+server.use('/', articleRoutes);
 server.use('/', commentRoutes);
 server.use('/', categoryRoutes);
 server.use('/', fileRoutes);
@@ -131,6 +132,8 @@ server.post('/login', function(req, res, next) {
             return res.json(user);
             
           })
+        } else {
+            return res.sendStatus(401);
         }
     })(req, res, next);
 });

@@ -20,13 +20,13 @@ router.get('/articles', findAllArticles);
 router.get('/article/:id', findArticleById);
 router.get('/articles/category/:category_id', findAllArticlesByCategory);
 router.get('/articles/confirmation/:confirmation', findAllArticlesByConfirmation);
-router.post('/article/:category_id/:template_id?', addArticle);
+router.get('/articles/user/:user_id', findAllArticlesByUserId);
+router.post('/article/:category_id/:template_id?/:user_id?', addArticle);
 router.put('/article/:id/:category_id?', updateArticle);
 router.put('/article/:id/like/:is_liked', likeArticle);
 router.delete('/article/:id', deleteArticle);
 
 // TODO: when add article save user id
-// TODO: get articles by user id
 // TODO: get all articles by several status values 
 
 // *** get ALL articles *** //
@@ -39,6 +39,7 @@ function findAllArticles(req, res, next) {
                 .populate('category')
                 .populate('file')
                 .populate('template')
+                .populate('user')
                 .lean()
                 .exec(function(err, articles) {
                     if(err) {
@@ -70,6 +71,7 @@ function findArticleById(req, res, next) {
             .populate('category')
             .populate('file')
             .populate('template')
+            .populate('user')
             .lean()
             .exec(function(err, article) {
                 if(err) {
@@ -100,6 +102,7 @@ function findAllArticlesByCategory(req, res, next) {
             .populate('category')
             .populate('file')
             .populate('template')
+            .populate('user')
             .lean()
             .exec(function(err, articles){
               if(err) {
@@ -109,7 +112,7 @@ function findAllArticlesByCategory(req, res, next) {
               } else {
                   articles = articles.map(a => addFileUrl(a, a.file, req));
                   res.json(articles);
-                  intel.info("Get all articles by category" + req.params.category, articles);
+                  intel.info("Get all articles by category " + req.params.category, articles);
               }
             });
         } else {
@@ -129,6 +132,7 @@ function findAllArticlesByConfirmation(req, res, next) {
             .populate('category')
             .populate('file')
             .populate('template')
+            .populate('user')
             .lean()
             .exec(function(err, articles){
             if(err) {
@@ -147,6 +151,36 @@ function findAllArticlesByConfirmation(req, res, next) {
         }
       })(req, res, next);
   }
+
+// *** get All articles by user Id *** //
+function findAllArticlesByUserId(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+            Article.find({'user':req.params.user_id})
+            .populate('comments')
+            .populate('category')
+            .populate('file')
+            .populate('template')
+            .populate('user')
+            .lean()
+            .exec(function(err, articles){
+              if(err) {
+                res.status(400);
+                res.json(err);
+                intel.error(err);
+              } else {
+                  articles = articles.map(a => addFileUrl(a, a.file, req));
+                  res.json(articles);
+                  intel.info("Get all articles by user id " + req.params.category, articles);
+              }
+            });
+        } else {
+            res.status(403);
+            res.send('Access denied');
+        }
+      })(req, res, next);
+}  
 
 // *** add SINGLE article  *** //
 // FIXME: Add single article method
@@ -181,6 +215,7 @@ function addArticle(req, res, next) {
                                 newArticle.file = newFile._id;
                                 newArticle.category = req.params.category_id;
                                 newArticle.template = req.params.template_id;
+                                newArticle.user = req.params.user_id;
                                 newArticle.save(saveCallback(req, res, newFile));
                             });
                         }
@@ -210,6 +245,7 @@ function addArticle(req, res, next) {
                         newArticle.file = newFile._id;
                         newArticle.category = req.params.category_id;
                         newArticle.template = req.params.template_id;
+                        newArticle.user = req.params.user_id;
                         newArticle.save(saveCallback(req, res, newFile));
                     });
                 }   

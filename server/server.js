@@ -57,46 +57,45 @@ server.use(passport.initialize());
 // TODO: Secure all end-points
 passport.use(new LocalStrategy(
     function(login, password, done) {
-      User.findOne({ login: login }, function(err, user) {
+      User.findOne({ login: login, token: password }, function(err, user) {
         if (err) { return done(err); }
         if (!user) {
             request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {"UserName": login, "Password": password}}, function optionalCallback(err, httpResponse, body) {
-            if (err) {
-                return console.error('upload failed:', err);
-            }
-            if (httpResponse.statusCode == 404) {
-                return done(null, false, { message: 'Incorrect username.' });
-            } 
-            else if (httpResponse.statusCode == 200) {
-                const newUser = new User({
-                    // TODO: token live time
-                    token: uuidv4(),
-                    login: login,
-                    firstName: body.FirstName,
-                    lastName: body.LastName,
-                    secondaryName: body.SecondName,
-                    roles: body.ListGroups
-                });
-                    
-                newUser.save(function(err, newUser) {
-                    if(err) {
-                        // res.status(400);
-                        // res.json(err);
-                        intel.error(err);
-                        return done(null, false);
-                    } else {
-                        intel.info('Added new user ', newUser);
-                        JSON.stringify(newUser);
-                        newUser['isCookie'] = false;
-                        return done(null, newUser);
-                    }
-                });
-                return done(null, user);
+                if (err) {
+                    return console.error('upload failed:', err);
+                }
+                if (httpResponse.statusCode == 200) {
+                    const newUser = new User({
+                        // TODO: token live time
+                        token: uuidv4(),
+                        login: login,
+                        firstName: body.FirstName,
+                        lastName: body.LastName,
+                        secondaryName: body.SecondName,
+                        roles: body.ListGroups
+                    });
+                        
+                    newUser.save(function(err, newUser) {
+                        if(err) {
+                            // res.status(400);
+                            // res.json(err);
+                            intel.error(err);
+                            return done(null, false);
+                        } else {
+                            intel.info('Added new user ', newUser);
+                            newUser = newUser.toObject();
+                            newUser['isCookie'] = false;
+                            return done(null, newUser);
+                        }
+                    });
+                   
+                } else {
+                    return done(null, false);     
                 }
             });
-            return done(null, false);
+        } else {
+            return done(null, user);
         }
-        return done(null, user);
       });
     }
 ));
@@ -111,7 +110,7 @@ const templateRoutes = require('./routes/template_routes.js');
 const fileRoutes = require('./routes/file_routes');
 const userRoutes = require('./routes/user_routes');
 
-server.use('/', articleRoutes);
+server.use('/',  articleRoutes);
 server.use('/', commentRoutes);
 server.use('/', categoryRoutes);
 server.use('/', fileRoutes);
@@ -122,11 +121,15 @@ server.post('/login', function(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
       if (err) { return next(err); }
       if (user) {
-          if (user.isCookie == false) {
-            res.cookie('user', user, {maxAge : 9999}); 
-            delete user['isCookie'];
-          }
-          return res.json(user); 
+          Template.findById('5b87c0181084f84ccd538b62', function(err, template){
+            if (user.isCookie == false) {
+                res.cookie('user', user, {maxAge : template.cookieLifeTime * 1000 * 60 * 60 * 24}); 
+                delete user['isCookie'];
+                user['cookieLifeTime'] = template.cookieLifeTime;
+            }
+            return res.json(user);
+            
+          })
         }
     })(req, res, next);
 });

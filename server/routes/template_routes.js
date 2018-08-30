@@ -108,7 +108,7 @@ function updateTemplate(req, res) {
           if (err) {
             res.json(err);
           } else {
-            intel.info('Delete token in all users');
+            intel.info('Clear token field in all users');
           }
         });
       } 

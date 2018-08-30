@@ -13,6 +13,7 @@ const UPLOAD_PATH_IMAGES = UPLOAD_PATH + '/images';
 const UPLOAD_PATH_VIDEOS = UPLOAD_PATH + '/videos';
 const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
 const ffmpeg = require('fluent-ffmpeg');
+const passport = require('passport');
 
 // *** api routes *** //
 router.get('/articles', findAllArticles);
@@ -25,70 +26,116 @@ router.put('/article/:id/like/:is_liked', likeArticle);
 router.delete('/article/:id', deleteArticle);
 
 // *** get ALL articles *** //
-function findAllArticles(req, res) {
-  Article.find()
-    .populate('comments')
-    .populate('category')
-    .populate('file')
-    .populate('template')
-    .lean()
-    .exec(function(err, articles) {
-        if(err) {
-            res.status(400);
-            res.json(err);
-            intel.error(err);
+function findAllArticles(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+            Article.find()
+                .populate('comments')
+                .populate('category')
+                .populate('file')
+                .populate('template')
+                .lean()
+                .exec(function(err, articles) {
+                    if(err) {
+                        res.status(400);
+                        res.json(err);
+                        intel.error(err);
+                    } else {
+                        articles = articles.map(a => addFileUrl(a, a.file, req));
+                        res.json(articles);
+                        intel.info("Get all articles ", articles);
+                    }
+            });
         } else {
-            articles = articles.map(a => addFileUrl(a, a.file, req));
-            res.json(articles);
-            intel.info("Get all articles ", articles);
+            // TODO: нормальные выводы ответов
+            return res.sendStatus(403);
         }
-  }); 
+      })(req, res, next);
 }
 
 // *** get SINGLE article by id *** //
-function findArticleById(req, res) {
-  Article.findById(req.params.id)
-    .populate('comments')
-    .populate('category')
-    .populate('file')
-    .populate('template')
-    .lean()
-    .exec(function(err, article) {
-        if(err) {
-            res.status(400);
-            res.json(err);
-            intel.error(err);
+function findArticleById(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+            Article.findById(req.params.id)
+            .populate('comments')
+            .populate('category')
+            .populate('file')
+            .populate('template')
+            .lean()
+            .exec(function(err, article) {
+                if(err) {
+                    res.status(400);
+                    res.json(err);
+                    intel.error(err);
+                } else {
+                    article = addFileUrl(article, article.file, req);
+                    res.json(article);
+                    intel.info('Get single article by id ', article);
+                }
+            });
         } else {
-            article = addFileUrl(article, article.file, req);
-            res.json(article);
-            intel.info('Get single article by id ', article);
+            return res.sendStatus(403);
         }
-  });
+      })(req, res, next);
 }
 
 // *** get All articles by category *** //
-function findAllArticlesByCategory(req, res) {
-  Article.find({'category':req.params.category_id})
-  .populate('comments')
-  .populate('category')
-  .populate('file')
-  .populate('template')
-  .lean()
-  .exec(function(err, articles){
-    if(err) {
-      res.status(400);
-      res.json(err);
-      intel.error(err);
-    } else {
-        articles = articles.map(a => addFileUrl(a, a.file, req));
-        res.json(articles);
-        intel.info("Get all articles by category" + req.params.category, articles);
-    }
-  });
+function findAllArticlesByCategory(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+            Article.find({'category':req.params.category_id})
+            .populate('comments')
+            .populate('category')
+            .populate('file')
+            .populate('template')
+            .lean()
+            .exec(function(err, articles){
+              if(err) {
+                res.status(400);
+                res.json(err);
+                intel.error(err);
+              } else {
+                  articles = articles.map(a => addFileUrl(a, a.file, req));
+                  res.json(articles);
+                  intel.info("Get all articles by category" + req.params.category, articles);
+              }
+            });
+        } else {
+            return res.sendStatus(403);
+        }
+      })(req, res, next);
 }
 
 // *** get All articles by confirmation *** //
-function findAllArticlesByConfirmation(req, res) {
+function findAllArticlesByConfirmation(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+            Article.find({'category':req.params.category_id})
+            .populate('comments')
+            .populate('category')
+            .populate('file')
+            .populate('template')
+            .lean()
+            .exec(function(err, articles){
+              if(err) {
+                res.status(400);
+                res.json(err);
+                intel.error(err);
+              } else {
+                  articles = articles.map(a => addFileUrl(a, a.file, req));
+                  res.json(articles);
+                  intel.info("Get all articles by category" + req.params.category, articles);
+              }
+            });
+        } else {
+            return res.sendStatus(403);
+        }
+      })(req, res, next);
     Article.find({'confirmation':req.params.confirmation})
     .populate('comments')
     .populate('category')

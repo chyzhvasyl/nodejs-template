@@ -84,7 +84,6 @@ function findCommentsByConfirmation(req, res, next) {
 
 // *** add SINGLE comment *** //
 function addComment(req, res, next) {
-  // TODO: при добавлени коммента спользует одни логин и пароль, при поиске статьи нужны другие
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
     if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 

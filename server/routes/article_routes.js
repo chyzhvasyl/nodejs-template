@@ -17,16 +17,15 @@ const passport = require('passport');
 
 // *** api routes *** //
 router.get('/articles', findAllArticles);
-router.get('/article/:id', findArticleById);
-router.get('/articles/category/:category_id', findAllArticlesByCategory);
-router.get('/articles/confirmation/:confirmation', findAllArticlesByConfirmation);
+router.get('/article/:id/:confirmation', findArticleByIdAndConfirmation);
+router.get('/articles/category/:category_id/:confirmation', findAllArticlesByCategoryAndConfirmation);
 router.get('/articles/user/:user_id', findAllArticlesByUserId);
+router.get('/articles/confirmation/:confirmation', findAllArticlesByConfirmation);
 router.post('/article/:category_id/:template_id?/:user_id?', addArticle);
 router.put('/article/:id/:category_id?', updateArticle);
 router.put('/article/:id/like/:is_liked', likeArticle);
 router.delete('/article/:id', deleteArticle);
 
-// TODO: when add article save user id
 // TODO: get all articles by several status values 
 
 // *** get ALL articles *** //
@@ -53,7 +52,6 @@ function findAllArticles(req, res, next) {
                     }
             });
         } else {
-            // TODO: нормальные выводы ответов
             res.status(403);
             res.send('Access denied');
         }
@@ -61,12 +59,11 @@ function findAllArticles(req, res, next) {
 }
 
 // *** get SINGLE article by id *** //
-// TODO: by id and confirmation
-function findArticleById(req, res, next) {
+function findArticleByIdAndConfirmation(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
         if (user && user.roles && user.roles.includes('CN=NEWS_Reader')) { 
-            Article.findById(req.params.id)
+            Article.find({'_id' : req.params.id, 'confirmation' : req.params.confirmation})
             .populate('comments')
             .populate('category')
             .populate('file')
@@ -92,12 +89,11 @@ function findArticleById(req, res, next) {
 }
 
 // *** get All articles by category *** //
-// TODO: by category and confirmation
-function findAllArticlesByCategory(req, res, next) {
+function findAllArticlesByCategoryAndConfirmation(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
         if (user && user.roles && user.roles.includes('CN=NEWS_Reader')) { 
-            Article.find({'category':req.params.category_id})
+            Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation})
             .populate('comments')
             .populate('category')
             .populate('file')

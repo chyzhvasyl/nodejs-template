@@ -55,7 +55,6 @@ server.use(morgan(':method :url :status :res[content-length] - :response-time ms
 server.use(flash());
 server.use(passport.initialize());
 // server.use(passport.session());
-// TODO: Secure all end-points
 passport.use(new LocalStrategy(
     function(login, password, done) {
       // TODO: первый заход и последующие ищет по token(а летит пароль)

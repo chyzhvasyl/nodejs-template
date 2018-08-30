@@ -18,6 +18,7 @@ const User = require('./models/user');
 const flash = require('connect-flash');
 const session = require('express-session');
 const uuidv4 = require('uuid/v4');
+const Template = require('./models/template');
 
 // *** express instance *** //
 const server = express();
@@ -44,6 +45,7 @@ server.use(express.static(path.join(__dirname, 'uploads')));
 server.use(cors(corsOptions));
 server.use(bodyParser.json({limit: "50mb"}));
 server.use(bodyParser.raw({limit: "50mb", extended: true, parameterLimit:50000}));
+// TODO: session or cookie parser
 // server.use(session({ cookie: { maxAge: 60000 }, 
 //     secret: 'woot',
 //     resave: false, 
@@ -52,6 +54,7 @@ server.use(morgan(':method :url :status :res[content-length] - :response-time ms
 server.use(flash());
 server.use(passport.initialize());
 // server.use(passport.session());
+// TODO: Secure all end-points
 passport.use(new LocalStrategy(
     function(login, password, done) {
       User.findOne({ login: login }, function(err, user) {
@@ -66,6 +69,7 @@ passport.use(new LocalStrategy(
             } 
             else if (httpResponse.statusCode == 200) {
                 const newUser = new User({
+                    // TODO: token live time
                     token: uuidv4(),
                     login: login,
                     firstName: body.FirstName,
@@ -87,18 +91,17 @@ passport.use(new LocalStrategy(
                         return done(null, newUser);
                     }
                 });
-                // console.log('Server responded with:', body);
                 return done(null, user);
                 }
             });
-            return done(null, false, { message: 'Incorrect username.' });
+            return done(null, false);
         }
         return done(null, user);
       });
     }
 ));
 // server.use(forceSsl);
-// enother middlewares
+// another middlewares
 
 // *** routes *** //
 const articleRoutes = require('./routes/article_routes.js');
@@ -119,17 +122,12 @@ server.post('/login', function(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
       if (err) { return next(err); }
       if (user) {
-          console.log(user);
           if (user.isCookie == false) {
             res.cookie('user', user, {maxAge : 9999}); 
             delete user['isCookie'];
           }
           return res.json(user); 
         }
-    //   req.logIn(user, function(err) {
-    //     if (err) { return next(err); }
-    //     return res.redirect('/users/' + user.username);
-    //   });
     })(req, res, next);
 });
 
@@ -142,6 +140,7 @@ server.listen(port, () => {
     intel.info(`Server started on port , ${port}`);
 });
 
+//TODO: https
 // options = {
 //     key: fs.readFileSync('./server/encryption/server.key'),
 //     cert: fs.readFileSync('./server/encryption/server.pem'),

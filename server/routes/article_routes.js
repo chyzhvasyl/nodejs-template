@@ -109,12 +109,13 @@ function findAllArticlesByConfirmation(req, res) {
   }
 
 // *** add SINGLE article  *** //
+// FIXME: Add single article method
 function addArticle(req, res) {
     if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
         upload(req, res, function (err) {
             if (err) {
                 res.send(err);
-              // An error occurred when uploading
+                // TODO: An error occurred when uploading
               return
             } else {
                 if (req.file) { 
@@ -145,9 +146,9 @@ function addArticle(req, res) {
     } 
     if (req.headers['content-type'].indexOf('application/json') !== -1) {
         if (req.body.fileBase64 && req.body.fileBase64Small) {
-            const curentDate = Date.now();
-            const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
-            const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
+            const currentDate = Date.now();
+            const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate);
+            const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate);
             const newFile = new File();
             newFile.filename = fileMeta.fileName;
             newFile.contentType = mime.getType(fileMeta.extension);
@@ -172,13 +173,13 @@ function addArticle(req, res) {
     } 
 }
 
-function saveFile(file, prefix, curentDate) {
+function saveFile(file, prefix, currentDate) {
     if (file) {
         const decodedImg = decodeBase64Image(file);
         const imageBuffer = decodedImg.data;
         const type = decodedImg.type;
         const extension = mime.getExtension(type);
-        const fileName = `${prefix}-${curentDate}.${extension}`;
+        const fileName = `${prefix}-${currentDate}.${extension}`;
         try {
             fs.writeFile(UPLOAD_PATH_IMAGES + '/' + fileName, imageBuffer, 'utf8');
             return {
@@ -229,7 +230,7 @@ function saveCallback( req, res, file) {
 function addFileUrl(article, file, req) {
     if (article && file && file._id) {
         const imageFileTypes =  /image/;
-        //TODO const videoFfiletypes = /video\/pm4|video\/webm|video\/ogg|video\/x-matroska/;
+        // const videoFiletypes = /video\/pm4|video\/webm|video\/ogg|video\/x-matroska/;
         const videoFileTypes = /video/;
         const isImage = imageFileTypes.test(file.contentType);
         const isVideo = videoFileTypes.test(file.contentType);
@@ -291,11 +292,7 @@ function checkFileType(file, cb) {
 // *** convert configuration *** //
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 console.log(ffmpegInstaller.path, ffmpegInstaller.version);
-/**
- *    input - string, path of input file
- *    output - string, path of output file
- *    callback - function, node-style callback fn (error, result)        
- */
+
 function convert(input, filename, callback) {
     ffmpeg(input)
         .output(UPLOAD_PATH_VIDEOS + '/' + 'convert_' + filename.substring(0, filename.lastIndexOf('.')) + '.mp4').format('mp4').size('640x480')
@@ -330,6 +327,7 @@ function getScreenshot(filePath, fileName, outputFolder, callback) {
 }
 
 // *** update SINGLE article *** //
+// FIXME: Update single article method
 function updateArticle(req, res) {
     if (req.headers['content-type'].indexOf('application/json') !== -1) {
         Article.findById(req.params.id)
@@ -360,9 +358,9 @@ function updateArticle(req, res) {
             article.category = req.params.category_id;
         }
         if (req.body.fileBase64 && req.body.fileBase64Small) {
-            const curentDate = Date.now();
-            const fileMeta = saveFile(req.body.fileBase64, 'img', curentDate);
-            const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', curentDate);
+            const currentDate = Date.now();
+            const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate);
+            const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate);
             fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
                 if (err) {
                     intel.error(err);
@@ -398,7 +396,6 @@ function updateArticle(req, res) {
             //         intel.info('Updated article ', article);
             //     }
             // });
-            //TODO review
             article.save(saveCallback(req, res, article.file));
         }
     }); 
@@ -431,8 +428,8 @@ function updateArticle(req, res) {
             if (req.params.category_id) {
                 article.category = req.params.category_id;
             }
-            if (req.body.videoOgvUrl && req.body.fvideoMP4Url && req.body.videoWebmUrl) {
-                const curentDate = Date.now();
+            if (req.body.videoOgvUrl && req.body.videoMP4Url && req.body.videoWebmUrl) {
+                const currentDate = Date.now();
                 if (req.file) {
                     videoFilePath = UPLOAD_PATH_VIDEOS + '/' + file.filename;
                     convert(videoFilePath, file.filename, function(err){
@@ -476,8 +473,7 @@ function updateArticle(req, res) {
                 //         intel.info('Updated article ', article);
                 //     }
                 // });
-                //TODO review
-                article.save(saveCallback(req,  res));
+                article.save(saveCallback(req, res));
             }
     }); 
     }
@@ -544,7 +540,7 @@ function deleteArticle(req, res) {
                 });
               });
         } else if (isVideo) {
-            // TODO delete video files
+            // TODO: delete video files
         }
         res.json(article);
         intel.info('Deleted article ', article);

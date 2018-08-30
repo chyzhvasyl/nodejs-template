@@ -4,25 +4,26 @@ const User = require('../models/user');
 const intel = require('intel');
 const uuid = require('uuid/v4');
 
+// FIXME: All user routes
 // *** api routes *** //
-// router.get('/users', findAllUsers);
+router.get('/users', findAllUsers);
 // router.get('/user/:id', findUserById);
 router.post('/user', addUser);
 // router.put('/user/:id', updateUser);
 // router.delete('/user/:id', deleteUser);
 
 // *** get ALL users *** //
-// function findAllCategories(req, res) {
-//   Category.find(function(err, categories) {
-//     if(err) {
-//       res.json(err);
-//       intel.error(err);
-//     } else {
-//       res.json(categories);
-//       intel.info("Take all categories ", categories);
-//     }
-//   });
-// }
+function findAllUsers(req, res) {
+  User.find(function(err, users) {
+    if(err) {
+      res.json(err);
+      intel.error(err);
+    } else {
+      res.json(users);
+      intel.info("Take all users ", users);
+    }
+  });
+}
 
 // *** get SINGLE category by id *** //
 // function findCategoryById(req, res) {

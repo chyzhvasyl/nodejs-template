@@ -56,7 +56,7 @@ function addCategory(req, res) {
   });
 }
 
-// *** uodate SINGLE category *** //
+// *** update SINGLE category *** //
 function updateCategory(req, res) {
   Category.findById(req.params.id, function(err, category) {
     category.name = req.body.name;
@@ -79,7 +79,7 @@ function deleteCategory(req, res) {
     if(err) {
       res.json(err);
     } else {
-        Article.where({ category : category.id }).updateMany({ $set: {category : '5b83a8c043bf5623488d0bc6'}}).exec(function(err){
+        Article.where({ category : category.id }).updateMany({ $set: { category : '5b83a8c043bf5623488d0bc6' }}).exec(function(err){
           if (err) {
             res.json(err);
           }

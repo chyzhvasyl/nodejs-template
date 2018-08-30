@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Template = require('../models/template');
+const User = require('../models/user');
 const intel = require('intel');
 
 // *** api routes *** //
@@ -58,7 +59,8 @@ function addTemplate(req, res) {
         length: req.body.articleStyles.title.length,
         fontSize: req.body.articleStyles.title.fontSize
       }
-    }
+    },
+    cookieLifeTime : req.body.cookieLifeTime
   });
 
   newTemplate.save(function(err, newTemplate) {
@@ -99,6 +101,18 @@ function updateTemplate(req, res) {
     }
     if (req.body.articleStyles.title.fontSize) {
       template.articleStyles.title.fontSize = req.body.articleStyles.title.fontSize;
+    }
+    if (req.body.cookieLifeTime) {
+      if (req.body.cookieLifeTime < template.cookieLifeTime) {
+        User.find().updateMany({ $set: { token : '' }}).exec(function(err){
+          if (err) {
+            res.json(err);
+          } else {
+            intel.info('Delete token in all users');
+          }
+        });
+      } 
+      template.cookieLifeTime = req.body.cookieLifeTime;
     }
     template.save(function(err) {
       if(err) {

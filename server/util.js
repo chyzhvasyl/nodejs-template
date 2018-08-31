@@ -1,6 +1,3 @@
-
-
-
 module.exports = {
      hasRole : function hasRole(user) {
         if (user && user.roles) {

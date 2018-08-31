@@ -1,4 +1,5 @@
 // TODO: change tabulation to 2
+// TODO: WebSocket
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -57,7 +58,6 @@ server.use(passport.initialize());
 // server.use(passport.session());
 passport.use(new LocalStrategy(
     function(login, password, done) {
-      // TODO: первый заход и последующие ищет по token(а летит пароль)
       User.findOne({ login: login }, function(err, user) {
         if (err) { return done(err); }
         if (!user) {
@@ -112,47 +112,21 @@ passport.use(new LocalStrategy(
                             lastName: body.LastName,
                             secondaryName: body.SecondName,
                             roles: body.ListGroups
-                        }, (function(err){
+                        }, 
+                        { new: true }, (function(err, updatedUser){
                             if(err) {
                                 // res.status(400);
                                 // res.json(err);
                                 intel.error(err);
                                 return done(null, false);
                             } else {
-                                User.findOne({token: newToken}, function(err, updatedUser){
-                                    intel.info('Added new user ', updatedUser);
-                                    updatedUser = updatedUser.toObject();
-                                    updatedUser['isCookie'] = false;
-                                    return done(null, updatedUser);
-                                })
+                                intel.info('Added new user ', updatedUser);
+                                updatedUser = updatedUser.toObject();
+                                updatedUser['isCookie'] = false;
+                                return done(null, updatedUser);
                             }
                         })
                     )
-
-                    // user.({
-                    //     // TODO: token live time
-                    //     token: uuidv4(),
-                    //     login: login,
-                    //     firstName: body.FirstName,
-                    //     lastName: body.LastName,
-                    //     secondaryName: body.SecondName,
-                    //     roles: body.ListGroups
-                    // });
-                        
-                    // newUser.save(function(err, newUser) {
-                    //     if(err) {
-                    //         // res.status(400);
-                    //         // res.json(err);
-                    //         intel.error(err);
-                    //         return done(null, false);
-                    //     } else {
-                    //         intel.info('Added new user ', newUser);
-                    //         newUser = newUser.toObject();
-                    //         newUser['isCookie'] = false;
-                    //         return done(null, newUser);
-                    //     }
-                    // });
-                   
                 } else {
                     return done(null, false);     
                 }

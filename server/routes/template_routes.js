@@ -4,6 +4,7 @@ const Template = require('../models/template');
 const User = require('../models/user');
 const intel = require('intel');
 const passport = require('passport');
+const util = require('../util');
 
 // *** api routes *** //
 router.get('/templates', findAllTemplates);
@@ -12,11 +13,13 @@ router.post('/template', addTemplate);
 router.put('/template/:id', updateTemplate);
 router.delete('/template/:id', deleteTemplate);
 
+
+
 // *** get ALL templates *** //
 function findAllTemplates(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+    if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
       Template.find(function(err, templates) {
         if(err) {
           res.json(err);
@@ -37,7 +40,7 @@ function findAllTemplates(req, res, next) {
 function findTemplateById(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+      if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
       Template.findById(req.params.id)
       .populate('article')
       .exec(function(err, template) {
@@ -60,7 +63,7 @@ function findTemplateById(req, res, next) {
 function addTemplate(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+      if (util.hasRole(user, 'CN=NEWS_Administrator')) {
       var newTemplate = new Template({
         generalStyles: {
           fontSizeMetric: req.body.generalStyles.fontSizeMetric,
@@ -104,7 +107,7 @@ function addTemplate(req, res, next) {
 function updateTemplate(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+      if (util.hasRole(user, 'CN=NEWS_Administrator')) {
       Template.findById(req.params.id, function(err, template) {
         if (req.body.generalStyles.fontSizeMetric) {
           template.generalStyles.fontSizeMetric = req.body.generalStyles.fontSizeMetric;
@@ -163,7 +166,7 @@ function updateTemplate(req, res, next) {
 function deleteTemplate(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+    if (user && user.roles && user.roles.includes('CN=NEWS_Administrator')) {
       Template.findByIdAndDelete(req.params.id, function(err, template) {
         if(err) {
           res.json(err);

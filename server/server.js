@@ -122,7 +122,9 @@ server.post('/login', function(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
       if (err) { return next(err); }
       if (user) {
-          Template.findById('5b87c0181084f84ccd538b62', function(err, template){
+          Template.find({}, function(err, templates) {
+            if (err) intel.error(err);
+            const template = templates[0];
             if (user.isCookie == false) {
                 res.cookie('user', user, {maxAge : template.cookieLifeTime * 1000 * 60 * 60 * 24}); 
                 delete user['isCookie'];
@@ -159,5 +161,6 @@ server.listen(port, () => {
 //     console.log(`Server started on port ${port}`);
 //     intel.info(`Server started on port ${port}`);
 // });
+
 
 module.exports = server;

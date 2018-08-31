@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const UPLOAD_PATH = './server/uploads';
 const passport = require('passport');
+const util = require('../util');
 
 // *** api routes *** //
 router.get('/files', findAllFiles);
@@ -20,7 +21,7 @@ router.get('/screenshot/:id', findScreenshotById);
 function findAllFiles(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             File.find(function(err, files) {
                 if (err) {
                     res.sendStatus(400);
@@ -41,7 +42,7 @@ function findAllFiles(req, res, next) {
 function findFileById(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             File.findById(req.params.id, (err, file) => {
                 if (err) {
                     res.sendStatus(400);
@@ -62,7 +63,7 @@ function findFileById(req, res, next) {
 function findFileSmallById(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             File.findById(req.params.id, (err, file) => {
                 if (err) {
                     res.sendStatus(400);
@@ -86,7 +87,7 @@ function findFileSmallById(req, res, next) {
 function findVideoById(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             File.findById(req.params.id, (err, file) => {
                 if (err) {
                     res.sendStatus(400);
@@ -113,7 +114,7 @@ function findVideoById(req, res, next) {
 function findScreenshotById(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             File.findById(req.params.id, (err, file) => {
                 if (err) {
                     res.sendStatus(400);

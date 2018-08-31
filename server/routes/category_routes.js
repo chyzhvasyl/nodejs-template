@@ -4,6 +4,7 @@ const Category = require('../models/category');
 const Article = require('../models/article');
 const intel = require('intel');
 const passport = require('passport');
+const util = require('../util');
 
 // *** api routes *** //
 router.get('/categories', findAllCategories);
@@ -16,7 +17,7 @@ router.delete('/category/:id', deleteCategory);
 function findAllCategories(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+      if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
       Category.find(function(err, categories) {
         if(err) {
           res.json(err);
@@ -37,7 +38,7 @@ function findAllCategories(req, res, next) {
 function findCategoryById(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+      if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
       Category.findById(req.params.id, function(err, category) {
         if(err) {
           res.status(404);
@@ -59,7 +60,7 @@ function findCategoryById(req, res, next) {
 function addCategory(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+      if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
       var newCategory = new Category({
         name: req.body.name
       });
@@ -85,7 +86,7 @@ function addCategory(req, res, next) {
 function updateCategory(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+      if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
       Category.findById(req.params.id, function(err, category) {
         category.name = req.body.name;
         category.save(function(err) {
@@ -110,7 +111,7 @@ function updateCategory(req, res, next) {
 function deleteCategory(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+      if (util.hasRole(user, 'CN=NEWS_Administrator')) {
       Category.findByIdAndDelete(req.params.id, function(err, category) {
         if(err) {
           res.json(err);

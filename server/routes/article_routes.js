@@ -14,6 +14,7 @@ const UPLOAD_PATH_VIDEOS = UPLOAD_PATH + '/videos';
 const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
 const ffmpeg = require('fluent-ffmpeg');
 const passport = require('passport');
+const util = require('../util');
 
 // *** api routes *** //
 router.get('/articles', findAllArticles);
@@ -32,7 +33,7 @@ router.delete('/article/:id', deleteArticle);
 function findAllArticles(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_Administrator')) { 
+        if (util.hasRole(user, 'CN=NEWS_Administrator')) {
             Article.find()
                 .populate('comments')
                 .populate('category')
@@ -62,7 +63,7 @@ function findAllArticles(req, res, next) {
 function findArticleByIdAndConfirmation(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_Reader')) { 
+        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             Article.find({'_id' : req.params.id, 'confirmation' : req.params.confirmation})
             .populate('comments')
             .populate('category')
@@ -92,7 +93,7 @@ function findArticleByIdAndConfirmation(req, res, next) {
 function findAllArticlesByCategoryAndConfirmation(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_Reader')) { 
+        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation})
             .populate('comments')
             .populate('category')
@@ -122,7 +123,7 @@ function findAllArticlesByCategoryAndConfirmation(req, res, next) {
 function findAllArticlesByConfirmation(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_Reader')) { 
+        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             Article.find({'confirmation':req.params.confirmation})
             .populate('comments')
             .populate('category')
@@ -152,7 +153,7 @@ function findAllArticlesByConfirmation(req, res, next) {
 function findAllArticlesByUserId(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+        if (util.hasRole(user, 'CN=NEWS_Author')) {
             Article.find({'user':req.params.user_id})
             .populate('comments')
             .populate('category')
@@ -183,7 +184,7 @@ function findAllArticlesByUserId(req, res, next) {
 function addArticle(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+        if (util.hasRole(user, 'CN=NEWS_Author')) {
             if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
                 upload(req, res, function (err) {
                     if (err) {
@@ -411,7 +412,7 @@ function getScreenshot(filePath, fileName, outputFolder, callback) {
 function updateArticle(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+        if (util.hasRole(user, 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             if (req.headers['content-type'].indexOf('application/json') !== -1) {
                 Article.findById(req.params.id)
                 .populate('file')

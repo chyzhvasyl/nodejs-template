@@ -58,7 +58,7 @@ server.use(passport.initialize());
 passport.use(new LocalStrategy(
     function(login, password, done) {
       // TODO: первый заход и последующие ищет по token(а летит пароль)
-      User.findOne({ login: login, token: password }, function(err, user) {
+      User.findOne({ login: login }, function(err, user) {
         if (err) { return done(err); }
         if (!user) {
             request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {"UserName": login, "Password": password}}, function optionalCallback(err, httpResponse, body) {
@@ -95,7 +95,69 @@ passport.use(new LocalStrategy(
                 }
             });
         } else {
-            return done(null, user);
+            if (user.token === password) {
+                return done(null, user);
+            } else {
+                request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {"UserName": login, "Password": password}}, function optionalCallback(err, httpResponse, body) {
+                if (err) {
+                    return console.error('upload failed:', err);
+                } else if (httpResponse.statusCode == 200) {
+                    const newToken = uuidv4();
+                    User.findOneAndUpdate(
+                        { login: login, token: user.token },
+                        {
+                            token: newToken,
+                            login: login,
+                            firstName: body.FirstName,
+                            lastName: body.LastName,
+                            secondaryName: body.SecondName,
+                            roles: body.ListGroups
+                        }, (function(err){
+                            if(err) {
+                                // res.status(400);
+                                // res.json(err);
+                                intel.error(err);
+                                return done(null, false);
+                            } else {
+                                User.findOne({token: newToken}, function(err, updatedUser){
+                                    intel.info('Added new user ', updatedUser);
+                                    updatedUser = updatedUser.toObject();
+                                    updatedUser['isCookie'] = false;
+                                    return done(null, updatedUser);
+                                })
+                            }
+                        })
+                    )
+
+                    // user.({
+                    //     // TODO: token live time
+                    //     token: uuidv4(),
+                    //     login: login,
+                    //     firstName: body.FirstName,
+                    //     lastName: body.LastName,
+                    //     secondaryName: body.SecondName,
+                    //     roles: body.ListGroups
+                    // });
+                        
+                    // newUser.save(function(err, newUser) {
+                    //     if(err) {
+                    //         // res.status(400);
+                    //         // res.json(err);
+                    //         intel.error(err);
+                    //         return done(null, false);
+                    //     } else {
+                    //         intel.info('Added new user ', newUser);
+                    //         newUser = newUser.toObject();
+                    //         newUser['isCookie'] = false;
+                    //         return done(null, newUser);
+                    //     }
+                    // });
+                   
+                } else {
+                    return done(null, false);     
+                }
+            });
+            }
         }
       });
     }

@@ -22,6 +22,7 @@ router.get('/article/:id/:confirmation', findArticleByIdAndConfirmation);
 router.get('/articles/category/:category_id/:confirmation', findAllArticlesByCategoryAndConfirmation);
 router.get('/articles/user/:user_id', findAllArticlesByUserId);
 router.get('/articles/confirmation/:confirmation', findAllArticlesByConfirmation);
+router.get('/articles/status', findAllArticlesBySeveralStatus);
 router.post('/article/:category_id/:template_id?/:user_id?', addArticle);
 router.put('/article/:id/:category_id?', updateArticle);
 router.put('/article/:id/like/:is_liked', likeArticle);
@@ -177,7 +178,37 @@ function findAllArticlesByUserId(req, res, next) {
             res.send('Access denied');
         }
       })(req, res, next);
-}  
+}
+
+// *** get All articles by several status *** //
+function findAllArticlesBySeveralStatus(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
+            Article.find({ $or: [{status : 'modified'}, {status : 'created'}]})
+            .populate('comments')
+            .populate('category')
+            .populate('file')
+            .populate('template')
+            .populate('user')
+            .lean()
+            .exec(function(err, articles){
+              if(err) {
+                res.status(400);
+                res.json(err);
+                intel.error(err);
+              } else {
+                  articles = articles.map(a => addFileUrl(a, a.file, req));
+                  res.json(articles);
+                  intel.info("Get all articles by several status " , articles);
+              }
+            });
+        } else {
+            res.status(403);
+            res.send('Access denied');
+        }
+      })(req, res, next);
+}
 
 // *** add SINGLE article  *** //
 // FIXME: Add single article method

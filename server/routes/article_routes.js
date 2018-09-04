@@ -67,7 +67,7 @@ function findArticleByIdAndConfirmation(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
         if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-            Article.find({'_id' : req.params.id, 'confirmation' : req.params.confirmation})
+            Article.findOne({'_id' : req.params.id, 'confirmation' : req.params.confirmation})
             .populate('comment')
             .populate('commentByEditor')
             .populate('commentByPublisher')

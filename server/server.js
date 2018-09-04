@@ -166,7 +166,7 @@ server.post('/login', function(req, res, next) {
             if (err) intel.error(err);
             const template = templates[0];
             if (user.isCookie == false) {
-                res.cookie('user', user, {maxAge : template.cookieLifeTime * 1000 * 60 * 60 * 24}); 
+                res.cookie('user', user, {maxAge : 1 * 1000 * 60 * 60 * 24});
                 delete user['isCookie'];
                 user['cookieLifeTime'] = template.cookieLifeTime;
             }

@@ -113,7 +113,6 @@ function addCommentByPublisher(req, res, next) {
           intel.error(err);
         } else {
           res.json(newCommentByPublisher);
-        article.commentsByPublisher.push(newCommentByPublisher._id);
           intel.info('Added new commentByPublisher ', newCommentByPublisher);
         }
       });

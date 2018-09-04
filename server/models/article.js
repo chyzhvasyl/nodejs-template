@@ -45,7 +45,9 @@ const articleSchema = new Schema({
   file: { type: Schema.Types.ObjectId, ref: 'file' },
   user: { type: Schema.Types.ObjectId, ref: 'user' },
   template: { type: Schema.Types.ObjectId, ref: 'template' },
-  comments: [{ type: Schema.Types.ObjectId, ref: 'comment' }]
+  comments: [{ type: Schema.Types.ObjectId, ref: 'comment' }],
+  commentsByEditor: [{ type: Schema.Types.ObjectId, ref: 'commentByEditor' }],
+  commentsByPublisher: [{ type: Schema.Types.ObjectId, ref: 'commentByPublisher' }]
 }, { versionKey: false });
 
 articleSchema.methods.toJSONObject = function () {

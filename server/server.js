@@ -142,6 +142,8 @@ passport.use(new LocalStrategy(
 // *** routes *** //
 const articleRoutes = require('./routes/article_routes.js');
 const commentRoutes = require('./routes/comment_routes.js');
+const commentByEditorRoutes = require('./routes/commentByEditor_routes.js');
+const commentByPublisherRoutes = require('./routes/commentByPublisher_routes.js');
 const categoryRoutes = require('./routes/category_routes');
 const templateRoutes = require('./routes/template_routes.js');
 const fileRoutes = require('./routes/file_routes');
@@ -149,6 +151,8 @@ const userRoutes = require('./routes/user_routes');
 
 server.use('/', articleRoutes);
 server.use('/', commentRoutes);
+server.use('/', commentByEditorRoutes);
+server.use('/', commentByPublisherRoutes);
 server.use('/', categoryRoutes);
 server.use('/', fileRoutes);
 server.use('/', templateRoutes);

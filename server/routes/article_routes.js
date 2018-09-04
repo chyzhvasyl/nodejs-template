@@ -7,6 +7,8 @@ const mime = require('mime');
 const path = require('path');
 const Article = require('../models/article');
 const Comment = require('../models/comment');
+const CommentByEditor = require('../models/commentByEditor');
+const CommentByPublisher = require('../models/commentByPublisher');
 const File = require('../models/file');
 const UPLOAD_PATH = './server/uploads';
 const UPLOAD_PATH_IMAGES = UPLOAD_PATH + '/images';
@@ -28,8 +30,6 @@ router.put('/article/:id/:category_id?', updateArticle);
 router.put('/article/:id/like/:is_liked', likeArticle);
 router.delete('/article/:id', deleteArticle);
 
-// TODO: get all articles by several status values 
-
 // *** get ALL articles *** //
 function findAllArticles(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
@@ -37,6 +37,8 @@ function findAllArticles(req, res, next) {
         if (util.hasRole(user, 'CN=NEWS_Administrator')) {
             Article.find()
                 .populate('comments')
+                .populate('commentsByEditor')
+                .populate('commentsByPublisher')
                 .populate('category')
                 .populate('file')
                 .populate('template')
@@ -66,7 +68,9 @@ function findArticleByIdAndConfirmation(req, res, next) {
         if (err) { return next(err); }
         if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             Article.find({'_id' : req.params.id, 'confirmation' : req.params.confirmation})
-            .populate('comments')
+            .populate('comment')
+            .populate('commentByEditor')
+            .populate('commentByPublisher')
             .populate('category')
             .populate('file')
             .populate('template')
@@ -97,6 +101,8 @@ function findAllArticlesByCategoryAndConfirmation(req, res, next) {
         if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation})
             .populate('comments')
+            .populate('commentsByEditor')
+            .populate('commentsByPublisher')
             .populate('category')
             .populate('file')
             .populate('template')
@@ -126,7 +132,9 @@ function findAllArticlesByConfirmation(req, res, next) {
         if (err) { return next(err); }
         if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             Article.find({'confirmation':req.params.confirmation})
-            .populate('comments')
+            .populate('comment')
+            .populate('commentByEditor')
+            .populate('commentByPublisher')
             .populate('category')
             .populate('file')
             .populate('template')
@@ -156,7 +164,9 @@ function findAllArticlesByUserId(req, res, next) {
         if (err) { return next(err); }
         if (util.hasRole(user, 'CN=NEWS_Author')) {
             Article.find({'user':req.params.user_id})
-            .populate('comments')
+            .populate('comment')
+            .populate('commentByEditor')
+            .populate('commentByPublisher')
             .populate('category')
             .populate('file')
             .populate('template')
@@ -186,7 +196,9 @@ function findAllArticlesBySeveralStatus(req, res, next) {
         if (err) { return next(err); }
         if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             Article.find({ $or: [{status : 'modified'}, {status : 'created'}]})
-            .populate('comments')
+            .populate('comment')
+            .populate('commentByEditor')
+            .populate('commentByPublisher')
             .populate('category')
             .populate('file')
             .populate('template')

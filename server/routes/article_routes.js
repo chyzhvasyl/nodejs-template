@@ -197,8 +197,8 @@ function findAllArticlesBySeveralStatus(req, res, next) {
         if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]})
             .populate('comment')
-            .populate('commentByEditor')
-            .populate('commentByPublisher')
+            .populate('commentsByEditor')
+            .populate('commentsByPublisher')
             .populate('category')
             .populate('file')
             .populate('template')
@@ -218,8 +218,8 @@ function findAllArticlesBySeveralStatus(req, res, next) {
         } else if (util.hasRole(user,'CN=NEWS_publisher', 'CN=NEWS_Administrator')){
             Article.find({ $or: [{status : 'modified'}]})
                 .populate('comment')
-                .populate('commentByEditor')
-                .populate('commentByPublisher')
+                .populate('commentsByEditor')
+                .populate('commentsByPublisher')
                 .populate('category')
                 .populate('file')
                 .populate('template')

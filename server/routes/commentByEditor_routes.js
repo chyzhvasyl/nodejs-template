@@ -17,7 +17,7 @@ router.delete('/commentByEditor/:id', deleteCommentByEditor);
 function findAllCommentsByEditor(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+    if (user && user.roles && user.roles.includes('CN=NEWS_Editor')) {
       CommentByEditor.find()
       .populate('article')
       .exec(function(err, commentsByEditor) { 
@@ -40,7 +40,7 @@ function findAllCommentsByEditor(req, res, next) {
 function findCommentByEditorById(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+    if (user && user.roles && user.roles.includes('CN=NEWS_Editor')) {
       CommentByEditor.findById(req.params.id)
       .populate('article')
       .exec(function(err, commentByEditor) {
@@ -63,7 +63,7 @@ function findCommentByEditorById(req, res, next) {
 function findCommentsByEditorByConfirmation(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+    if (user && user.roles && user.roles.includes('CN=NEWS_Editor')) {
       CommentByEditor.find({'confirmation':req.params.confirmation})
       .populate('article')
       .exec(function(err, commentsByEditor) {
@@ -86,7 +86,7 @@ function findCommentsByEditorByConfirmation(req, res, next) {
 function addCommentByEditor(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+    if (user && user.roles && user.roles.includes('CN=NEWS_Editor')) {
       var newCommentByEditor = new CommentByEditor({
         body: req.body.body,
         confirmation: req.body.confirmation,
@@ -127,7 +127,7 @@ function addCommentByEditor(req, res, next) {
 function updateCommentByEditor(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+    if (user && user.roles && user.roles.includes('CN=NEWS_Editor')) {
         CommentByEditor.findById(req.params.id, function(err, commentByEditor) {
             if (req.body.body) {
                 commentByEditor.body = req.body.body;
@@ -159,7 +159,7 @@ function updateCommentByEditor(req, res, next) {
 function deleteCommentByEditor(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+    if (user && user.roles && user.roles.includes('CN=NEWS_Editor')) {
         CommentByEditor.findByIdAndDelete(req.params.id, function(err, commentByEditor) {
             if(err) {
             res.json(err);

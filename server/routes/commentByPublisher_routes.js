@@ -9,7 +9,7 @@ const passport = require('passport');
 router.get('/commentsByPublisher', findAllCommentsByPublisher);
 router.get('/commentByPublisher/:id', findCommentByPublisherById);
 router.get('/commentsByPublisher/:confirmation', findCommentsByPublisherByConfirmation);
-router.post('/commentByPublisher/:article_id', addCommentByPublisher);
+router.post('/commentByPublisher/:article_id/:user_id', addCommentByPublisher);
 router.put('/commentByPublisher/:id', updateCommentByPublisher);
 router.delete('/commentByPublisher/:id', deleteCommentByPublisher);
 

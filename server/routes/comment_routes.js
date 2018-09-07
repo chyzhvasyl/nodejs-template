@@ -10,7 +10,7 @@ const util = require('../util');
 router.get('/comments', findAllComments);
 router.get('/comment/:id', findCommentById);
 router.get('/comments/:confirmation', findCommentsByConfirmation);
-router.post('/comment/:article_id', addComment);
+router.post('/comment/:article_id/:user_id', addComment);
 router.put('/comment/:id', updateComment);
 router.delete('/comment/:id', deleteComment);
 

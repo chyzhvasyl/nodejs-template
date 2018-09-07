@@ -50,7 +50,6 @@ function findAllArticles(req, res, next) {
                         res.json(err);
                         intel.error(err);
                     } else {
-                        console.log(typeof articles);
                         articles = articles.map(a => addFileUrl(a, a.file, req));
                         res.json(articles);
                         intel.info("Get all articles ", articles);
@@ -375,7 +374,6 @@ function saveCallback( req, res, file) {
 
 function addFileUrl(article, file, req) {
     if (article && file && file._id) {
-        console.log(typeof article);
         const imageFileTypes =  /image/;
         // const videoFiletypes = /video\/pm4|video\/webm|video\/ogg|video\/x-matroska/;
         const videoFileTypes = /video/;

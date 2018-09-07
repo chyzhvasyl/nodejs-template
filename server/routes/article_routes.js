@@ -36,9 +36,18 @@ function findAllArticles(req, res, next) {
         if (err) { return next(err); }
         if (util.hasRole(user, 'CN=NEWS_Administrator')) {
             Article.find()
-                .populate('comments')
-                .populate('commentsByEditor')
-                .populate('commentsByPublisher')
+                .populate({
+                    path: 'comments',
+                    populate: { path: 'user' }
+                })
+                .populate({
+                    path: 'commentsByEditor',
+                    populate: { path: 'user' }
+                })
+                .populate({
+                    path: 'commentsByPublisher',
+                    populate: { path: 'user' }
+                })
                 .populate('category')
                 .populate('file')
                 .populate('template')
@@ -68,25 +77,34 @@ function findArticleByIdAndConfirmation(req, res, next) {
         if (err) { return next(err); }
         if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             Article.findOne({'_id' : req.params.id, 'confirmation' : req.params.confirmation})
-            .populate('user')
-            .populate('comment')
-            .populate('commentByEditor')
-            .populate('commentByPublisher')
-            .populate('category')
-            .populate('file')
-            .populate('template')
-            .lean()
-            .exec(function(err, article) {
-                if(err) {
-                    res.status(400);
-                    res.json(err);
-                    intel.error(err);
-                } else {
-                    article = addFileUrl(article, article.file, req);
-                    res.json(article);
-                    intel.info('Get single article by id ', article);
-                }
-            });
+                .populate('user')
+                .populate({
+                    path: 'comments',
+                    populate: { path: 'user' }
+                })
+                .populate({
+                    path: 'commentsByEditor',
+                    populate: { path: 'user' }
+                })
+                .populate({
+                    path: 'commentsByPublisher',
+                    populate: { path: 'user' }
+                })
+                .populate('category')
+                .populate('file')
+                .populate('template')
+                .lean()
+                .exec(function(err, article) {
+                    if(err) {
+                        res.status(400);
+                        res.json(err);
+                        intel.error(err);
+                    } else {
+                        article = addFileUrl(article, article.file, req);
+                        res.json(article);
+                        intel.info('Get single article by id ', article);
+                    }
+                });
         } else {
             res.status(403);
             res.send('Access denied');
@@ -100,24 +118,33 @@ function findAllArticlesByCategoryAndConfirmation(req, res, next) {
         if (err) { return next(err); }
         if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation})
-            .populate('comments')
-            .populate('commentsByEditor')
-            .populate('commentsByPublisher')
-            .populate('category')
-            .populate('file')
-            .populate('template')
-            .populate('user')
-            .lean()
-            .exec(function(err, articles){
-              if(err) {
-                res.status(400);
-                res.json(err);
-                intel.error(err);
-              } else {
-                  articles = articles.map(a => addFileUrl(a, a.file, req));
-                  res.json(articles);
-                  intel.info("Get all articles by category " + req.params.category, articles);
-              }
+                .populate({
+                    path: 'comments',
+                    populate: { path: 'user' }
+                })
+                .populate({
+                    path: 'commentsByEditor',
+                    populate: { path: 'user' }
+                })
+                .populate({
+                    path: 'commentsByPublisher',
+                    populate: { path: 'user' }
+                })
+                .populate('category')
+                .populate('file')
+                .populate('template')
+                .populate('user')
+                .lean()
+                .exec(function(err, articles){
+                if(err) {
+                    res.status(400);
+                    res.json(err);
+                    intel.error(err);
+                } else {
+                    articles = articles.map(a => addFileUrl(a, a.file, req));
+                    res.json(articles);
+                    intel.info("Get all articles by category " + req.params.category, articles);
+                }
             });
         } else {
             res.status(403);
@@ -132,24 +159,33 @@ function findAllArticlesByConfirmation(req, res, next) {
         if (err) { return next(err); }
         if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             Article.find({'confirmation':req.params.confirmation})
-            .populate('comment')
-            .populate('commentByEditor')
-            .populate('commentByPublisher')
-            .populate('category')
-            .populate('file')
-            .populate('template')
-            .populate('user')
-            .lean()
-            .exec(function(err, articles){
-            if(err) {
-                res.status(400);
-                res.json(err);
-                intel.error(err);
-            } else {
-                articles = articles.map(a => addFileUrl(a, a.file, req));
-                res.json(articles);
-                intel.info("Get all articles by confirmation " + req.params.category, articles);
-            }
+                .populate({
+                    path: 'comments',
+                    populate: { path: 'user' }
+                })
+                .populate({
+                    path: 'commentsByEditor',
+                    populate: { path: 'user' }
+                })
+                .populate({
+                    path: 'commentsByPublisher',
+                    populate: { path: 'user' }
+                })
+                .populate('category')
+                .populate('file')
+                .populate('template')
+                .populate('user')
+                .lean()
+                .exec(function(err, articles){
+                if(err) {
+                    res.status(400);
+                    res.json(err);
+                    intel.error(err);
+                } else {
+                    articles = articles.map(a => addFileUrl(a, a.file, req));
+                    res.json(articles);
+                    intel.info("Get all articles by confirmation " + req.params.category, articles);
+                }
             });
         } else {
             res.status(403);
@@ -164,24 +200,33 @@ function findAllArticlesByUserId(req, res, next) {
         if (err) { return next(err); }
         if (util.hasRole(user, 'CN=NEWS_Author')) {
             Article.find({'user':req.params.user_id})
-            .populate('comment')
-            .populate('commentByEditor')
-            .populate('commentByPublisher')
-            .populate('category')
-            .populate('file')
-            .populate('template')
-            .populate('user')
-            .lean()
-            .exec(function(err, articles){
-              if(err) {
-                res.status(400);
-                res.json(err);
-                intel.error(err);
-              } else {
-                  articles = articles.map(a => addFileUrl(a, a.file, req));
-                  res.json(articles);
-                  intel.info("Get all articles by user id " + req.params.category, articles);
-              }
+                .populate({
+                    path: 'comments',
+                    populate: { path: 'user' }
+                })
+                .populate({
+                    path: 'commentsByEditor',
+                    populate: { path: 'user' }
+                })
+                .populate({
+                    path: 'commentsByPublisher',
+                    populate: { path: 'user' }
+                })
+                .populate('category')
+                .populate('file')
+                .populate('template')
+                .populate('user')
+                .lean()
+                .exec(function(err, articles){
+                if(err) {
+                    res.status(400);
+                    res.json(err);
+                    intel.error(err);
+                } else {
+                    articles = articles.map(a => addFileUrl(a, a.file, req));
+                    res.json(articles);
+                    intel.info("Get all articles by user id " + req.params.category, articles);
+                }
             });
         } else {
             res.status(403);
@@ -196,30 +241,48 @@ function findAllArticlesBySeveralStatus(req, res, next) {
         if (err) { return next(err); }
         if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]})
-            .populate('comment')
-            .populate('commentsByEditor')
-            .populate('commentsByPublisher')
-            .populate('category')
-            .populate('file')
-            .populate('template')
-            .populate('user')
-            .lean()
-            .exec(function(err, articles){
-              if(err) {
-                res.status(400);
-                res.json(err);
-                intel.error(err);
-              } else {
-                  articles = articles.map(a => addFileUrl(a, a.file, req));
-                  res.json(articles);
-                  intel.info("Get all articles by several status " , articles);
-              }
+                .populate({
+                    path: 'comments',
+                    populate: { path: 'user' }
+                })
+                .populate({
+                    path: 'commentsByEditor',
+                    populate: { path: 'user' }
+                })
+                .populate({
+                    path: 'commentsByPublisher',
+                    populate: { path: 'user' }
+                })
+                .populate('category')
+                .populate('file')
+                .populate('template')
+                .populate('user')
+                .lean()
+                .exec(function(err, articles){
+                if(err) {
+                    res.status(400);
+                    res.json(err);
+                    intel.error(err);
+                } else {
+                    articles = articles.map(a => addFileUrl(a, a.file, req));
+                    res.json(articles);
+                    intel.info("Get all articles by several status " , articles);
+                }
             });
         } else if (util.hasRole(user,'CN=NEWS_publisher', 'CN=NEWS_Administrator')){
             Article.find({ $or: [{status : 'modified'}]})
-                .populate('comment')
-                .populate('commentsByEditor')
-                .populate('commentsByPublisher')
+                .populate({
+                    path: 'comments',
+                    populate: { path: 'user' }
+                })
+                .populate({
+                    path: 'commentsByEditor',
+                    populate: { path: 'user' }
+                })
+                .populate({
+                    path: 'commentsByPublisher',
+                    populate: { path: 'user' }
+                })
                 .populate('category')
                 .populate('file')
                 .populate('template')
@@ -244,7 +307,7 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 }
 
 // *** add SINGLE article  *** //
-// FIXME: Add single article method
+// FIXME: Add single article method(videos)
 function addArticle(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }

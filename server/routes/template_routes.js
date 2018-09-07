@@ -22,6 +22,7 @@ function findAllTemplates(req, res, next) {
     if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
       Template.find(function(err, templates) {
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -45,6 +46,7 @@ function findTemplateById(req, res, next) {
       .populate('article')
       .exec(function(err, template) {
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -90,7 +92,7 @@ function addTemplate(req, res, next) {
         if(err) {
           res.status(400);
           res.json(err);
-          intel.error("ERROR ", err);
+          intel.error(err);
         } else {
           res.json(newTemplate);
           intel.info('Added new template ', newTemplate);
@@ -147,6 +149,7 @@ function updateTemplate(req, res, next) {
         }
         template.save(function(err) {
           if(err) {
+            res.status(400);
             res.json(err);
             intel.error(err);
           } else {
@@ -169,7 +172,9 @@ function deleteTemplate(req, res, next) {
     if (user && user.roles && user.roles.includes('CN=NEWS_Administrator')) {
       Template.findByIdAndDelete(req.params.id, function(err, template) {
         if(err) {
+          res.status(400);
           res.json(err);
+          intel.error(err);
         } else {
             res.json(template);
             intel.info('Deleted template ', template);

@@ -20,6 +20,7 @@ function findAllCategories(req, res, next) {
       if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
       Category.find(function(err, categories) {
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -50,8 +51,8 @@ function findCategoryById(req, res, next) {
         }
       });
     } else {
-        res.status(403);
-        res.send('Access denied');
+      res.status(403);
+      res.send('Access denied');
     }
   })(req, res, next);
 }
@@ -61,7 +62,7 @@ function addCategory(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
       if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-      var newCategory = new Category({
+      const newCategory = new Category({
         name: req.body.name
       });
     
@@ -112,17 +113,54 @@ function deleteCategory(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
       if (util.hasRole(user, 'CN=NEWS_Administrator')) {
-      Category.findByIdAndDelete(req.params.id, function(err, category) {
+      Category.findByIdAndDelete(req.params.id, function(err, deletedCategory) {
         if(err) {
           res.json(err);
         } else {
-            // TODO: проверка если нет категории прочее(uppercase, lowercase)
-            Article.where({ category : category.id }).updateMany({ $set: { category : '5b83a8c043bf5623488d0bc6' }}).exec(function(err){
-              if (err) {
-                res.json(err);
-              }
-              res.json(category);
-              intel.info('Deleted category ', category);
+            Category.findOne({name : { $elemMatch : { $regex : 'прочее', $options : 'i' }}})
+            .populate('article')
+            .exec(function(err, templateCategory) {
+                if(err) {
+                    res.status(400);
+                    res.json(err);
+                    intel.error(err);
+                } else {
+                    if (category != null) {
+                      Article.where({ category : deletedCategory._id }).updateMany({ $set: { category : templateCategory._id }}).exec(function(err){
+                        if (err) {
+                          res.status(400);
+                          res.json(err);
+                          intel.error(err);
+                        }
+                        res.json(deletedCategory);
+                        intel.info('Deleted category ', deletedCategory);
+                      });
+                    } else {
+
+                      const newTemplateCategory = new Category({
+                        name: 'прочее'
+                      });
+                    
+                      newTemplateCategory.save(function(err, newTemplateCategory) {
+                        if(err) {
+                          res.status(400);
+                          res.json(err);
+                          intel.error(err);
+                        } else {
+                          Article.where({ category : deletedCategory._id }).updateMany({ $set: { category : newTemplateCategory._id }}).exec(function(err){
+                            if (err) {
+                              res.status(400);
+                              res.json(err);
+                              intel.error(err);
+                            }
+                            res.json(deletedCategory);
+                            intel.info('Deleted category ', deletedCategory);
+                          });
+                          intel.info('Added new category ', newTemplateCategory);
+                        }
+                      });
+                    }
+                }
             });
           }
       });

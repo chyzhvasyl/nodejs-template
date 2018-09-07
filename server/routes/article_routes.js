@@ -50,6 +50,7 @@ function findAllArticles(req, res, next) {
                         res.json(err);
                         intel.error(err);
                     } else {
+                        console.log(typeof articles);
                         articles = articles.map(a => addFileUrl(a, a.file, req));
                         res.json(articles);
                         intel.info("Get all articles ", articles);
@@ -68,13 +69,13 @@ function findArticleByIdAndConfirmation(req, res, next) {
         if (err) { return next(err); }
         if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
             Article.findOne({'_id' : req.params.id, 'confirmation' : req.params.confirmation})
+            .populate('user')
             .populate('comment')
             .populate('commentByEditor')
             .populate('commentByPublisher')
             .populate('category')
             .populate('file')
             .populate('template')
-            .populate('user')
             .lean()
             .exec(function(err, article) {
                 if(err) {
@@ -353,14 +354,15 @@ function saveCallback( req, res, file) {
 
 function addFileUrl(article, file, req) {
     if (article && file && file._id) {
+        console.log(typeof article);
         const imageFileTypes =  /image/;
         // const videoFiletypes = /video\/pm4|video\/webm|video\/ogg|video\/x-matroska/;
         const videoFileTypes = /video/;
         const isImage = imageFileTypes.test(file.contentType);
         const isVideo = videoFileTypes.test(file.contentType);
         if (isImage) {
-            article['imgUrl'] = req.protocol + "://" + req.get('host') + '/file/' + file._id;
-            article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/file-small/' + file._id;
+            article['imgUrl'] = req.protocol + "://" + req.get('host') + '/file/' + file._id + '?username='+ article.user.login +'&password=' + article.user.token;
+            article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/file-small/' + file._id + '?username='+ article.user.login +'&password=' + article.user.token;
         }
         if (isVideo) {
             article['videoOgvUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/ogv';
@@ -624,11 +626,11 @@ function likeArticle(req, res, next) {
             }
             Article.findOneAndUpdate(req.params.id, likeAction, function (err, article) {
                 if (err) {
-                res.status(400);
-                res.json(err);
-                intel.error(err);
+                    res.status(400);
+                    res.json(err);
+                    intel.error(err);
                 } else {
-                res.json(article);
+                    res.json(article);
                 }
             })
         } else {
@@ -651,6 +653,7 @@ function deleteArticle(req, res, next) {
     } else {
         Comment.deleteMany({article: article._id}, function (err) {
             if (err) {
+                res.status(400);
                 res.json(err);
                 intel.error(err);
             }

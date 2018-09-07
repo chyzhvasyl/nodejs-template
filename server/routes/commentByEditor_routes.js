@@ -22,6 +22,7 @@ function findAllCommentsByEditor(req, res, next) {
       .populate('article')
       .exec(function(err, commentsByEditor) { 
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -45,6 +46,7 @@ function findCommentByEditorById(req, res, next) {
       .populate('article')
       .exec(function(err, commentByEditor) {
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -68,6 +70,7 @@ function findCommentsByEditorByConfirmation(req, res, next) {
       .populate('article')
       .exec(function(err, commentsByEditor) {
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -91,7 +94,8 @@ function addCommentByEditor(req, res, next) {
         body: req.body.body,
         confirmation: req.body.confirmation,
         time: req.body.time,
-        article: req.params.article_id
+        article: req.params.article_id,
+        user: req.params.user_id
       });
     
       Article.findById(req.params.article_id, (function(err, article) {
@@ -101,6 +105,7 @@ function addCommentByEditor(req, res, next) {
         article.commentsByEditor.push(newCommentByEditor._id);
         article.save(function(err) {
           if(err) {
+            res.status(400);
             res.json(err);
             intel.error(err);
           }
@@ -109,6 +114,7 @@ function addCommentByEditor(req, res, next) {
     
       newCommentByEditor.save(function(err, newCommentByEditor) {
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -140,6 +146,7 @@ function updateCommentByEditor(req, res, next) {
             }
             commentByEditor.save(function(err) {
             if(err) {
+                res.status(400);
                 res.json(err);
                 intel.error(err);
             } else {
@@ -162,7 +169,9 @@ function deleteCommentByEditor(req, res, next) {
     if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
         CommentByEditor.findByIdAndDelete(req.params.id, function(err, commentByEditor) {
             if(err) {
-            res.json(err);
+              res.status(400);
+              res.json(err);
+              intel.error(err);;
             } else {
                 res.json(commentByEditor);
                 intel.info('Deleted commentByEditor ', commentByEditor);

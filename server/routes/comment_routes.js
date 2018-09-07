@@ -22,6 +22,7 @@ function findAllComments(req, res, next) {
       .populate('article')
       .exec(function(err, comments) {
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -45,6 +46,7 @@ function findCommentById(req, res, next) {
       .populate('article')
       .exec(function(err, comment) {
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -68,6 +70,7 @@ function findCommentsByConfirmation(req, res, next) {
       .populate('article')
       .exec(function(err, comments) {
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -91,7 +94,8 @@ function addComment(req, res, next) {
         body: req.body.body,
         confirmation: req.body.confirmation,
         time: req.body.time,
-        article: req.params.article_id
+        article: req.params.article_id,
+        user: req.params.user_id
       });
     
       Article.findById(req.params.article_id, (function(err, article) {
@@ -101,6 +105,7 @@ function addComment(req, res, next) {
         article.comments.push(newComment._id);
         article.save(function(err) {
           if(err) {
+            res.status(400);
             res.json(err);
             intel.error(err);
           }
@@ -109,6 +114,7 @@ function addComment(req, res, next) {
     
       newComment.save(function(err, newComment) {
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -140,6 +146,7 @@ function updateComment(req, res, next) {
         }
         comment.save(function(err) {
           if(err) {
+            res.status(400);
             res.json(err);
             intel.error(err);
           } else {
@@ -162,7 +169,9 @@ function deleteComment(req, res, next) {
     if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
       Comment.findByIdAndDelete(req.params.id, function(err, comment) {
         if(err) {
+          res.status(400);
           res.json(err);
+          intel.error(err);
         } else {
             res.json(comment);
             intel.info('Deleted comment ', comment);

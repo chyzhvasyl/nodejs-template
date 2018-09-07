@@ -16,6 +16,7 @@ router.post('/user', addUser);
 function findAllUsers(req, res) {
   User.find(function(err, users) {
     if(err) {
+      res.status(400);
       res.json(err);
       intel.error(err);
     } else {

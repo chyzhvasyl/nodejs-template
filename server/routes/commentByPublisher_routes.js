@@ -22,6 +22,7 @@ function findAllCommentsByPublisher(req, res, next) {
       .populate('article')
       .exec(function(err, commentsByPublisher) {
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -45,6 +46,7 @@ function findCommentByPublisherById(req, res, next) {
       .populate('article')
       .exec(function(err, commentByPublisher) {
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -68,6 +70,7 @@ function findCommentsByPublisherByConfirmation(req, res, next) {
       .populate('article')
       .exec(function(err, commentsByPublisher) {
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -91,7 +94,8 @@ function addCommentByPublisher(req, res, next) {
         body: req.body.body,
         confirmation: req.body.confirmation,
         time: req.body.time,
-        article: req.params.article_id
+        article: req.params.article_id,
+        user: req.params.user_id
       });
     
       Article.findById(req.params.article_id, (function(err, article) {
@@ -101,6 +105,7 @@ function addCommentByPublisher(req, res, next) {
         article.commentsByPublisher.push(newCommentByPublisher._id);
         article.save(function(err) {
           if(err) {
+            res.status(400);
             res.json(err);
             intel.error(err);
           }
@@ -109,6 +114,7 @@ function addCommentByPublisher(req, res, next) {
     
       newCommentByPublisher.save(function(err, newCommentByPublisher) {
         if(err) {
+          res.status(400);
           res.json(err);
           intel.error(err);
         } else {
@@ -140,6 +146,7 @@ function updateCommentByPublisher(req, res, next) {
         }
         commentByPublisher.save(function(err) {
           if(err) {
+            res.status(400);
             res.json(err);
             intel.error(err);
           } else {
@@ -162,7 +169,9 @@ function deleteCommentByPublisher(req, res, next) {
     if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
       CommentByPublisher.findByIdAndDelete(req.params.id, function(err, commentByPublisher) {
         if(err) {
+          res.status(400);
           res.json(err);
+          intel.error(err);
         } else {
             res.json(commentByPublisher);
             intel.info('Deleted commentByPublisher ', commentByPublisher);

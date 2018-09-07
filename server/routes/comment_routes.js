@@ -4,6 +4,7 @@ const Comment = require('../models/comment');
 const Article = require('../models/article');
 const intel = require('intel');
 const passport = require('passport');
+const util = require('../util');
 
 // *** api routes *** //
 router.get('/comments', findAllComments);
@@ -17,7 +18,7 @@ router.delete('/comment/:id', deleteComment);
 function findAllComments(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+    if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
       Comment.find()
       .populate('article')
       .exec(function(err, comments) {
@@ -41,7 +42,7 @@ function findAllComments(req, res, next) {
 function findCommentById(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+    if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
       Comment.findById(req.params.id)
       .populate('article')
       .exec(function(err, comment) {
@@ -65,7 +66,7 @@ function findCommentById(req, res, next) {
 function findCommentsByConfirmation(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+    if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
       Comment.find({'confirmation':req.params.confirmation})
       .populate('article')
       .exec(function(err, comments) {
@@ -89,7 +90,7 @@ function findCommentsByConfirmation(req, res, next) {
 function addComment(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+    if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
       var newComment = new Comment({
         body: req.body.body,
         confirmation: req.body.confirmation,
@@ -133,7 +134,7 @@ function addComment(req, res, next) {
 function updateComment(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+    if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
       Comment.findById(req.params.id, function(err, comment) {
         if (req.body.body) {
           comment.body = req.body.body;
@@ -166,7 +167,7 @@ function updateComment(req, res, next) {
 function deleteComment(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+    if (util.hasRole(user,'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
       Comment.findByIdAndDelete(req.params.id, function(err, comment) {
         if(err) {
           res.status(400);

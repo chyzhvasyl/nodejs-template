@@ -195,11 +195,11 @@ function findAllArticlesByUserId(req, res, next) {
 function findAllArticlesBySeveralStatus(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-            Article.find({ $or: [{status : 'modified'}, {status : 'created'}]})
+        if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
+            Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]})
             .populate('comment')
-            .populate('commentByEditor')
-            .populate('commentByPublisher')
+            .populate('commentsByEditor')
+            .populate('commentsByPublisher')
             .populate('category')
             .populate('file')
             .populate('template')
@@ -216,6 +216,27 @@ function findAllArticlesBySeveralStatus(req, res, next) {
                   intel.info("Get all articles by several status " , articles);
               }
             });
+        } else if (util.hasRole(user,'CN=NEWS_publisher', 'CN=NEWS_Administrator')){
+            Article.find({ $or: [{status : 'modified'}]})
+                .populate('comment')
+                .populate('commentsByEditor')
+                .populate('commentsByPublisher')
+                .populate('category')
+                .populate('file')
+                .populate('template')
+                .populate('user')
+                .lean()
+                .exec(function(err, articles){
+                    if(err) {
+                        res.status(400);
+                        res.json(err);
+                        intel.error(err);
+                    } else {
+                        articles = articles.map(a => addFileUrl(a, a.file, req));
+                        res.json(articles);
+                        intel.info("Get all articles by several status " , articles);
+                    }
+                });
         } else {
             res.status(403);
             res.send('Access denied');
@@ -228,7 +249,7 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 function addArticle(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (util.hasRole(user, 'CN=NEWS_Author')) {
+        if (util.hasRole(user, 'CN=NEWS_Author', 'CN=NEWS_Administrator')) {
             if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
                 upload(req, res, function (err) {
                     if (err) {
@@ -364,14 +385,28 @@ function addFileUrl(article, file, req) {
             article['imgUrl'] = req.protocol + "://" + req.get('host') + '/file/' + file._id + '?username='+ article.user.login +'&password=' + article.user.token;
             article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/file-small/' + file._id + '?username='+ article.user.login +'&password=' + article.user.token;
         }
-        if (isVideo) {
-            article['videoOgvUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/ogv';
-            article['videoMP4Url'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mp4';
-            article['videoWebmUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/webm';
-            article['screenshot'] = req.protocol + "://" + req.get('host') + '/screenshot/' + file._id;
+        return article;
+    } else {
+        if (article && file && file._id) {
+            const imageFileTypes =  /image/;
+            // const videoFiletypes = /video\/pm4|video\/webm|video\/ogg|video\/x-matroska/;
+            const videoFileTypes = /video/;
+            const isImage = imageFileTypes.test(file.contentType);
+            const isVideo = videoFileTypes.test(file.contentType);
+            if (isImage) {
+                article['imgUrl'] = req.protocol + "://" + req.get('host') + '/file/' + file._id;
+                article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/file-small/' + file._id;
+            }
+            if (isVideo) {
+                article['videoOgvUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/ogv';
+                article['videoMP4Url'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mp4';
+                article['videoWebmUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/webm';
+                article['screenshot'] = req.protocol + "://" + req.get('host') + '/screenshot/' + file._id;
+            }
         }
+        return article;
     }
-    return article;
+
 }
 
 function decodeBase64Image(dataString) {
@@ -617,7 +652,7 @@ function updateArticle(req, res, next) {
 function likeArticle(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+        if (util.hasRole(user, 'CN=NEWS_Administrator')) {
             let likeAction;
             if (req.params.is_liked == 'false') {
                 likeAction = { $inc: { likes: 1 } };
@@ -644,7 +679,7 @@ function likeArticle(req, res, next) {
 function deleteArticle(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
+        if (util.hasRole(user, 'CN=NEWS_Administrator')) {
             Article.findByIdAndDelete(req.params.id)
     .populate('file')
     .exec(function (err, article) {

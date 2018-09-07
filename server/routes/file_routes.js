@@ -21,7 +21,7 @@ router.get('/screenshot/:id', findScreenshotById);
 function findAllFiles(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
+        if (true) {
             File.find(function(err, files) {
                 if (err) {
                     res.sendStatus(400);
@@ -42,7 +42,7 @@ function findAllFiles(req, res, next) {
 function findFileById(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
+        if (true) {
             File.findById(req.params.id, (err, file) => {
                 if (err) {
                     res.sendStatus(400);
@@ -63,7 +63,7 @@ function findFileById(req, res, next) {
 function findFileSmallById(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
+        if (true) {
             File.findById(req.params.id, (err, file) => {
                 if (err) {
                     res.sendStatus(400);
@@ -87,7 +87,7 @@ function findFileSmallById(req, res, next) {
 function findVideoById(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
+        if (true) {
             File.findById(req.params.id, (err, file) => {
                 if (err) {
                     res.sendStatus(400);
@@ -114,7 +114,7 @@ function findVideoById(req, res, next) {
 function findScreenshotById(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
-        if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
+        if (true) {
             File.findById(req.params.id, (err, file) => {
                 if (err) {
                     res.sendStatus(400);

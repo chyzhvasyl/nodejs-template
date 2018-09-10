@@ -1,11 +1,12 @@
 // TODO: change tabulation to 2
 // TODO: WebSocket
+const server = require('express')();
+const http = require('http').Server(server);
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
-const http = require('http');
 const https = require('https');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -21,9 +22,10 @@ const flash = require('connect-flash');
 const session = require('express-session');
 const uuidv4 = require('uuid/v4');
 const Template = require('./models/template');
+const io = require('socket.io')(http);
 
 // *** express instance *** //
-const server = express();
+// const server = express();
 
 // *** mongodb config *** //
 mongoose.connect(dbConfig.database, (err) => {
@@ -149,6 +151,10 @@ const templateRoutes = require('./routes/template_routes.js');
 const fileRoutes = require('./routes/file_routes');
 const userRoutes = require('./routes/user_routes');
 
+server.get('/', function(req, res){
+    res.sendFile(__dirname + '/index.html');
+});
+
 server.use('/', articleRoutes);
 server.use('/', commentRoutes);
 server.use('/', commentByEditorRoutes);
@@ -183,9 +189,28 @@ server.post('/login', function(req, res, next) {
 const hostname = '192.168.0.123';
 const port = 3000; 
 
-server.listen(port, () => {
-    console.log(`Server started on port + ${port}`);
-    intel.info(`Server started on port , ${port}`);
+// server.listen(port, () => {
+//     console.log(`Server started on port + ${port}`);
+//     intel.info(`Server started on port , ${port}`);
+// });
+
+// *** socket.io config *** //
+io.on('connection', function(socket){
+    console.log('a user connected'  +  socket.id);
+    socket.on('disconnect', function(){
+        console.log('user disconnected');
+    });
+});
+
+io.on('connection', function(socket){
+    socket.on('chat message', function(msg){
+        io.emit('chat message', msg);
+    });
+});
+
+
+http.listen(port, function(){
+    console.log('listening on *:3000');
 });
 
 //TODO: https

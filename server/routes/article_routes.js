@@ -17,6 +17,9 @@ const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
 const ffmpeg = require('fluent-ffmpeg');
 const passport = require('passport');
 const util = require('../util');
+const io = require('socket.io')();
+
+//TODO: get all articles(comments by confirmation)
 
 // *** api routes *** //
 router.get('/articles', findAllArticles);
@@ -59,6 +62,9 @@ function findAllArticles(req, res, next) {
                         res.json(err);
                         intel.error(err);
                     } else {
+                        io.on('connection', function(socket){
+                            
+                        });
                         articles = articles.map(a => addFileUrl(a, a.file, req));
                         res.json(articles);
                         intel.info("Get all articles ", articles);
@@ -80,15 +86,18 @@ function findArticleByIdAndConfirmation(req, res, next) {
                 .populate('user')
                 .populate({
                     path: 'comments',
-                    populate: { path: 'user' }
+                    populate: { path: 'user' },
+                    match: { confirmation : true }
                 })
                 .populate({
                     path: 'commentsByEditor',
-                    populate: { path: 'user' }
+                    populate: { path: 'user' },
+                    match: { confirmation : true }
                 })
                 .populate({
                     path: 'commentsByPublisher',
-                    populate: { path: 'user' }
+                    populate: { path: 'user' },
+                    match: { confirmation : true }
                 })
                 .populate('category')
                 .populate('file')
@@ -120,15 +129,18 @@ function findAllArticlesByCategoryAndConfirmation(req, res, next) {
             Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation})
                 .populate({
                     path: 'comments',
-                    populate: { path: 'user' }
+                    populate: { path: 'user' },
+                    match: { confirmation : true }
                 })
                 .populate({
                     path: 'commentsByEditor',
-                    populate: { path: 'user' }
+                    populate: { path: 'user' },
+                    match: { confirmation : true }
                 })
                 .populate({
                     path: 'commentsByPublisher',
-                    populate: { path: 'user' }
+                    populate: { path: 'user' },
+                    match: { confirmation : true }
                 })
                 .populate('category')
                 .populate('file')
@@ -161,15 +173,18 @@ function findAllArticlesByConfirmation(req, res, next) {
             Article.find({'confirmation':req.params.confirmation})
                 .populate({
                     path: 'comments',
-                    populate: { path: 'user' }
+                    populate: { path: 'user' },
+                    match: { confirmation : true }
                 })
                 .populate({
                     path: 'commentsByEditor',
-                    populate: { path: 'user' }
+                    populate: { path: 'user' },
+                    match: { confirmation : true }
                 })
                 .populate({
                     path: 'commentsByPublisher',
-                    populate: { path: 'user' }
+                    populate: { path: 'user' },
+                    match: { confirmation : true }
                 })
                 .populate('category')
                 .populate('file')
@@ -747,6 +762,7 @@ function deleteArticle(req, res, next) {
     if (err) {
       res.json(err);
     } else {
+        //TODO: delete CommentsByEditor, CommentsByPublisher
         Comment.deleteMany({article: article._id}, function (err) {
             if (err) {
                 res.status(400);

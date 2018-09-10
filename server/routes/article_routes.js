@@ -19,8 +19,6 @@ const passport = require('passport');
 const util = require('../util');
 const io = require('socket.io')();
 
-//TODO: get all articles(comments by confirmation)
-
 // *** api routes *** //
 router.get('/articles', findAllArticles);
 router.get('/article/:id/:confirmation', findArticleByIdAndConfirmation);
@@ -63,7 +61,8 @@ function findAllArticles(req, res, next) {
                         intel.error(err);
                     } else {
                         io.on('connection', function(socket){
-                            
+                            console.log('sadasd');
+                            io.emit('articlemessage', '123');
                         });
                         articles = articles.map(a => addFileUrl(a, a.file, req));
                         res.json(articles);
@@ -757,12 +756,11 @@ function deleteArticle(req, res, next) {
         if (err) { return next(err); }
         if (util.hasRole(user, 'CN=NEWS_Administrator')) {
             Article.findByIdAndDelete(req.params.id)
-    .populate('file')
-    .exec(function (err, article) {
-    if (err) {
-      res.json(err);
-    } else {
-        //TODO: delete CommentsByEditor, CommentsByPublisher
+            .populate('file')
+            .exec(function (err, article) {
+            if (err) {
+                res.json(err);
+            } else {
         Comment.deleteMany({article: article._id}, function (err) {
             if (err) {
                 res.status(400);
@@ -770,6 +768,22 @@ function deleteArticle(req, res, next) {
                 intel.error(err);
             }
             intel.info(`Comments deleted for article[${article._id}]`);
+        });
+        CommentByEditor.deleteMany({article: article._id}, function (err) {
+            if (err) {
+                res.status(400);
+                res.json(err);
+                intel.error(err);
+            }
+            intel.info(`CommentByEditor deleted for article[${article._id}]`);
+        });
+        CommentByPublisher.deleteMany({article: article._id}, function (err) {
+            if (err) {
+                res.status(400);
+                res.json(err);
+                intel.error(err);
+            }
+            intel.info(`CommentByPublisher deleted for article[${article._id}]`);
         });
         const imageFileTypes = /image/;
         const videoFileTypes = /video/;

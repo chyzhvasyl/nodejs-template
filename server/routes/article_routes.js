@@ -17,7 +17,6 @@ const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
 const ffmpeg = require('fluent-ffmpeg');
 const passport = require('passport');
 const util = require('../util');
-const io = require('socket.io')();
 
 // *** api routes *** //
 router.get('/articles', findAllArticles);
@@ -60,10 +59,7 @@ function findAllArticles(req, res, next) {
                         res.json(err);
                         intel.error(err);
                     } else {
-                        io.on('connection', function(socket){
-                            console.log('sadasd');
-                            io.emit('articlemessage', '123');
-                        });
+                        console.log(req.session);
                         articles = articles.map(a => addFileUrl(a, a.file, req));
                         res.json(articles);
                         intel.info("Get all articles ", articles);
@@ -591,6 +587,19 @@ function updateArticle(req, res, next) {
                     article.confirmation = req.body.confirmation;
                 }
                 if (req.body.status) {
+                    if (article.status == 'created' && req.body.status == 'not approved by editor') {
+                        req.io.sockets.emit('update', 'not approved by editor');
+                    } else if (article.status == 'created' && req.body.status == 'modified') {
+                        req.io.sockets.emit('update', 'modified');
+                    } else if (article.status == 'not approved by editor' && req.body.status == 'created') {
+                        req.io.sockets.emit('update', 'fix by creator');
+                    } else if (article.status == 'modified' && req.body.status == 'not approved by publisher') {
+                        req.io.sockets.emit('update', 'not approved by publisher');
+                    } else if (article.status == 'modified' && req.body.status == 'published') {
+                        req.io.sockets.emit('update', 'published');
+                    } else if (article.status == 'not approved by publisher' && req.body.status == 'modified') {
+                        req.io.sockets.emit('update', 'fix by editor');
+                    }
                     article.status = req.body.status;
                 }
                 if (req.params.category_id) {
@@ -734,7 +743,7 @@ function likeArticle(req, res, next) {
             } else {
                 likeAction = { $inc: { likes: -1 } };
             }
-            Article.findOneAndUpdate(req.params.id, likeAction, function (err, article) {
+            Article.findOneAndUpdate(req.params.id, likeAction, { new: true }, function (err, article) {
                 if (err) {
                     res.status(400);
                     res.json(err);

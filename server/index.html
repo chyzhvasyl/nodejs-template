@@ -34,8 +34,8 @@
         socket.on('chat message', function(msg){
             $('#messages').append($('<li>').text(msg));
         });
-        socket.on('articlemessage', function(msg){
-            console.log('article message: ' + msg);
+        socket.on('update', function(foo){
+            console.log('message: ' + foo);
         });
     });
 </script>

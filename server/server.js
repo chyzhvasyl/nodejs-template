@@ -1,7 +1,8 @@
 // TODO: change tabulation to 2
 // TODO: WebSocket
-const server = require('express')();
-const http = require('http').Server(server);
+// TODO: Перемотка видео
+// TODO: Autocomplete template
+// TODO: Likes
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -19,13 +20,19 @@ const LocalStrategy = require('passport-local').Strategy;
 const request = require('request');
 const User = require('./models/user');
 const flash = require('connect-flash');
-const session = require('express-session');
+const session = require('express-session')({  
+    secret: 'ssshhhhh',
+    resave: true,
+    saveUninitialized: true
+});
 const uuidv4 = require('uuid/v4');
 const Template = require('./models/template');
-const io = require('socket.io')(http);
+const sharedsession = require("express-socket.io-session");
 
 // *** express instance *** //
-// const server = express();
+const server = express();
+const http = require('http').Server(server);
+const io = require('socket.io')(http);
 
 // *** mongodb config *** //
 mongoose.connect(dbConfig.database, (err) => {
@@ -50,10 +57,8 @@ server.use(cors(corsOptions));
 server.use(bodyParser.json({limit: "50mb"}));
 server.use(bodyParser.raw({limit: "50mb", extended: true, parameterLimit:50000}));
 // TODO: session or cookie parser
-// server.use(session({ cookie: { maxAge: 60000 }, 
-//     secret: 'woot',
-//     resave: false, 
-//     saveUninitialized: false}));
+server.use(session);
+io.use(sharedsession(session));
 server.use(morgan(':method :url :status :res[content-length] - :response-time ms :date[clf] :http-version', {stream: accessLogStream}));
 server.use(flash());
 server.use(passport.initialize());
@@ -139,6 +144,10 @@ passport.use(new LocalStrategy(
     }
 ));
 // server.use(forceSsl);
+server.use(function(req,res,next){
+    req.io = io;
+    next();
+});
 // another middlewares
 
 // *** routes *** //
@@ -196,7 +205,11 @@ const port = 3000;
 
 // *** socket.io config *** //
 io.on('connection', function(socket){
-    console.log('a user connected'  +  socket.id);
+    socket.handshake.session.userdata = 'userdata';
+    socket.handshake.session.save();
+    console.log('user connected');
+    console.log(io.sockets.clients());
+    console.log(socket.handshake.session.userdata);
     socket.on('disconnect', function(){
         console.log('user disconnected');
     });

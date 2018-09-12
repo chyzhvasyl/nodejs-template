@@ -117,7 +117,8 @@ function deleteCategory(req, res, next) {
         if(err) {
           res.json(err);
         } else {
-            Category.findOne({name : { $elemMatch : { $regex : 'прочее', $options : 'i' }}})
+            //FIXME: Error: Can't use $elemMatch with String
+            Category.findOne({ 'name' : { $elemMatch : { $regex : 'прочее', $options : 'i' }}})
             .populate('article')
             .exec(function(err, templateCategory) {
                 if(err) {
@@ -125,7 +126,7 @@ function deleteCategory(req, res, next) {
                     res.json(err);
                     intel.error(err);
                 } else {
-                    if (category != null) {
+                    if (templateCategory != null) {
                       Article.where({ category : deletedCategory._id }).updateMany({ $set: { category : templateCategory._id }}).exec(function(err){
                         if (err) {
                           res.status(400);
@@ -171,4 +172,4 @@ function deleteCategory(req, res, next) {
   })(req, res, next);
 }
 
-module.exports = router;
+module.exports = router;           

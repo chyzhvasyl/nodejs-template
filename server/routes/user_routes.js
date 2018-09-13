@@ -8,6 +8,7 @@ const uuid = require('uuid/v4');
 // *** api routes *** //
 router.get('/users', findAllUsers);
 // router.get('/user/:id', findUserById);
+router.get('/users/:user_role', findAllUsersByRole);
 router.post('/user', addUser);
 // router.put('/user/:id', updateUser);
 // router.delete('/user/:id', deleteUser);
@@ -22,6 +23,20 @@ function findAllUsers(req, res) {
     } else {
       res.json(users);
       intel.info("Take all users ", users);
+    }
+  });
+}
+
+// *** get ALL users *** //
+function findAllUsersByRole(req, res) {
+  User.find({ roles: req.params.user_role }, function(err, users) {
+    if(err) {
+      res.status(400);
+      res.json(err);
+      intel.error(err);
+    } else {
+      res.json(users);
+      intel.info("Take all users by role ", users);
     }
   });
 }

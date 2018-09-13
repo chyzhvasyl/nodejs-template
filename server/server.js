@@ -3,6 +3,7 @@
 // TODO: Перемотка видео
 // TODO: Autocomplete template
 // TODO: Likes
+// TODO: Remove useless files from git
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -186,7 +187,6 @@ server.post('/login', function(req, res, next) {
                 user['cookieLifeTime'] = template.cookieLifeTime;
             }
             return res.json(user);
-            
           })
         } else {
             return res.sendStatus(401);
@@ -210,15 +210,21 @@ io.on('connection', function(socket){
     console.log('user connected');
     console.log(io.sockets.clients());
     console.log(socket.handshake.session.userdata);
+    socket.on('chat message', function(msg){
+        io.emit('chat message', msg);
+    });
+    socket.on('login', function(user){
+        socket.handshake.session.userdata = user;
+        socket.handshake.session.save();
+        console.log(socket.handshake.session.userdata);
+    });
     socket.on('disconnect', function(){
         console.log('user disconnected');
     });
 });
 
 io.on('connection', function(socket){
-    socket.on('chat message', function(msg){
-        io.emit('chat message', msg);
-    });
+    
 });
 
 

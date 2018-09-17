@@ -60,8 +60,7 @@ function findAllArticles(req, res, next) {
 					res.json(err);
 					intel.error(err);
 				} else {
-					console.log(req.session);
-					articles = articles.map(a => addFileUrl(a, a.file, req));
+					articles = articles.map(a => addFileUrl(a, a.file, req, a.user));
 					res.json(articles);
 					intel.info("Get all articles ", articles);
 				}
@@ -69,8 +68,8 @@ function findAllArticles(req, res, next) {
 		} else {
 			res.status(403);
 			res.send('Access denied');
-			}
-		})(req, res, next);
+		}
+	})(req, res, next);
 }
 
 // *** get SINGLE article by id *** //
@@ -105,7 +104,7 @@ function findArticleByIdAndConfirmation(req, res, next) {
 					res.json(err);
 					intel.error(err);
 				} else {
-					article = addFileUrl(article, article.file, req);
+					article = addFileUrl(article, article.file, req, article.user);
 					res.json(article);
 					intel.info('Get single article by id ', article);
 				}
@@ -149,7 +148,7 @@ function findAllArticlesByCategoryAndConfirmation(req, res, next) {
 					res.json(err);
 					intel.error(err);
 				} else {
-					articles = articles.map(a => addFileUrl(a, a.file, req));
+					articles = articles.map(a => addFileUrl(a, a.file, req, a.user));
 					res.json(articles);
 					intel.info("Get all articles by category " + req.params.category, articles);
 				}
@@ -193,7 +192,7 @@ function findAllArticlesByConfirmation(req, res, next) {
 					res.json(err);
 					intel.error(err);
 				} else {
-					articles = articles.map(a => addFileUrl(a, a.file, req));
+					articles = articles.map(a => addFileUrl(a, a.file, req, a.user));
 					res.json(articles);
 					intel.info("Get all articles by confirmation " + req.params.category, articles);
 				}
@@ -234,7 +233,7 @@ function findAllArticlesByUserId(req, res, next) {
 					res.json(err);
 					intel.error(err);
 				} else {
-					articles = articles.map(a => addFileUrl(a, a.file, req));
+					articles = articles.map(a => addFileUrl(a, a.file, req, a.user));
 					res.json(articles);
 					intel.info("Get all articles by user id " + req.params.category, articles);
 				}
@@ -276,7 +275,7 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 					res.json(err);
 					intel.error(err);
 				} else {
-					articles = articles.map(a => addFileUrl(a, a.file, req));
+					articles = articles.map(a => addFileUrl(a, a.file, req, a.user));
 					res.json(articles);
 					intel.info("Get all articles by several status " , articles);
 				}
@@ -306,7 +305,7 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 					res.json(err);
 					intel.error(err);
 				} else {
-					articles = articles.map(a => addFileUrl(a, a.file, req));
+					articles = articles.map(a => addFileUrl(a, a.file, req, a.user));
 					res.json(articles);
 					intel.info("Get all articles by several status " , articles);
 				}
@@ -319,7 +318,6 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 }
 
 // *** add SINGLE article  *** //
-// FIXME: Add single article method(videos)
 function addArticle(req, res, next) {
 		passport.authenticate('local', function(err, user, info) {
 				if (err) { return next(err); }
@@ -328,7 +326,6 @@ function addArticle(req, res, next) {
 								upload(req, res, function (err) {
 										if (err) {
 												res.send(err);
-												// TODO: An error occurred when uploading
 											return
 										} else {
 												if (req.file) { 
@@ -416,64 +413,64 @@ function saveFile(file, prefix, currentDate) {
 }   
 
 function saveCallback(req, res, file, user) {
-		return function (err, article) {
-				if (err) {
-						res.status(400);
-						res.json(err);
-						intel.error('Can\'t save article ', err);
-				} else {
-						if (file.contentType == "video/mp4") {
-								convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
-										if(!err) {
-												console.log('conversion complete');
-										}
-								});
-								getScreenshot(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, UPLOAD_PATH_VIDEOS, function(err){
-										if(!err) {
-												console.log('conversion complete');
-										}
-								});
-								let articleResponse = addFileUrl(article.toJSONObject(), file, req, user);
-								res.status(201);
-								res.json(articleResponse);
-								intel.info('Added new article ', articleResponse);
-						} else {
-								let articleResponse = addFileUrl(article.toJSONObject(), file, req, user);
-								let sockets = req.io.sockets.clients();
-								let socketsArray = Object.values(sockets.sockets);
-								article.status = req.body.status;
-								for (let i = 0; i < socketsArray.length; i++) {
-										if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Editor') != -1) {
-												req.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(articleResponse));
-										} 
-								}
-								res.status(201);
-								res.json(articleResponse);
-								intel.info('Added new article ', articleResponse);
-						}
+	return function (err, article) {
+		if (err) {
+			res.status(400);
+			res.json(err);
+			intel.error('Can\'t save article ', err);
+		} else {
+			if (file.contentType == "video/mp4") {
+				convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
+					if(!err) {
+						console.log('conversion complete');
+					}
+				});
+				getScreenshot(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, UPLOAD_PATH_VIDEOS, function(err){
+					if(!err) {
+						console.log('conversion complete');
+					}
+				});
+				let articleResponse = addFileUrl(article.toJSONObject(), file, req, user);
+				res.status(201);
+				res.json(articleResponse);
+				intel.info('Added new article ', articleResponse);
+			} else {
+				let articleResponse = addFileUrl(article.toJSONObject(), file, req, user);
+				let sockets = req.io.sockets.clients();
+				let socketsArray = Object.values(sockets.sockets);
+				article.status = req.body.status;
+				for (let i = 0; i < socketsArray.length; i++) {
+					if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Editor') != -1) {
+						eq.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(articleResponse));
+					} 
 				}
+				res.status(201);
+				res.json(articleResponse);
+				intel.info('Added new article ', articleResponse);
+			}
 		}
- }
+	}
+}
 
 function addFileUrl(article, file, req, user) {
-		if (article && file && file._id) {
-				// const videoFiletypes = /video\/pm4|video\/webm|video\/ogg|video\/x-matroska/;
-				const imageFileTypes =  /image/;
-				const videoFileTypes = /video/;
-				const isImage = imageFileTypes.test(file.contentType);
-				const isVideo = videoFileTypes.test(file.contentType);
-				if (isImage) {
-						article['imgUrl'] = req.protocol + "://" + req.get('host') + '/file/' + file._id + '?username='+ user.login +'&password=' + user.token;
-						article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/file-small/' + file._id + '?username='+ user.login +'&password=' + user.token;
-				}
-				if (isVideo) {
-					article['videoOgvUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/ogv';
-					article['videoMP4Url'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mp4';
-					article['videoWebmUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/webm';
-					article['screenshot'] = req.protocol + "://" + req.get('host') + '/screenshot/' + file._id;
-			}
-				return article;
+	if (article && file && file._id) {
+		// const videoFiletypes = /video\/pm4|video\/webm|video\/ogg|video\/x-matroska/;
+		const imageFileTypes =  /image/;
+		const videoFileTypes = /video/;
+		const isImage = imageFileTypes.test(file.contentType);
+		const isVideo = videoFileTypes.test(file.contentType);
+		if (isImage) {
+			article['imgUrl'] = req.protocol + "://" + req.get('host') + '/file/' + file._id + '?username='+ user.login +'&password=' + user.token;
+			article['imgSmallUrl'] = req.protocol + "://" + req.get('host') + '/file-small/' + file._id + '?username='+ user.login +'&password=' + user.token;
 		}
+		if (isVideo) {
+			article['videoOgvUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/ogv' + '?username='+ user.login +'&password=' + user.token;
+			article['videoMP4Url'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/mp4' + '?username='+ user.login +'&password=' + user.token;
+			article['videoWebmUrl'] = req.protocol + "://" + req.get('host') + '/video/' + file._id + '/webm' + '?username='+ user.login +'&password=' + user.token;
+			article['screenshot'] = req.protocol + "://" + req.get('host') + '/screenshot/' + file._id + '?username='+ user.login +'&password=' + user.token;
+		}
+		return article;
+	}
 }
 
 function decodeBase64Image(dataString) {
@@ -522,36 +519,36 @@ ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 console.log(ffmpegInstaller.path, ffmpegInstaller.version);
 
 function convert(input, filename, callback) {
-		ffmpeg(input)
-				.output(UPLOAD_PATH_VIDEOS + '/' + 'convert_' + filename.substring(0, filename.lastIndexOf('.')) + '.mp4').format('mp4').size('640x480')
-				.output(UPLOAD_PATH_VIDEOS + '/' + 'convert_' + filename.substring(0, filename.lastIndexOf('.')) + '.ogv').format('ogv').size('640x480')
-				.output(UPLOAD_PATH_VIDEOS + '/' + 'convert_' + filename.substring(0, filename.lastIndexOf('.')) + '.webm').format('webm').size('640x480')
-				.on('end', function() {                    
-						console.log('conversion ended');
-						callback(null)
-				})
-				.on('error', function(err){
-						console.log('error: ', err.code, err.msg);
-						callback(err);
-				}).run();
+	ffmpeg(input)
+	.output(UPLOAD_PATH_VIDEOS + '/' + 'convert_' + filename.substring(0, filename.lastIndexOf('.')) + '.mp4').format('mp4').size('640x480')
+	.output(UPLOAD_PATH_VIDEOS + '/' + 'convert_' + filename.substring(0, filename.lastIndexOf('.')) + '.ogv').format('ogv').size('640x480')
+	.output(UPLOAD_PATH_VIDEOS + '/' + 'convert_' + filename.substring(0, filename.lastIndexOf('.')) + '.webm').format('webm').size('640x480')
+	.on('end', function() {                    
+		console.log('conversion ended');
+		callback(null)
+	})
+	.on('error', function(err){
+		console.log('error: ', err.code, err.msg);
+		callback(err);
+	}).run();
 }
 
 function getScreenshot(filePath, fileName, outputFolder, callback) {
-		ffmpeg(filePath)
-		.on('filenames', function(filenames) {
-				console.log('Will generate ' + filenames.join(', '))
-				callback(null)
-			})
-			.on('end', function() {
-				console.log('Screenshots taken');
-				// callback(err);
-			})
-			.thumbnail({
-				count: 1,
-				folder: outputFolder,
-				filename: 'screenshot_' + fileName.substring(0, fileName.lastIndexOf('.')) + '.png',
-				size: '400x400'
-			});
+	ffmpeg(filePath)
+	.on('filenames', function(filenames) {
+		console.log('Will generate ' + filenames.join(', '))
+		callback(null)
+	})
+	.on('end', function() {
+		console.log('Screenshots taken');
+		// callback(err);
+	})
+	.thumbnail({
+		count: 1,
+		folder: outputFolder,
+		filename: 'screenshot_' + fileName.substring(0, fileName.lastIndexOf('.')) + '.png',
+		size: '400x400'
+	});
 }
 
 // *** update SINGLE article *** //
@@ -687,17 +684,6 @@ function updateArticle(req, res, next) {
 														}
 												})
 										})
-								} else {
-										// article.save(function(err, article) {
-										//     if(err) {
-										//     res.json(err);
-										//     intel.error(err);
-										//     } else {
-										//         res.json(article);
-										//         intel.info('Updated article ', article);
-										//     }
-										// });
-										article.save(saveCallback(req, res, article.file));
 								}
 						}); 
 						}   
@@ -847,6 +833,7 @@ function deleteArticle(req, res, next) {
 						}
 						intel.info(`CommentByPublisher deleted for article[${article._id}]`);
 				});
+				// TODO: to separate function image or video
 				const imageFileTypes = /image/;
 				const videoFileTypes = /video/;
 				const isImage = imageFileTypes.test(article.file.contentType);
@@ -875,6 +862,27 @@ function deleteArticle(req, res, next) {
 							});
 				} else if (isVideo) {
 						// TODO: delete video files
+						File.deleteOne({_id: article.file.id}, function (err) {
+							if (err) {
+									res.json(err);
+									intel.error(err);
+							} 
+							intel.info(`File delete for article[${article._id}]`);
+							fs.unlink(UPLOAD_PATH_VIDEOS + '/' + article.file.filename, (err) => {
+									if (err) {
+											res.json(err);
+											intel.error(err);
+									};
+									intel.info(article.file.filename + ' was deleted.');
+							});
+							fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
+									if (err) {
+											res.json(err);
+											intel.error(err);
+									};
+									intel.info('small-' + article.file.filename + ' was deleted.');
+							});
+						});
 				}
 				res.json(article);
 				intel.info('Deleted article ', article);

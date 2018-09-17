@@ -49,7 +49,7 @@ mongoose.connect(dbConfig.database, (err) => {
 				// res.json(err);
 				intel.error(err);
 			} else {
-				if (Object.keys(templates).length == 0) {
+				if (!templates || Object.keys(templates).length == 0) {
 					let newTemplate = new Template({
 						generalStyles: {
 							fontSizeMetric: '1',

@@ -244,20 +244,14 @@ const port = 3000;
 
 // *** socket.io config *** //
 io.on('connection', function(socket){
-	socket.handshake.session.userdata = 'userdata';
-	socket.handshake.session.save();
 	console.log('user connected');
-	// let sockets = io.sockets.clients().sockets;
-	// console.log(sockets);
-	// console.log(io.sockets.clients());
-	// console.log(socket.handshake.session.userdata);
 	socket.on('chat message', function(msg){
 		io.emit('chat message', msg);
 	});
 	socket.on('login', function(user){
-		socket.handshake.session.userdata = user;
+		socket.handshake.session.user = user;
 		socket.handshake.session.save();
-		console.log(socket.handshake.session.userdata);
+		console.log(socket.handshake.session.user);
 	});
 	socket.on('disconnect', function(){
 		console.log('user disconnected');

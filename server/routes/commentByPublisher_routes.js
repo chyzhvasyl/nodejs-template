@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const CommentByPublisher = require('../models/commentByPublisher');
-const Article = require('../models/article');
 const intel = require('intel');
 const passport = require('passport');
+const Article = require('../models/article');
+const CommentByPublisher = require('../models/commentByPublisher');
+
 
 // *** api routes *** //
 router.get('/commentsByPublisher', findAllCommentsByPublisher);
@@ -134,7 +135,7 @@ function updateCommentByPublisher(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
     if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
-      CommentByPublisher.findById(req.params.id, function(err, ccommentByPublisher) {
+      CommentByPublisher.findById(req.params.id, function(err, commentByPublisher) {
         if (req.body.body) {
           commentByPublisher.body = req.body.body;
         }

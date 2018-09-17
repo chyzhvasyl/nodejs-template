@@ -25,7 +25,7 @@ function findAllCategories(req, res, next) {
           intel.error(err);
         } else {
           res.json(categories);
-          intel.info("Take all categories ", categories);
+          intel.info("Get all categories ", categories);
         }
       });
     } else {
@@ -117,8 +117,7 @@ function deleteCategory(req, res, next) {
         if(err) {
           res.json(err);
         } else {
-            //FIXME: Error: Can't use $elemMatch with String
-            Category.findOne({ 'name' : { $elemMatch : { $regex : 'прочее', $options : 'i' }}})
+            Category.findOne({name:{'$regex' : '^прочее$', '$options' : 'i'}})
             .populate('article')
             .exec(function(err, templateCategory) {
                 if(err) {

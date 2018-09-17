@@ -13,8 +13,6 @@ router.post('/template', addTemplate);
 router.put('/template/:id', updateTemplate);
 router.delete('/template/:id', deleteTemplate);
 
-
-
 // *** get ALL templates *** //
 function findAllTemplates(req, res, next) {
   passport.authenticate('local', function(err, user, info) {

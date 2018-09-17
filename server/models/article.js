@@ -1,8 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-//TODO: Comments by editor, publisher
-
 const articleSchema = new Schema({
   title: {
     type: String,
@@ -51,7 +49,7 @@ const articleSchema = new Schema({
 }, { versionKey: false });
 
 articleSchema.methods.toJSONObject = function () {
-    return this.toObject();
+  return this.toObject();
 };
 
 const Article  = mongoose.model('article', articleSchema);

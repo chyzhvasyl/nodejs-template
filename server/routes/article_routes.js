@@ -319,75 +319,75 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 
 // *** add SINGLE article  *** //
 function addArticle(req, res, next) {
-		passport.authenticate('local', function(err, user, info) {
-				if (err) { return next(err); }
-				if (util.hasRole(user, 'CN=NEWS_Author', 'CN=NEWS_Administrator')) {
-						if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
-								upload(req, res, function (err) {
-										if (err) {
-												res.send(err);
-											return
-										} else {
-												if (req.file) { 
-														const newFile = new File();
-														// newFile.filename = req.file.filename.substring(0, req.file.filename.lastIndexOf('.'));
-														newFile.filename = req.file.filename;
-														newFile.contentType = req.file.mimetype;
-														newFile.save(function (err, newFile) {
-																if (err) {
-																		res.sendStatus(400);
-																		res.json(err);
-																		intel.error(err);
-																}
-																const newArticle = new Article();
-																newArticle.title = req.body.title;
-																newArticle.shortBody = req.body.shortBody;
-																newArticle.body = req.body.body;
-																newArticle.confirmation = req.body.confirmation;
-																newArticle.status = req.body.status;
-																newArticle.file = newFile._id;
-																newArticle.category = req.params.category_id;
-																newArticle.template = req.params.template_id;
-																newArticle.user = req.params.user_id;
-																newArticle.save(saveCallback(req, res, newFile, user));
-														});
-												}
-										}
-								})
-						} 
-						if (req.headers['content-type'].indexOf('application/json') !== -1) {
-								if (req.body.fileBase64 && req.body.fileBase64Small) {
-										const currentDate = Date.now();
-										const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate);
-										const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate);
-										const newFile = new File();
-										newFile.filename = fileMeta.fileName;
-										newFile.contentType = mime.getType(fileMeta.extension);
-										newFile.save(function (err, newFile) {
-												if (err) {
-														res.sendStatus(400);
-														res.json(err);
-														intel.error(err);
-												}
-												const newArticle = new Article();
-												newArticle.title = req.body.title;
-												newArticle.shortBody = req.body.shortBody;
-												newArticle.body = req.body.body;
-												newArticle.confirmation = req.body.confirmation;
-												newArticle.status = req.body.status;
-												newArticle.file = newFile._id;
-												newArticle.category = req.params.category_id;
-												newArticle.template = req.params.template_id;
-												newArticle.user = req.params.user_id;
-												newArticle.save(saveCallback(req, res, newFile, user));
-										});
-								}   
-						} 
-				} else {
-						res.status(403);
-						res.send('Access denied');
-				}
-			})(req, res, next);
+	passport.authenticate('local', function(err, user, info) {
+		if (err) { return next(err); }
+		if (util.hasRole(user, 'CN=NEWS_Author', 'CN=NEWS_Administrator')) {
+			if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
+				upload(req, res, function (err) {
+					if (err) {
+						res.send(err);
+						return
+					} else {
+						if (req.file) { 
+							const newFile = new File();
+							// newFile.filename = req.file.filename.substring(0, req.file.filename.lastIndexOf('.'));
+							newFile.filename = req.file.filename;
+							newFile.contentType = req.file.mimetype;
+							newFile.save(function (err, newFile) {
+								if (err) {
+									res.sendStatus(400);
+									res.json(err);
+									intel.error(err);
+								}
+								const newArticle = new Article();
+								newArticle.title = req.body.title;
+								newArticle.shortBody = req.body.shortBody;
+								newArticle.body = req.body.body;
+								newArticle.confirmation = req.body.confirmation;
+								newArticle.status = req.body.status;
+								newArticle.file = newFile._id;
+								newArticle.category = req.params.category_id;
+								newArticle.template = req.params.template_id;
+								newArticle.user = req.params.user_id;
+								newArticle.save(saveCallback(req, res, newFile, user));
+							});
+						}
+					}
+				})
+			} 
+			if (req.headers['content-type'].indexOf('application/json') !== -1) {
+				if (req.body.fileBase64 && req.body.fileBase64Small) {
+					const currentDate = Date.now();
+					const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate);
+					const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate);
+					const newFile = new File();
+					newFile.filename = fileMeta.fileName;
+					newFile.contentType = mime.getType(fileMeta.extension);
+					newFile.save(function (err, newFile) {
+						if (err) {
+							res.sendStatus(400);
+							res.json(err);
+							intel.error(err);
+						}
+						const newArticle = new Article();
+						newArticle.title = req.body.title;
+						newArticle.shortBody = req.body.shortBody;
+						newArticle.body = req.body.body;
+						newArticle.confirmation = req.body.confirmation;
+						newArticle.status = req.body.status;
+						newArticle.file = newFile._id;
+						newArticle.category = req.params.category_id;
+						newArticle.template = req.params.template_id;
+						newArticle.user = req.params.user_id;
+						newArticle.save(saveCallback(req, res, newFile, user));
+					});
+				}   
+			} 
+		} else {
+			res.status(403);
+			res.send('Access denied');
+		}
+	})(req, res, next);
 }
 
 function saveFile(file, prefix, currentDate) {
@@ -436,14 +436,13 @@ function saveCallback(req, res, file, user) {
 				intel.info('Added new article ', articleResponse);
 			} else {
 				let articleResponse = addFileUrl(article.toJSONObject(), file, req, user);
-				let sockets = req.io.sockets.clients();
-				let socketsArray = Object.values(sockets.sockets);
-				article.status = req.body.status;
-				for (let i = 0; i < socketsArray.length; i++) {
-					if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Editor') != -1) {
-						eq.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(articleResponse));
-					} 
-				}
+				// let sockets = req.io.sockets.clients();
+				// let socketsArray = Object.values(sockets.sockets);
+				// for (let i = 0; i < socketsArray.length; i++) {
+				// 	if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Editor') != -1) {
+				// 		eq.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(articleResponse));
+				// 	} 
+				// }
 				res.status(201);
 				res.json(articleResponse);
 				intel.info('Added new article ', articleResponse);
@@ -474,24 +473,24 @@ function addFileUrl(article, file, req, user) {
 }
 
 function decodeBase64Image(dataString) {
-		const matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
-				response = {};
+	const matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
+	response = {};
 
-		if (matches.length !== 3) {
-				return new Error('Invalid input string');
-		}
+	if (matches.length !== 3) {
+		return new Error('Invalid input string');
+	}
 
-		response.type = matches[1];
-		response.data = new Buffer(matches[2], 'base64');
+	response.type = matches[1];
+	response.data = new Buffer(matches[2], 'base64');
 
-		return response;
+	return response;
 }
 
 // *** multer configuration *** //
 let storage = multer.diskStorage({
 		destination: UPLOAD_PATH_VIDEOS,
 		filename: function (req, file, cb) {
-				cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+			cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
 		}
 });
 
@@ -554,255 +553,265 @@ function getScreenshot(filePath, fileName, outputFolder, callback) {
 // *** update SINGLE article *** //
 // FIXME: Update single article method
 function updateArticle(req, res, next) {
-		passport.authenticate('local', function(err, user, info) {
-				if (err) { return next(err); }
-				if (util.hasRole(user, 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-						if (req.headers['content-type'].indexOf('application/json') !== -1) {
-								Article.findById(req.params.id)
-								.populate('file')
-								.exec(function(err, article) {
-								if (req.body.title) {
-										article.title = req.body.title;
+	passport.authenticate('local', function(err, user, info) {
+		if (err) { return next(err); }
+		if (util.hasRole(user, 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
+			if (req.headers['content-type'].indexOf('application/json') !== -1) {
+				Article.findById(req.params.id)
+				.populate('file')
+				.exec(function(err, article) {
+					if (req.body.title) {
+						article.title = req.body.title;
+					}
+					if (req.body.shortBody) {
+						article.shortBody = req.body.shortBody;
+					}
+					if (req.body.body) {
+						article.body = req.body.body;
+					}
+					if (req.body.timeOfCreation) {
+						article.timeOfCreation = req.body.timeOfCreation;
+					}
+					if (req.body.timeOfPublication) {
+						article.timeOfPublication = req.body.timeOfPublication;
+					}
+					if (req.body.confirmation != undefined) {
+						article.confirmation = req.body.confirmation;
+					}
+					if (req.body.status) {
+						//TODO: change emit to broadcast
+						if (article.status == 'created' && req.body.status == 'not approved by editor') {
+							let sockets = req.io.sockets.clients();
+							let socketsArray = Object.values(sockets.sockets);
+							// let authors = User.find({ roles: 'CN=NEWS_Author' }, function(err, users) {
+							// 		if(err) {
+							// 			res.status(400);
+							// 			res.json(err);
+							// 			intel.error(err);
+							// 		} else {
+							// 			return users;
+							// 		}
+							// });
+							// authorsArray = Object.values(authors);
+							// authorsArray.forEach(author => {		
+							// });
+							// console.log(authors);
+							article.status = req.body.status;
+							for (let i = 0; i < socketsArray.length; i++) {
+								if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Author') != -1) {
+									req.io.sockets.connected[ socketsArray[i].id ].emit('update', article.toJSONObject());
 								}
-								if (req.body.shortBody) {
-										article.shortBody = req.body.shortBody;
-								}
-								if (req.body.body) {
-										article.body = req.body.body;
-								}
-								if (req.body.timeOfCreation) {
-										article.timeOfCreation = req.body.timeOfCreation;
-								}
-								if (req.body.timeOfPublication) {
-										article.timeOfPublication = req.body.timeOfPublication;
-								}
-								if (req.body.confirmation != undefined) {
-										article.confirmation = req.body.confirmation;
-								}
-								if (req.body.status) {
-										//TODO: change emit to broadcast
-										if (article.status == 'created' && req.body.status == 'not approved by editor') {
-												let sockets = req.io.sockets.clients();
-												let socketsArray = Object.values(sockets.sockets);
-												// let authors = User.find({ roles: 'CN=NEWS_Author' }, function(err, users) {
-												// 		if(err) {
-												// 			res.status(400);
-												// 			res.json(err);
-												// 			intel.error(err);
-												// 		} else {
-												// 			return users;
-												// 		}
-												// });
-												// authorsArray = Object.values(authors);
-												// authorsArray.forEach(author => {
-														
-												// });
-												// console.log(authors);
-												article.status = req.body.status;
-												for (let i = 0; i < socketsArray.length; i++) {
-														if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Author') != -1) {
-																req.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(article));
-														}
-												}
-										} else if (article.status == 'created' && req.body.status == 'modified') {
-												let sockets = req.io.sockets.clients();
-												let socketsArray = Object.values(sockets.sockets);
-												article.status = req.body.status;
-												for (let i = 0; i < socketsArray.length; i++) {
-														if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_publisher') != -1) {
-																req.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(article));
-														} 
-												}
-										} else if (article.status == 'not approved by editor' && req.body.status == 'created') {
-												let sockets = req.io.sockets.clients();
-												let socketsArray = Object.values(sockets.sockets);
-												article.status = req.body.status;
-												for (let i = 0; i < socketsArray.length; i++) {
-														if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Editor') != -1) {
-																req.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(article));
-														} 
-												}
-										} else if (article.status == 'modified' && req.body.status == 'not approved by publisher') {
-												let sockets = req.io.sockets.clients();
-												let socketsArray = Object.values(sockets.sockets);
-												article.status = req.body.status;
-												for (let i = 0; i < socketsArray.length; i++) {
-														if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Editor') != -1) {
-																req.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(article));
-														} 
-												}
-										} else if (article.status == 'modified' && req.body.status == 'published') {
-												let sockets = req.io.sockets.clients();
-												let socketsArray = Object.values(sockets.sockets);
-												article.status = req.body.status;
-												for (let i = 0; i < socketsArray.length; i++) {
-														if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Editor') != -1) {
-																req.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(article));
-														} 
-												}
-										} else if (article.status == 'not approved by publisher' && req.body.status == 'modified') {
-												let sockets = req.io.sockets.clients();
-												let socketsArray = Object.values(sockets.sockets);
-												article.status = req.body.status;
-												for (let i = 0; i < socketsArray.length; i++) {
-														if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Editor') != -1) {
-																req.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(article));
-														} 
-												}
-										}
-										article.status = req.body.status;
-								}
-								if (req.params.category_id) {
-										article.category = req.params.category_id;
-								}
-								if (req.body.fileBase64 && req.body.fileBase64Small) {
-										const currentDate = Date.now();
-										const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate);
-										const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate);
-										fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
-												if (err) {
-														intel.error(err);
-												};
-												intel.info(article.file.filename + ' was deleted.');
-										});
-										fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
-												if (err) {
-														intel.error(err);
-												};
-												intel.info('small-' + article.file.filename + ' was deleted.');
-										});
-										File.findById(article.file._id, function(err, file) {
-												file.filename = fileMeta.fileName;
-												file.contentType = mime.getType(fileMeta.extension);
-												file.save(function (err, file){
-														if (err) {
-																res.sendStatus(400);
-																res.json(err);
-																intel.error(err);
-														} else {
-																article.save(saveCallback(req, res, file));
-														}
-												})
-										})
-								}
-						}); 
-						}   
-						if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
-								Article.findById(req.params.id)
-								.populate('file')
-								.exec(function(err, article) {
-										if (req.body.title) {
-												article.title = req.body.title;
-										}
-										if (req.body.shortBody) {
-												article.shortBody = req.body.shortBody;
-										}
-										if (req.body.body) {
-												article.body = req.body.body;
-										}
-										if (req.body.timeOfCreation) {
-												article.timeOfCreation = req.body.timeOfCreation;
-										}
-										if (req.body.timeOfPublication) {
-												article.timeOfPublication = req.body.timeOfPublication;
-										}
-										if (req.body.confirmation != undefined) {
-												article.confirmation = req.body.confirmation;
-										}
-										if (req.body.status) {
-												article.status = req.body.status;
-										}
-										if (req.params.category_id) {
-												article.category = req.params.category_id;
-										}
-										if (req.body.videoOgvUrl && req.body.videoMP4Url && req.body.videoWebmUrl) {
-												const currentDate = Date.now();
-												if (req.file) {
-														videoFilePath = UPLOAD_PATH_VIDEOS + '/' + file.filename;
-														convert(videoFilePath, file.filename, function(err){
-																if(!err) {
-																		console.log('conversion complete');
-																}
-														 });
-												}
-												fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
-														if (err) {
-																intel.error(err);
-														};
-														intel.info(article.file.filename + ' was deleted.');
-												});
-												fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
-														if (err) {
-																intel.error(err);
-														};
-														intel.info('small-' + article.file.filename + ' was deleted.');
-												});
-												File.findById(article.file._id, function(err, file) {
-														file.filename = fileMeta.fileName;
-														file.contentType = mime.getType(fileMeta.extension);
-														file.save(function (err, file){
-																if (err) {
-																		res.sendStatus(400);
-																		res.json(err);
-																		intel.error(err);
-																} else {
-																		article.save(saveCallback(req, res, file));
-																}
-														})
-												})
-										} else {
-												// article.save(function(err, article) {
-												//     if(err) {
-												//     res.json(err);
-												//     intel.error(err);
-												//     } else {
-												//         res.json(article);
-												//         intel.info('Updated article ', article);
-												//     }
-												// });
-												article.save(saveCallback(req, res));
-										}
-						}); 
+							}
+						} else if (article.status == 'created' && req.body.status == 'modified') {
+							let sockets = req.io.sockets.clients();
+							let socketsArray = Object.values(sockets.sockets);
+							article.status = req.body.status;
+							for (let i = 0; i < socketsArray.length; i++) {
+								if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_publisher') != -1) {
+									req.io.sockets.connected[ socketsArray[i].id ].emit('update', article.toJSONObject());
+								} 
+							}
+						} else if (article.status == 'not approved by editor' && req.body.status == 'created') {
+							let sockets = req.io.sockets.clients();
+							let socketsArray = Object.values(sockets.sockets);
+							article.status = req.body.status;
+							for (let i = 0; i < socketsArray.length; i++) {
+								if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Editor') != -1) {
+									req.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(article));
+								} 
+							}
+						} else if (article.status == 'modified' && req.body.status == 'not approved by publisher') {
+							let sockets = req.io.sockets.clients();
+							let socketsArray = Object.values(sockets.sockets);
+							article.status = req.body.status;
+							for (let i = 0; i < socketsArray.length; i++) {
+								if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Editor') != -1) {
+									req.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(article));
+								} 
+							}
+						} else if (article.status == 'modified' && req.body.status == 'published') {
+							let sockets = req.io.sockets.clients();
+							let socketsArray = Object.values(sockets.sockets);
+							article.status = req.body.status;
+							for (let i = 0; i < socketsArray.length; i++) {
+								if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Editor') != -1) {
+									req.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(article));
+								} 
+							}
+						} else if (article.status == 'not approved by publisher' && req.body.status == 'modified') {
+							let sockets = req.io.sockets.clients();
+							let socketsArray = Object.values(sockets.sockets);
+							article.status = req.body.status;
+							for (let i = 0; i < socketsArray.length; i++) {
+								if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Editor') != -1) {
+									req.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(article));
+								} 
+							}
 						}
-				} else {
-						res.status(403);
-						res.send('Access denied');
-				}
-			})(req, res, next);
+						article.status = req.body.status;
+					}
+					if (req.params.category_id) {
+						article.category = req.params.category_id;
+					}
+					if (req.body.fileBase64 && req.body.fileBase64Small) {
+						const currentDate = Date.now();
+						const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate);
+						const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate);
+						fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
+							if (err) {
+								intel.error(err);
+							};
+							intel.info(article.file.filename + ' was deleted.');
+						});
+						fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
+							if (err) {
+								intel.error(err);
+							};
+							intel.info('small-' + article.file.filename + ' was deleted.');
+						});
+						File.findById(article.file._id, function(err, file) {
+							file.filename = fileMeta.fileName;
+							file.contentType = mime.getType(fileMeta.extension);
+							file.save(function (err, file){
+								if (err) {
+									res.sendStatus(400);
+									res.json(err);
+									intel.error(err);
+								} else {
+									article.save(saveCallback(req, res, file));
+								}
+							})
+						})
+					} else {
+						article.save(function (err, article) {
+							if (err) {
+								res.status(400);
+								res.json(err);
+								intel.error('Can\'t save article ', err);
+							}
+							res.status(201);
+							res.json(article);
+							intel.info('Updated article ', article);
+						})
+				 }
+				}); 
+			}   
+			if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
+				Article.findById(req.params.id)
+				.populate('file')
+				.exec(function(err, article) {
+					if (req.body.title) {
+						article.title = req.body.title;
+					}
+					if (req.body.shortBody) {
+						article.shortBody = req.body.shortBody;
+					}
+					if (req.body.body) {
+						article.body = req.body.body;
+					}
+					if (req.body.timeOfCreation) {
+						article.timeOfCreation = req.body.timeOfCreation;
+					}
+					if (req.body.timeOfPublication) {
+						article.timeOfPublication = req.body.timeOfPublication;
+					}
+					if (req.body.confirmation != undefined) {
+						article.confirmation = req.body.confirmation;
+					}
+					if (req.body.status) {
+						article.status = req.body.status;
+					}
+					if (req.params.category_id) {
+						article.category = req.params.category_id;
+					}
+					if (req.body.videoOgvUrl && req.body.videoMP4Url && req.body.videoWebmUrl) {
+						const currentDate = Date.now();
+						if (req.file) {
+							videoFilePath = UPLOAD_PATH_VIDEOS + '/' + file.filename;
+							convert(videoFilePath, file.filename, function(err){
+								if(!err) {
+									console.log('conversion complete');
+								}
+							});
+						}
+						fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
+							if (err) {
+								intel.error(err);
+							};
+							intel.info(article.file.filename + ' was deleted.');
+						});
+						fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
+							if (err) {
+								intel.error(err);
+							};
+							intel.info('small-' + article.file.filename + ' was deleted.');
+						});
+						File.findById(article.file._id, function(err, file) {
+							file.filename = fileMeta.fileName;
+							file.contentType = mime.getType(fileMeta.extension);
+							file.save(function (err, file){
+								if (err) {
+									res.sendStatus(400);
+									res.json(err);
+									intel.error(err);
+								} else {
+									article.save(saveCallback(req, res, file));
+								}
+							})
+						})
+					} else {
+						// article.save(function(err, article) {
+						//     if(err) {
+						//     res.json(err);
+						//     intel.error(err);
+						//     } else {
+						//         res.json(article);
+						//         intel.info('Updated article ', article);
+						//     }
+						// });
+						article.save(saveCallback(req, res));
+					}
+				}); 
+			}
+		} else {
+			res.status(403);
+			res.send('Access denied');
+		}
+	})(req, res, next);
 }; 
 
 // *** add or remove article like *** //
 function likeArticle(req, res, next) {
-		passport.authenticate('local', function(err, user, info) {
-				if (err) { return next(err); }
-				if (util.hasRole(user, 'CN=NEWS_Administrator')) {
-						let likeAction;
-						if (req.params.is_liked == 'false') {
-								likeAction = { $inc: { likes: 1 } };
-						} else {
-								likeAction = { $inc: { likes: -1 } };
-						}
-						Article.findOneAndUpdate(req.params.id, likeAction, { new: true }, function (err, article) {
-								if (err) {
-										res.status(400);
-										res.json(err);
-										intel.error(err);
-								} else {
-										res.json(article);
-								}
-						})
+	passport.authenticate('local', function(err, user, info) {
+		if (err) { return next(err); }
+		if (util.hasRole(user, 'CN=NEWS_Administrator')) {
+			let likeAction;
+			if (req.params.is_liked == 'false') {
+				likeAction = { $inc: { likes: 1 } };
+			} else {
+				likeAction = { $inc: { likes: -1 } };
+			}
+			Article.findOneAndUpdate(req.params.id, likeAction, { new: true }, function (err, article) {
+				if (err) {
+					res.status(400);
+					res.json(err);
+					intel.error(err);
 				} else {
-						res.status(403);
-						res.send('Access denied');
+					res.json(article);
 				}
-			})(req, res, next);
+			});
+		} else {
+			res.status(403);
+			res.send('Access denied');
+		}
+	})(req, res, next);
 }
 
 // *** delete SINGLE article *** //
 function deleteArticle(req, res, next) {
 	passport.authenticate('local', function(err, user, info) {
 		if (err) { return next(err); }
-			if (util.hasRole(user, 'CN=NEWS_Administrator')) {
+		if (util.hasRole(user, 'CN=NEWS_Administrator')) {
 				Article.findByIdAndDelete(req.params.id)
 				.populate('file')
 				.exec(function (err, article) {
@@ -908,10 +917,10 @@ function deleteArticle(req, res, next) {
 						intel.info('Deleted article ', article);
 					}
 				});
-			} else {
-				res.status(403);
-				res.send('Access denied');
-			}
+		} else {
+			res.status(403);
+			res.send('Access denied');
+		}
 	})(req, res, next);
 }
 

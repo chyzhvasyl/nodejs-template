@@ -36,7 +36,7 @@
             $('#messages').append($('<li>').text(msg));
         });
         socket.on('update', function(foo){
-            console.log('message: ' + foo);
+            console.log(foo);
         });
     });
 </script>

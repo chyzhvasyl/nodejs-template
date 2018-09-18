@@ -657,31 +657,88 @@ function updateArticle(req, res, next) {
 						const currentDate = Date.now();
 						const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate);
 						const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate);
-						fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
-							if (err) {
-								intel.error(err);
-							};
-							intel.info(article.file.filename + ' was deleted.');
-						});
-						fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
-							if (err) {
-								intel.error(err);
-							};
-							intel.info('small-' + article.file.filename + ' was deleted.');
-						});
-						File.findById(article.file._id, function(err, file) {
-							file.filename = fileMeta.fileName;
-							file.contentType = mime.getType(fileMeta.extension);
-							file.save(function (err, file){
-								if (err) {
-									res.sendStatus(400);
-									res.json(err);
-									intel.error(err);
-								} else {
-									article.save(saveCallback(req, res, file));
-								}
-							})
-						})
+						const imageFileTypes = /image/;
+						const videoFileTypes = /video/;
+						const isImage = imageFileTypes.test(article.file.contentType);
+						const isVideo = videoFileTypes.test(article.file.contentType);
+						if (isImage) {
+							File.findById(article.file._id, function(err, file) {
+								file.filename = fileMeta.fileName;
+								file.contentType = mime.getType(fileMeta.extension);
+								file.save(function (err, file){
+									if (err) {
+										res.sendStatus(400);
+										res.json(err);
+										intel.error(err);
+									} else {
+										fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
+											if (err) {
+												res.json(err);
+												intel.error(err);
+											};
+											intel.info(article.file.filename + ' was deleted.');
+										});
+										fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
+											if (err) {
+												res.json(err);
+												intel.error(err);
+											};
+											intel.info('small-' + article.file.filename + ' was deleted.');
+										});
+										article.save(saveCallback(req, res, file, user));
+									}
+								})
+							});
+						} else if (isVideo) {
+							File.findById(article.file._id, function(err, file) {
+								file.filename = fileMeta.fileName;
+								file.contentType = mime.getType(fileMeta.extension);
+								file.save(function (err, file){
+									if (err) {
+										res.sendStatus(400);
+										res.json(err);
+										intel.error(err);
+									} else {
+									fs.unlink(UPLOAD_PATH_VIDEOS + '/' + article.file.filename.substring(0, article.file.filename.lastIndexOf('.')) + '.mp4', (err) => {
+										if (err) {
+											res.json(err);
+											intel.error(err);
+										};
+										intel.info(article.file.filename + ' was deleted.');
+									});
+									fs.unlink(UPLOAD_PATH_VIDEOS + '/convert_' + article.file.filename, (err) => {
+										if (err) {
+											res.json(err);
+											intel.error(err);
+										};
+										intel.info(article.file.filename + ' was deleted.');
+									});
+									fs.unlink(UPLOAD_PATH_VIDEOS + '/convert_' + article.file.filename.substring(0, article.file.filename.lastIndexOf('.')) + '.ogv', (err) => {
+										if (err) {
+										res.json(err);
+										intel.error(err);
+										};
+										intel.info(article.file.filename + ' was deleted.');
+									});
+									fs.unlink(UPLOAD_PATH_VIDEOS + '/convert_' + article.file.filename.substring(0, article.file.filename.lastIndexOf('.')) + '.webm', (err) => {
+										if (err) {
+											res.json(err);
+											intel.error(err);
+										};
+										intel.info(article.file.filename + ' was deleted.');
+									});
+									fs.unlink(UPLOAD_PATH_VIDEOS + '/screenshot_' + article.file.filename.substring(0, article.file.filename.lastIndexOf('.')) + '.png', (err) => {
+										if (err) {
+											res.json(err);
+											intel.error(err);
+										};
+										intel.info(article.file.filename + ' was deleted.');
+									});
+									article.save(saveCallback(req, res, file, user));
+									}
+								})
+							});
+						}
 					} else {
 						article.save(function (err, article) {
 							if (err) {
@@ -692,7 +749,7 @@ function updateArticle(req, res, next) {
 							res.status(201);
 							res.json(article);
 							intel.info('Updated article ', article);
-						})
+						});
 				 }
 				}); 
 			}   
@@ -760,16 +817,16 @@ function updateArticle(req, res, next) {
 							})
 						})
 					} else {
-						// article.save(function(err, article) {
-						//     if(err) {
-						//     res.json(err);
-						//     intel.error(err);
-						//     } else {
-						//         res.json(article);
-						//         intel.info('Updated article ', article);
-						//     }
-						// });
-						article.save(saveCallback(req, res));
+						article.save(function (err, article) {
+							if (err) {
+								res.status(400);
+								res.json(err);
+								intel.error('Can\'t save article ', err);
+							}
+							res.status(201);
+							res.json(article);
+							intel.info('Updated article ', article);
+						});
 					}
 				}); 
 			}
@@ -876,7 +933,7 @@ function deleteArticle(req, res, next) {
 										intel.error(err);
 									} 
 									intel.info(`File delete for article[${article._id}]`);
-									fs.unlink(UPLOAD_PATH_VIDEOS + '/' + article.file.filename.substring(0, article.file.filename.lastIndexOf('.')) + '.mp4', (err) => {
+									fs.unlink(UPLOAD_PATH_VIDEOS + '/' + article.file.filename, (err) => {
 										if (err) {
 											res.json(err);
 											intel.error(err);

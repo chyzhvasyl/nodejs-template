@@ -584,20 +584,20 @@ function updateArticle(req, res, next) {
 										if (article.status == 'created' && req.body.status == 'not approved by editor') {
 												let sockets = req.io.sockets.clients();
 												let socketsArray = Object.values(sockets.sockets);
-												let authors = User.find({ roles: 'CN=NEWS_Author' }, function(err, users) {
-														if(err) {
-															res.status(400);
-															res.json(err);
-															intel.error(err);
-														} else {
-															return users;
-														}
-												});
-												authorsArray = Object.values(authors);
-												authorsArray.forEach(author => {
+												// let authors = User.find({ roles: 'CN=NEWS_Author' }, function(err, users) {
+												// 		if(err) {
+												// 			res.status(400);
+												// 			res.json(err);
+												// 			intel.error(err);
+												// 		} else {
+												// 			return users;
+												// 		}
+												// });
+												// authorsArray = Object.values(authors);
+												// authorsArray.forEach(author => {
 														
-												});
-												console.log(authors);
+												// });
+												// console.log(authors);
 												article.status = req.body.status;
 												for (let i = 0; i < socketsArray.length; i++) {
 														if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Author') != -1) {
@@ -800,99 +800,119 @@ function likeArticle(req, res, next) {
 
 // *** delete SINGLE article *** //
 function deleteArticle(req, res, next) {
-		passport.authenticate('local', function(err, user, info) {
-				if (err) { return next(err); }
-				if (util.hasRole(user, 'CN=NEWS_Administrator')) {
-						Article.findByIdAndDelete(req.params.id)
-						.populate('file')
-						.exec(function (err, article) {
-						if (err) {
-								res.json(err);
-						} else {
-				Comment.deleteMany({article: article._id}, function (err) {
-						if (err) {
-								res.status(400);
-								res.json(err);
-								intel.error(err);
-						}
-						intel.info(`Comments deleted for article[${article._id}]`);
-				});
-				CommentByEditor.deleteMany({article: article._id}, function (err) {
-						if (err) {
-								res.status(400);
-								res.json(err);
-								intel.error(err);
-						}
-						intel.info(`CommentByEditor deleted for article[${article._id}]`);
-				});
-				CommentByPublisher.deleteMany({article: article._id}, function (err) {
-						if (err) {
-								res.status(400);
-								res.json(err);
-								intel.error(err);
-						}
-						intel.info(`CommentByPublisher deleted for article[${article._id}]`);
-				});
-				// TODO: to separate function image or video
-				const imageFileTypes = /image/;
-				const videoFileTypes = /video/;
-				const isImage = imageFileTypes.test(article.file.contentType);
-				const isVideo = videoFileTypes.test(article.file.contentType);
-				if (isImage) {
-						File.deleteOne({_id: article.file.id}, function (err) {
+	passport.authenticate('local', function(err, user, info) {
+		if (err) { return next(err); }
+			if (util.hasRole(user, 'CN=NEWS_Administrator')) {
+				Article.findByIdAndDelete(req.params.id)
+				.populate('file')
+				.exec(function (err, article) {
+					if (err) {
+						res.json(err);
+					} else {
+							Comment.deleteMany({article: article._id}, function (err) {
 								if (err) {
-										res.json(err);
-										intel.error(err);
-								} 
-								intel.info(`File delete for article[${article._id}]`);
-								fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
-										if (err) {
-												res.json(err);
-												intel.error(err);
-										};
-										intel.info(article.file.filename + ' was deleted.');
-								});
-								fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
-										if (err) {
-												res.json(err);
-												intel.error(err);
-										};
-										intel.info('small-' + article.file.filename + ' was deleted.');
-								});
-							});
-				} else if (isVideo) {
-						// TODO: delete video files
-						File.deleteOne({_id: article.file.id}, function (err) {
-							if (err) {
+									res.status(400);
 									res.json(err);
 									intel.error(err);
-							} 
-							intel.info(`File delete for article[${article._id}]`);
-							fs.unlink(UPLOAD_PATH_VIDEOS + '/' + article.file.filename, (err) => {
+								}
+								intel.info(`Comments deleted for article[${article._id}]`);
+							});
+							CommentByEditor.deleteMany({article: article._id}, function (err) {
+								if (err) {
+									res.status(400);
+									res.json(err);
+									intel.error(err);
+								}
+								intel.info(`CommentByEditor deleted for article[${article._id}]`);
+							});
+							CommentByPublisher.deleteMany({article: article._id}, function (err) {
+								if (err) {
+									res.status(400);
+									res.json(err);
+									intel.error(err);
+								}
+								intel.info(`CommentByPublisher deleted for article[${article._id}]`);
+							});
+							// TODO: to separate function image or video
+							const imageFileTypes = /image/;
+							const videoFileTypes = /video/;
+							const isImage = imageFileTypes.test(article.file.contentType);
+							const isVideo = videoFileTypes.test(article.file.contentType);
+							if (isImage) {
+								File.deleteOne({_id: article.file.id}, function (err) {
 									if (err) {
+										res.json(err);
+										intel.error(err);
+									} 
+									intel.info(`File delete for article[${article._id}]`);
+									fs.unlink(UPLOAD_PATH_IMAGES + '/' + article.file.filename, (err) => {
+										if (err) {
 											res.json(err);
 											intel.error(err);
-									};
+										};
+										intel.info(article.file.filename + ' was deleted.');
+									});
+									fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
+										if (err) {
+											res.json(err);
+											intel.error(err);
+										};
+										intel.info('small-' + article.file.filename + ' was deleted.');
+									});
+								});
+							} else if (isVideo) {
+								File.deleteOne({_id: article.file.id}, function (err) {
+									if (err) {
+										res.json(err);
+										intel.error(err);
+									} 
+									intel.info(`File delete for article[${article._id}]`);
+									fs.unlink(UPLOAD_PATH_VIDEOS + '/' + article.file.filename.substring(0, article.file.filename.lastIndexOf('.')) + '.mp4', (err) => {
+										if (err) {
+											res.json(err);
+											intel.error(err);
+										};
+										intel.info(article.file.filename + ' was deleted.');
+									});
+									fs.unlink(UPLOAD_PATH_VIDEOS + '/convert_' + article.file.filename.substring(0, article.file.filename.lastIndexOf('.')) + '.mp4', (err) => {
+										if (err) {
+											res.json(err);
+											intel.error(err);
+										};
+										intel.info(article.file.filename + ' was deleted.');
+									});
+									fs.unlink(UPLOAD_PATH_VIDEOS + '/convert_' + article.file.filename.substring(0, article.file.filename.lastIndexOf('.')) + '.ogv', (err) => {
+										if (err) {
+										res.json(err);
+										intel.error(err);
+										};
+										intel.info(article.file.filename + ' was deleted.');
+									});
+									fs.unlink(UPLOAD_PATH_VIDEOS + '/convert_' + article.file.filename.substring(0, article.file.filename.lastIndexOf('.')) + '.webm', (err) => {
+										if (err) {
+											res.json(err);
+											intel.error(err);
+										};
+										intel.info(article.file.filename + ' was deleted.');
+									});
+									fs.unlink(UPLOAD_PATH_VIDEOS + '/screenshot_' + article.file.filename.substring(0, article.file.filename.lastIndexOf('.')) + '.png', (err) => {
+										if (err) {
+											res.json(err);
+											intel.error(err);
+										};
 									intel.info(article.file.filename + ' was deleted.');
-							});
-							fs.unlink(UPLOAD_PATH_IMAGES+ '/small-' + article.file.filename, (err) => {
-									if (err) {
-											res.json(err);
-											intel.error(err);
-									};
-									intel.info('small-' + article.file.filename + ' was deleted.');
-							});
-						});
-				}
-				res.json(article);
-				intel.info('Deleted article ', article);
-		}
-	});
-				} else {
-						res.status(403);
-						res.send('Access denied');
-				}
-			})(req, res, next);
+									});
+								});
+							}
+						res.json(article);
+						intel.info('Deleted article ', article);
+					}
+				});
+			} else {
+				res.status(403);
+				res.send('Access denied');
+			}
+	})(req, res, next);
 }
 
 module.exports = router;

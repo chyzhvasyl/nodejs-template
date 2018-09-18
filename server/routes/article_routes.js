@@ -419,8 +419,7 @@ function saveCallback(req, res, file, user) {
 			res.json(err);
 			intel.error('Can\'t save article ', err);
 		} else {
-			// TODO: любой тип
-			if (file.contentType == "video/mp4") {
+			if (file.contentType.indexOf('video') != -1) {
 				convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
 					if(!err) {
 						console.log('conversion complete');
@@ -552,7 +551,6 @@ function getScreenshot(filePath, fileName, outputFolder, callback) {
 }
 
 // *** update SINGLE article *** //
-// FIXME: Update single article method
 function updateArticle(req, res, next) {
 	passport.authenticate('local', function(err, user, info) {
 		if (err) { return next(err); }

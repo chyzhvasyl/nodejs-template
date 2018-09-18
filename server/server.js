@@ -187,6 +187,14 @@ passport.use(new LocalStrategy(
 		});
 	}
 ));
+server.use((err, req, res, next) => {
+	if (! err) {
+			return next();
+	}
+
+	res.status(500);
+	res.send('500: Internal server error');
+});
 // server.use(forceSsl);
 // another middlewares
 

@@ -132,6 +132,12 @@ server.use(function(req,res,next){
 	req.io = io;
 	next();
 });
+//TODO make better way to handle errors - user domains
+process.on('uncaughtException', function(err) {
+    // handle the error safely
+	intel.error(err);
+    console.log(err);
+});
 passport.use(new LocalStrategy(
 	function(login, password, done) {
 		User.findOne({ login: login }, function(err, user) {

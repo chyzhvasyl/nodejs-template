@@ -358,8 +358,8 @@ function addArticle(req, res, next) {
 			if (req.headers['content-type'].indexOf('application/json') !== -1) {
 				if (req.body.fileBase64 && req.body.fileBase64Small) {
 					const currentDate = Date.now();
-					const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate);
-					const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate);
+					const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate, res);
+					const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate, res);
 					const newFile = new File();
 					newFile.filename = fileMeta.fileName;
 					newFile.contentType = mime.getType(fileMeta.extension);
@@ -390,7 +390,7 @@ function addArticle(req, res, next) {
 	})(req, res, next);
 }
 
-function saveFile(file, prefix, currentDate) {
+function saveFile(file, prefix, currentDate, res) {
 	if (file) {
 		const decodedImg = decodeBase64Image(file);
 		const imageBuffer = decodedImg.data;
@@ -398,7 +398,7 @@ function saveFile(file, prefix, currentDate) {
 		const extension = mime.getExtension(type);
 		const fileName = `${prefix}-${currentDate}.${extension}`;
 		try {
-			fs.writeFile(UPLOAD_PATH_IMAGES + '/' + fileName, imageBuffer, 'utf8');
+			fs.writeFileSync(UPLOAD_PATH_IMAGES + '/' + fileName, imageBuffer, 'utf8');
 				return {
 					fileName: fileName,
 					extension: extension
@@ -621,8 +621,8 @@ function updateArticle(req, res, next) {
 					}
 					if (req.body.fileBase64 && req.body.fileBase64Small) {
 						const currentDate = Date.now();
-						const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate);
-						const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate);
+						const fileMeta = saveFile(req.body.fileBase64, 'img', currentDate, res);
+						const smallFileMeta = saveFile(req.body.fileBase64Small, 'small-img', currentDate, res);
 						const imageFileTypes = /image/;
 						const videoFileTypes = /video/;
 						const isImage = imageFileTypes.test(article.file.contentType);

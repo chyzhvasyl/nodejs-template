@@ -282,7 +282,8 @@ io.on('connection', function(socket){
 		io.emit('chat message', msg);
 	});
 	socket.on('login', function(user){
-		socket.handshake.session.user = user;
+        console.log('user logged in ' + JSON.stringify(user));
+        socket.handshake.session.user = user;
 		socket.handshake.session.save();
 		console.log(socket.handshake.session.user);
 	});

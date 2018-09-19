@@ -895,7 +895,7 @@ function updateArticle(req, res, next) {
 function likeArticle(req, res, next) {
 	passport.authenticate('local', function(err, user, info) {
 		if (err) { return next(err); }
-		if (util.hasRole(user, 'CN=NEWS_Administrator')) {
+		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
 			let likeAction;
 			if (req.params.is_liked == 'false') {
 				likeAction = { $inc: { likes: 1 } };

@@ -188,6 +188,7 @@ passport.use(new LocalStrategy(
 	}
 ));
 server.use((err, req, res, next) => {
+	// TODO: log file
 	if (! err) {
 			return next();
 	}

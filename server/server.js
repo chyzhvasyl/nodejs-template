@@ -19,6 +19,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const request = require('request');
 const User = require('./models/user');
 const Template = require('./models/template');
+const Category = require('./models/category');
 const flash = require('connect-flash');
 const uuidv4 = require('uuid/v4');
 const sharedsession = require('express-socket.io-session');
@@ -52,21 +53,21 @@ mongoose.connect(dbConfig.database, (err) => {
 				if (!templates || Object.keys(templates).length == 0) {
 					let newTemplate = new Template({
 						generalStyles: {
-							fontSizeMetric: '1',
-							backgroundColor: '1',
+							fontSizeMetric: 'px',
+							backgroundColor: '#ffffff',
 						},
 						articleStyles: {
 							shortBody: {
-								length: 1,
-								fontSize: 1
+								length: 250,
+								fontSize: 14
 							},
 							body: {
-								length: 1,
-								fontSize: 1
+								length: 750,
+								fontSize: 16
 							},
 							title: { 
-								length: 1,
-								fontSize: 1
+								length: 150,
+								fontSize: 18
 							}
 						},
 						cookieLifeTime : 9999
@@ -79,6 +80,29 @@ mongoose.connect(dbConfig.database, (err) => {
 							intel.error(err);
 						} else { 
 							intel.info('Added new template ', newTemplate);
+						}
+					});
+				}
+			}
+		});
+		Category.find(function(err, categories) {
+			if(err) {
+				// res.status(400);
+				// res.json(err);
+				intel.error(err);
+			} else {
+				if (!categories || Object.keys(categories).length == 0) {
+					let newCategory = new Category({
+						"name" : "прочее"
+					});
+									
+					newCategory.save(function(err, newCategory) {
+						if(err) {
+							//	res.status(400);
+							//	res.json(err);
+							intel.error(err);
+						} else { 
+							intel.info('Added new category ', newCategory);
 						}
 					});
 				}

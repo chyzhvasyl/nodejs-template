@@ -902,7 +902,7 @@ function likeArticle(req, res, next) {
 			} else {
 				likeAction = { $inc: { likes: -1 } };
 			}
-			Article.findOneAndUpdate(req.params.id, likeAction, { new: true }, function (err, article) {
+			Article.findOneAndUpdate({_id: req.params.id}, likeAction, { new: true }, function (err, article) {
 				if (err) {
 					res.status(400);
 					res.json(err);

@@ -637,7 +637,7 @@ function updateArticle(req, res, next) {
 									req.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(article));
 								} 
 							}
-						} else if (article.status == 'not approved by publisher' && req.body.status == 'modified') {
+						} else if (article.status === 'not approved by publisher' && req.body.status == 'modified') {
 							let sockets = req.io.sockets.clients();
 							let socketsArray = Object.values(sockets.sockets);
 							article.status = req.body.status;

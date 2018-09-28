@@ -2,13 +2,11 @@
 // TODO: Перемотка видео
 // TODO: Likes
 // TODO: Remove useless files from git
-// TODO: Табы на 2 все файлы роутов
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
+// const https = require('https');
 const express = require('express');
 const mongoose = require('mongoose');
-const dbConfig = require('./config/database');
 const corsOptions = require('./config/cors');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -16,21 +14,23 @@ const morgan = require('morgan');
 const intel = require('intel');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const request = require('request');
 const User = require('./models/user');
-const Template = require('./models/template');
 const Category = require('./models/category');
+const Template = require('./models/template');
+const dbConfig = require('./config/database');
+const request = require('request');
 const flash = require('connect-flash');
 const uuidv4 = require('uuid/v4');
+const redis = require('redis');
 const sharedsession = require('express-socket.io-session');
-const session = require('express-session')({  
+const session = require('express-session')({
 	secret: 'ssshhhhh',
 	resave: true,
 	saveUninitialized: true
 });
 // const forceSsl = require('express-force-ssl');
 
-// *** express instance *** //
+// *** http, express instance *** //
 const server = express();
 const http = require('http').Server(server);
 const io = require('socket.io')(http);
@@ -43,11 +43,8 @@ mongoose.connect(dbConfig.database, (err) => {
 	} else {
 		console.log('Connected to database ' + dbConfig.database);
 		intel.info('Connected to database %s', dbConfig.database);
-		// TODO: default values, res, иногда летит undefined
 		Template.find(function(err, templates) {
 			if(err) {
-				// res.status(400);
-				// res.json(err);
 				intel.error(err);
 			} else {
 				if (!templates || Object.keys(templates).length == 0) {
@@ -75,8 +72,6 @@ mongoose.connect(dbConfig.database, (err) => {
 									
 					newTemplate.save(function(err, newTemplate) {
 						if(err) {
-							//	res.status(400);
-							//	res.json(err);
 							intel.error(err);
 						} else { 
 							intel.info('Added new template ', newTemplate);
@@ -87,8 +82,6 @@ mongoose.connect(dbConfig.database, (err) => {
 		});
 		Category.find(function(err, categories) {
 			if(err) {
-				// res.status(400);
-				// res.json(err);
 				intel.error(err);
 			} else {
 				if (!categories || Object.keys(categories).length == 0) {
@@ -98,8 +91,6 @@ mongoose.connect(dbConfig.database, (err) => {
 									
 					newCategory.save(function(err, newCategory) {
 						if(err) {
-							//	res.status(400);
-							//	res.json(err);
 							intel.error(err);
 						} else { 
 							intel.info('Added new category ', newCategory);
@@ -111,6 +102,29 @@ mongoose.connect(dbConfig.database, (err) => {
 	}
 });
 
+// *** redis config *** //
+const redisHostname = '172.17.0.2';
+const redisPort = 6379;
+
+const client = redis.createClient(redisPort, redisHostname);
+
+client.on('connect', function() {
+	console.log('Redis client connected');
+});
+
+client.on('error', function (err) {
+	console.log('Something went wrong ' + err);
+});
+
+client.set('my test key', 'my test value', redis.print);
+client.get('my test key', function (error, result) {
+	if (error) {
+		console.log(error);
+		throw error;
+	}
+	console.log('GET result ->' + result);
+});
+
 // *** logger *** //
 intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
 
@@ -120,8 +134,8 @@ const accessLogStream = fs.createWriteStream(path.join(__dirname, './logs/access
 // *** config middleware *** //
 server.use(express.static(path.join(__dirname, 'uploads')));
 server.use(cors(corsOptions));
-server.use(bodyParser.json({limit: "50mb"}));
-server.use(bodyParser.raw({limit: "50mb", extended: true, parameterLimit:50000}));
+server.use(bodyParser.json({limit: '50mb'}));
+server.use(bodyParser.raw({limit: '50mb', extended: true, parameterLimit:50000}));
 // TODO: session or cookie parser
 server.use(session);
 io.use(sharedsession(session));
@@ -132,11 +146,15 @@ server.use(function(req,res,next){
 	req.io = io;
 	next();
 });
-//TODO make better way to handle errors - user domains
+server.use(function(req,res,next){
+	req.client = client;
+	next();
+});
+//TODO: make better way to handle errors - user domains
 process.on('uncaughtException', function(err) {
-    // handle the error safely
+	// handle the error safely
 	intel.error(err);
-    console.log(err);
+	console.log(err);
 });
 passport.use(new LocalStrategy(
 	function(login, password, done) {
@@ -181,34 +199,34 @@ passport.use(new LocalStrategy(
 					return done(null, user);
 				} else {
 					request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {"UserName": login, "Password": password}}, function optionalCallback(err, httpResponse, body) {
-					if (err) {
-						return console.error('upload failed:', err);
-					} else if (httpResponse.statusCode == 200) {
-						const newToken = uuidv4();
-						User.findOneAndUpdate(
-						{ login: login, token: user.token },
-						{
-							token: newToken,
-							login: login,
-							firstName: body.FirstName,
-							lastName: body.LastName,
-							secondaryName: body.SecondName,
-							roles: body.ListGroups
-						}, 
-						{ new: true }, (function(err, updatedUser){
-							if(err) {
-								// res.status(400);
-								// res.json(err);
-								intel.error(err);
-								return done(null, false);
-							} else {
-								intel.info('Added new user ', updatedUser);
-								updatedUser = updatedUser.toObject();
-								updatedUser['isCookie'] = false;
-								return done(null, updatedUser);
-							}
-						})
-						)} else {
+						if (err) {
+							return console.error('upload failed:', err); 
+						} else if (httpResponse.statusCode == 200) {
+							const newToken = uuidv4();
+							User.findOneAndUpdate(
+								{ login: login, token: user.token },
+								{
+									token: newToken,
+									login: login,
+									firstName: body.FirstName,
+									lastName: body.LastName,
+									secondaryName: body.SecondName,
+									roles: body.ListGroups
+								}, 
+								{ new: true }, (function(err, updatedUser){
+									if(err) {
+										// res.status(400);
+										// res.json(err);
+										intel.error(err);
+										return done(null, false);
+									} else {
+										intel.info('Added new user ', updatedUser);
+										updatedUser = updatedUser.toObject();
+										updatedUser['isCookie'] = false;
+										return done(null, updatedUser);
+									}
+								})
+							)} else {
 							return done(null, false);     
 						}
 					});
@@ -220,7 +238,7 @@ passport.use(new LocalStrategy(
 server.use((err, req, res, next) => {
 	// TODO: log file
 	if (! err) {
-			return next();
+		return next();
 	}
 
 	res.status(500);
@@ -266,18 +284,18 @@ server.post('/login', function(req, res, next) {
 				}
 				return res.json(user);
 			})
-			} else {
-				return res.sendStatus(401);
-			}
+		} else {
+			return res.sendStatus(401);
+		}
 	})(req, res, next);
 });
 
 // *** server config *** //
-const hostname = '192.168.0.123';
+// const hostname = '192.168.0.123';
 const port = 3000; 
 
 // server.listen(port, () => {
-//     console.log(`Server started on port + ${port}`);
+//     console.log(`Server started on port + ${port}`);   
 //     intel.info(`Server started on port , ${port}`);
 // });
 
@@ -288,10 +306,27 @@ io.on('connection', function(socket){
 		io.emit('chat message', msg);
 	});
 	socket.on('login', function(user){
-        console.log('user logged in ' + JSON.stringify(user));
-        socket.handshake.session.user = user;
+    console.log('user logged in ' + JSON.stringify(user));
+		socket.handshake.session.user = user;
 		socket.handshake.session.save();
 		console.log(socket.handshake.session.user);
+		// check redis
+		client.keys('*', function (err, keys) {
+			if (err) return 
+		
+			for(var i = 0, len = keys.length; i < len; i++) {
+				if (keys[i] === socket.handshake.session.user.login) {
+					client.get(keys[i], function (error, result) {
+						if (error) {
+								
+							throw error;
+						}
+						socket.id.emit('update', result);
+						client.del(keys[i]);
+					});
+				}
+			}
+		});
 	});
 	socket.on('disconnect', function(){
 		console.log('user disconnected');

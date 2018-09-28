@@ -29,7 +29,7 @@
         $('form').submit(function(){
             socket.emit('chat message', $('#m').val());
             $('#m').val('');
-            socket.emit('login', 'userdata1');
+            socket.emit('login', 'userdata');
             return false;
         });
         socket.on('chat message', function(msg){

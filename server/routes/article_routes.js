@@ -437,6 +437,7 @@ function saveCallback(req, res, file, user) {
 				intel.info('Added new article ', articleResponse);
 			} else {
 				let articleResponse = addFileUrl(article.toJSONObject(), file, req, user);
+				// TODO: io
 				// let sockets = req.io.sockets.clients();
 				// let socketsArray = Object.values(sockets.sockets);
 				// for (let i = 0; i < socketsArray.length; i++) {
@@ -594,12 +595,12 @@ function updateArticle(req, res, next) {
 								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
 							} else if (article.status == 'modified' && req.body.status == 'published') {
 								article.status = req.body.status;
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Reader', 'update', req);
 							} else if (article.status === 'not approved by publisher' && req.body.status == 'modified') {
 								article.status = req.body.status;
 								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
 							} else {
-            	article.status = req.body.status;
+								article.status = req.body.status;
 							}
 						}
 						if (req.params.category_id) {
@@ -702,7 +703,7 @@ function updateArticle(req, res, next) {
 								res.json(article);
 								intel.info('Updated article ', article);
 							});
-				 }
+						}
 					}); 
 			}   
 			if (req.headers['content-type'].indexOf('multipart/form-data') !== -1) {
@@ -748,7 +749,7 @@ function updateArticle(req, res, next) {
 										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
 									} else if (article.status == 'modified' && req.body.status == 'published') {
 										article.status = req.body.status;
-										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
+										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Reader', 'update', req);
 									} else if (article.status === 'not approved by publisher' && req.body.status == 'modified') {
 										article.status = req.body.status;
 										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
@@ -887,7 +888,7 @@ function notifyUsers(clientSockets, connectedSockets, article, role, event, requ
 			const socket = socketsArray[i];
 			let session = socket.handshake.session;
 			if (session.user && session.user.roles && Array.isArray(session.user.roles)) {
-				usersArray = usersArray.filter(user => user.token != session.user.token);
+				usersArray = usersArray.filter(user => user.login != session.user.login);
 			} else {
 				console.warn('Socket: ' + socket.id + ' has invalid session: ');
 			}

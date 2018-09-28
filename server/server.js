@@ -30,7 +30,7 @@ const session = require('express-session')({
 });
 // const forceSsl = require('express-force-ssl');
 
-// *** http, express instance *** //
+// *** http, express instance *** //Перемотка
 const server = express();
 const http = require('http').Server(server);
 const io = require('socket.io')(http);
@@ -116,14 +116,14 @@ client.on('error', function (err) {
 	console.log('Something went wrong ' + err);
 });
 
-client.set('my test key', 'my test value', redis.print);
-client.get('my test key', function (error, result) {
-	if (error) {
-		console.log(error);
-		throw error;
-	}
-	console.log('GET result ->' + result);
-});
+// client.set('my test key', 'my test value', redis.print);
+// client.get('my test key', function (error, result) {
+// 	if (error) {
+// 		console.log(error);
+// 		throw error;
+// 	}
+// 	console.log('GET result ->' + result);
+// });
 
 // *** logger *** //
 intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
@@ -189,7 +189,6 @@ passport.use(new LocalStrategy(
 								return done(null, newUser);
 							}
 						});
-									 
 					} else {
 						return done(null, false);     
 					}
@@ -302,28 +301,27 @@ const port = 3000;
 // *** socket.io config *** //
 io.on('connection', function(socket){
 	console.log('user connected');
-	socket.on('chat message', function(msg){
-		io.emit('chat message', msg);
-	});
+	// socket.on('chat message', function(msg){
+	// 	io.emit('chat message', msg);
+	// });
 	socket.on('login', function(user){
-    console.log('user logged in ' + JSON.stringify(user));
+    // console.log('user logged in ' + JSON.stringify(user));
 		socket.handshake.session.user = user;
 		socket.handshake.session.save();
-		console.log(socket.handshake.session.user);
+		// console.log(socket.handshake.session.user);
 		// check redis
 		client.keys('*', function (err, keys) {
-			if (err) return 
-		
-			for(var i = 0, len = keys.length; i < len; i++) {
+			if (err) return console.log(err);
+			for(var i = 0; i <= keys.length; i++) {
 				if (keys[i] === socket.handshake.session.user.login) {
-					client.get(keys[i], function (error, result) {
-						if (error) {
-								
-							throw error;
+					client.get(keys[i], function (err, result) {
+						if (err) {	
+							intel.error(err);
+						} else {
+							socket.local.emit('update', result);
 						}
-						socket.id.emit('update', result);
-						client.del(keys[i]);
 					});
+					client.del(keys[i]);
 				}
 			}
 		});

@@ -312,8 +312,9 @@ io.on('connection', function(socket){
 		// check redis
 		client.keys('*', function (err, keys) {
 			if (err) return console.log(err);
-			for(var i = 0; i <= keys.length; i++) {
-				if (keys[i] === socket.handshake.session.user.login) {
+			for(var i = 0; i <= keys.length -1; i++) {
+				// не работает
+				if (~keys[i].toString().indexOf(socket.handshake.session.user.login)) {
 					client.get(keys[i], function (err, result) {
 						if (err) {	
 							intel.error(err);

@@ -438,13 +438,7 @@ function saveCallback(req, res, file, user) {
 			} else {
 				let articleResponse = addFileUrl(article.toJSONObject(), file, req, user);
 				// TODO: io
-				// let sockets = req.io.sockets.clients();
-				// let socketsArray = Object.values(sockets.sockets);
-				// for (let i = 0; i < socketsArray.length; i++) {
-				// 	if (socketsArray[i].handshake.session.user.roles.indexOf('CN=NEWS_Editor') != -1) {
-				// 		eq.io.sockets.connected[ socketsArray[i].id ].emit('update', JSON.stringify(articleResponse));
-				// 	} 
-				// }
+				notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
 				res.status(201);
 				res.json(articleResponse);
 				intel.info('Added new article ', articleResponse);
@@ -598,7 +592,7 @@ function updateArticle(req, res, next) {
 								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Reader', 'update', req);
 							} else if (article.status === 'not approved by publisher' && req.body.status == 'modified') {
 								article.status = req.body.status;
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_publisher', 'update', req);
 							} else {
 								article.status = req.body.status;
 							}
@@ -895,7 +889,7 @@ function notifyUsers(clientSockets, connectedSockets, article, role, event, requ
 		}
 		console.log(usersArray);
 		for (let i = 0; i < usersArray.length; i++) {
-			request.client.set(usersArray[i].login, article, redis.print);
+			request.client.set(usersArray[i].login + Date.now(), article, redis.print);
 		}
 	});
 }

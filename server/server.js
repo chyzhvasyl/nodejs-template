@@ -314,13 +314,12 @@ io.on('connection', function(socket){
 			if (err) return console.log(err);
 			for(var i = 0; i <= keys.length -1; i++) {
 				// не работает
-				if (~keys[i].toString().indexOf(socket.handshake.session.user.login)) {
+				if (keys[i].indexOf(socket.handshake.session.user.login) != -1) {
 					client.get(keys[i], function (err, result) {
 						if (err) {	
 							intel.error(err);
-						} else {
-							socket.local.emit('update', result);
 						}
+						socket.local.emit('update', JSON.parse(result));
 					});
 					client.del(keys[i]);
 				}

@@ -889,7 +889,7 @@ function notifyUsers(clientSockets, connectedSockets, article, role, event, requ
 		}
 		console.log(usersArray);
 		for (let i = 0; i < usersArray.length; i++) {
-			request.client.set(usersArray[i].login + Date.now(), article, redis.print);
+			request.client.set(usersArray[i].login + Date.now(), JSON.stringify(article), redis.print);
 		}
 	});
 }

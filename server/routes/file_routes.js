@@ -89,14 +89,26 @@ function findVideoById(req, res, next) {
 					res.json(err);
 					intel.error(err);
 				}
+				const videoPath = path.join(UPLOAD_PATH + '/videos/', 'convert_' + file.filename);
+				const stat = fs.statSync(videoPath);
+				const fileSize = stat.size;
+				const range = 'bytes=0-';
+				const parts = range.replace(/bytes=/, '').split('-');
+				const start = parseInt(parts[0], 10);
+				const end = parts[1] ? parseInt(parts[1], 10) : fileSize-1;
+				const chunksize = (end-start)+1;
+				const videoFile = fs.createReadStream(videoPath, {start, end});
 				if (req.params.format === 'ogv') {
-					res.setHeader('Content-Type', 'video/ogg'); 
+					res.setHeader('Content-Type', 'video/ogg');
 				} else if (req.params.format === 'mp4') {
-					res.setHeader('Content-Type', 'video/mp4'); 
+					res.setHeader('Content-Type', 'video/mp4');
 				} else if (req.params.format === 'webm') {
-					res.setHeader('Content-Type', 'video/webm'); 
+					res.setHeader('Content-Type', 'video/webm');
 				}
-				fs.createReadStream(path.join(UPLOAD_PATH + '/videos/', 'convert_' + file.filename)).pipe(res);
+				res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
+				res.setHeader('Accept-Ranges', 'bytes');
+				res.setHeader('Content-Length', chunksize);
+				videoFile.pipe(res);
 			});
 		} else {
 			res.status(403);

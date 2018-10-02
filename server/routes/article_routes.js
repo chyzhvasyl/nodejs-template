@@ -17,8 +17,8 @@ const UPLOAD_PATH_VIDEOS = UPLOAD_PATH + '/videos';
 const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
 const ffmpeg = require('fluent-ffmpeg');
 const passport = require('passport');
-const util = require('../util');
 const redis = require('redis');
+const util = require('../util');
 
 // *** api routes *** //
 router.get('/articles', findAllArticles);

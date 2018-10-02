@@ -1,5 +1,3 @@
-// TODO: WebSocket
-// TODO: Перемотка видео
 // TODO: Likes
 // TODO: Remove useless files from git
 const fs = require('fs');
@@ -30,7 +28,7 @@ const session = require('express-session')({
 });
 // const forceSsl = require('express-force-ssl');
 
-// *** http, express instance *** //Перемотка
+// *** http, express instance *** //
 const server = express();
 const http = require('http').Server(server);
 const io = require('socket.io')(http);
@@ -116,15 +114,6 @@ client.on('error', function (err) {
 	console.log('Something went wrong ' + err);
 });
 
-// client.set('my test key', 'my test value', redis.print);
-// client.get('my test key', function (error, result) {
-// 	if (error) {
-// 		console.log(error);
-// 		throw error;
-// 	}
-// 	console.log('GET result ->' + result);
-// });
-
 // *** logger *** //
 intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
 
@@ -149,12 +138,6 @@ server.use(function(req,res,next){
 server.use(function(req,res,next){
 	req.client = client;
 	next();
-});
-//TODO: make better way to handle errors - user domains
-process.on('uncaughtException', function(err) {
-	// handle the error safely
-	intel.error(err);
-	console.log(err);
 });
 passport.use(new LocalStrategy(
 	function(login, password, done) {
@@ -243,6 +226,12 @@ server.use((err, req, res, next) => {
 	res.status(500);
 	res.send('500: Internal server error');
 });
+//TODO: make better way to handle errors - user domains
+process.on('uncaughtException', function(err) {
+	// handle the error safely
+	intel.error(err);
+	console.log(err);
+});
 // server.use(forceSsl);
 // another middlewares
 
@@ -270,7 +259,7 @@ server.use('/', templateRoutes);
 server.use('/', userRoutes);
 
 server.post('/login', function(req, res, next) {
-	passport.authenticate('local', function(err, user, info) {
+	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (user) {
 			Template.find({}, function(err, templates) {
@@ -282,7 +271,7 @@ server.post('/login', function(req, res, next) {
 					user['cookieLifeTime'] = template.cookieLifeTime;
 				}
 				return res.json(user);
-			})
+			});
 		} else {
 			return res.sendStatus(401);
 		}
@@ -309,11 +298,9 @@ io.on('connection', function(socket){
 		socket.handshake.session.user = user;
 		socket.handshake.session.save();
 		// console.log(socket.handshake.session.user);
-		// check redis
 		client.keys('*', function (err, keys) {
 			if (err) return console.log(err);
 			for(var i = 0; i <= keys.length -1; i++) {
-				// не работает
 				if (keys[i].indexOf(socket.handshake.session.user.login) != -1) {
 					client.get(keys[i], function (err, result) {
 						if (err) {	

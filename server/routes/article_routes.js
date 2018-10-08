@@ -24,10 +24,10 @@ const dataChunk = require('../config/general');
 // *** api routes *** //
 router.get('/articles/:flag', findAllArticles);
 router.get('/article/:id/:confirmation', findArticleByIdAndConfirmation);
-router.get('/articles/category/:category_id/:confirmation', findAllArticlesByCategoryAndConfirmation);
-router.get('/articles/user/:user_id', findAllArticlesByUserId);
-router.get('/articles/confirmation/:confirmation', findAllArticlesByConfirmation);
-router.get('/articles/status', findAllArticlesBySeveralStatus);
+router.get('/articles/category/:category_id/:confirmation/:flag', findAllArticlesByCategoryAndConfirmation);
+router.get('/articles/user/:user_id/:flag', findAllArticlesByUserId);
+router.get('/articles/confirmation/:confirmation/:flag', findAllArticlesByConfirmation);
+router.get('/articles/status/:flag', findAllArticlesBySeveralStatus);
 router.post('/article/:category_id/:template_id?/:user_id?', addArticle);
 router.put('/article/:id/:category_id?', updateArticle);
 router.put('/article/:id/like/:is_liked', likeArticle);
@@ -123,7 +123,7 @@ function findAllArticlesByCategoryAndConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation})
+			Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation}).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' },
@@ -167,7 +167,7 @@ function findAllArticlesByConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Article.find({'confirmation':req.params.confirmation})
+			Article.find({'confirmation':req.params.confirmation}).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' },
@@ -211,7 +211,7 @@ function findAllArticlesByUserId(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Author')) {
-			Article.find({'user':req.params.user_id})
+			Article.find({'user':req.params.user_id}).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' }
@@ -253,7 +253,7 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]})
+			Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]}).skip(req.params.flag * dataChunk).limit(dataChunk
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' }

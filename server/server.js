@@ -217,15 +217,16 @@ passport.use(new LocalStrategy(
 		});
 	}
 ));
+
 server.use((err, req, res, next) => {
 	// TODO: log file
 	if (! err) {
 		return next();
 	}
-
 	res.status(500);
 	res.send('500: Internal server error');
 });
+
 //TODO: make better way to handle errors - user domains
 process.on('uncaughtException', function(err) {
 	// handle the error safely

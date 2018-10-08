@@ -19,9 +19,10 @@ const ffmpeg = require('fluent-ffmpeg');
 const passport = require('passport');
 const redis = require('redis');
 const util = require('../util');
+const dataChunk = require('../config/general'); 
 
 // *** api routes *** //
-router.get('/articles', findAllArticles);
+router.get('/articles/:flag', findAllArticles);
 router.get('/article/:id/:confirmation', findArticleByIdAndConfirmation);
 router.get('/articles/category/:category_id/:confirmation', findAllArticlesByCategoryAndConfirmation);
 router.get('/articles/user/:user_id', findAllArticlesByUserId);
@@ -37,7 +38,7 @@ function findAllArticles(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Administrator')) {
-			Article.find()
+			Article.find().skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' }

@@ -4,12 +4,12 @@ const intel = require('intel');
 const passport = require('passport');
 const Article = require('../models/article');
 const CommentByPublisher = require('../models/commentByPublisher');
-
+const dataChunk = require('../config/general');
 
 // *** api routes *** //
-router.get('/commentsByPublisher', findAllCommentsByPublisher);
+router.get('/commentsByPublisher/:flag', findAllCommentsByPublisher);
 router.get('/commentByPublisher/:id', findCommentByPublisherById);
-router.get('/commentsByPublisher/:confirmation', findCommentsByPublisherByConfirmation);
+router.get('/commentsByPublisher/:confirmation/:flag', findCommentsByPublisherByConfirmation);
 router.post('/commentByPublisher/:article_id/:user_id', addCommentByPublisher);
 router.put('/commentByPublisher/:id', updateCommentByPublisher);
 router.delete('/commentByPublisher/:id', deleteCommentByPublisher);
@@ -19,7 +19,7 @@ function findAllCommentsByPublisher(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
-			CommentByPublisher.find()
+			CommentByPublisher.find().skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate('article')
 				.exec(function(err, commentsByPublisher) {
 					if(err) {
@@ -67,7 +67,7 @@ function findCommentsByPublisherByConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
-			CommentByPublisher.find({'confirmation':req.params.confirmation})
+			CommentByPublisher.find({'confirmation':req.params.confirmation}).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate('article')
 				.exec(function(err, commentsByPublisher) {
 					if(err) {

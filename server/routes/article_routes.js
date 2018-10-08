@@ -253,7 +253,7 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]}).skip(req.params.flag * dataChunk).limit(dataChunk
+			Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]}).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' }

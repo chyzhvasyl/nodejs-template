@@ -19,7 +19,7 @@ function findAllCommentsByEditor(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (user && user.roles && user.roles.includes('CN=NEWS_Editor')) {
-			CommentByEditor.find().skip(req.params.flag * dataChunk).limit(dataChunk)
+			CommentByEditor.find().sort({ time : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate('article')
 				.exec(function(err, commentsByEditor) { 
 					if(err) {
@@ -67,7 +67,7 @@ function findCommentsByEditorByConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (user && user.roles && user.roles.includes('CN=NEWS_Editor')) {
-			CommentByEditor.find({'confirmation':req.params.confirmation}).skip(req.params.flag * dataChunk).limit(dataChunk)
+			CommentByEditor.find({'confirmation':req.params.confirmation}).sort({ time : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate('article')
 				.exec(function(err, commentsByEditor) {
 					if(err) {

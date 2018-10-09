@@ -20,7 +20,7 @@ function findAllComments(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Comment.find().skip(req.params.flag * dataChunk).limit(dataChunk)
+			Comment.find().sort({ time : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate('article')
 				.exec(function(err, comments) {
 					if(err) {
@@ -68,7 +68,7 @@ function findCommentsByConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Comment.find({'confirmation':req.params.confirmation}).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Comment.find({'confirmation':req.params.confirmation}).sort({ time : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate('article')
 				.exec(function(err, comments) {
 					if(err) {

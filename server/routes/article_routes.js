@@ -252,7 +252,7 @@ function findAllArticlesByUserId(req, res, next) {
 function findAllArticlesBySeveralStatus(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
-		if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
+		if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator', 'CN=NEWS_Author')) {
 			Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]}).sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
@@ -283,7 +283,7 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 					}
 				});
 		} else if (util.hasRole(user, 'CN=NEWS_publisher', 'CN=NEWS_Administrator')){
-			Article.find({ $or: [{status : 'modified'}]})
+			Article.find({ $or: [{status : 'modified'}]}).sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' }

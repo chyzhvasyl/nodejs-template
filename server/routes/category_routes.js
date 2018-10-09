@@ -5,10 +5,9 @@ const Article = require('../models/article');
 const intel = require('intel');
 const passport = require('passport');
 const util = require('../util');
-const dataChunk = require('../config/general');
 
 // *** api routes *** //
-router.get('/categories/:flag', findAllCategories);
+router.get('/categories', findAllCategories);
 router.get('/category/:id', findCategoryById);
 router.post('/category', addCategory);
 router.put('/category/:id', updateCategory);
@@ -19,7 +18,7 @@ function findAllCategories(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Category.find().skip(req.params.flag * dataChunk).limit(dataChunk).exec(function(err, categories) {
+			Category.find().exec(function(err, categories) {
 				if(err) {
 					res.status(400);
 					res.json(err);

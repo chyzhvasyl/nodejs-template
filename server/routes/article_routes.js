@@ -38,7 +38,7 @@ function findAllArticles(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Administrator')) {
-			Article.find().skip(req.params.flag * dataChunk).limit(dataChunk)
+			Article.find().sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' }

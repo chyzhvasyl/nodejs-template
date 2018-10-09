@@ -84,7 +84,7 @@ mongoose.connect(dbConfig.database, (err) => {
 			} else {
 				if (!categories || Object.keys(categories).length == 0) {
 					let newCategory = new Category({
-						"name" : "прочее"
+						'name' : 'прочее'
 					});
 									
 					newCategory.save(function(err, newCategory) {
@@ -118,7 +118,7 @@ client.on('error', function (err) {
 intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
 
 // *** morgan stream *** //
-const accessLogStream = fs.createWriteStream(path.join(__dirname, './logs/access.log'), {flags: 'a'})
+const accessLogStream = fs.createWriteStream(path.join(__dirname, './logs/access.log'), {flags: 'a'});
 
 // *** config middleware *** //
 server.use(express.static(path.join(__dirname, 'uploads')));

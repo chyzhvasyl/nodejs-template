@@ -123,7 +123,7 @@ function findAllArticlesByCategoryAndConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation}).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation}).sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' },
@@ -167,7 +167,7 @@ function findAllArticlesByConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Article.find({'confirmation':req.params.confirmation}).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Article.find({'confirmation':req.params.confirmation}).sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' },
@@ -211,7 +211,7 @@ function findAllArticlesByUserId(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Author')) {
-			Article.find({'user':req.params.user_id}).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Article.find({'user':req.params.user_id}).sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' }
@@ -253,7 +253,7 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]}).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]}).sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' }

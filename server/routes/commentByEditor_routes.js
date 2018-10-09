@@ -4,12 +4,11 @@ const CommentByEditor = require('../models/commentByEditor');
 const Article = require('../models/article');
 const intel = require('intel');
 const passport = require('passport');
-const dataChunk = require('../config/general');
 
 // *** api routes *** //
-router.get('/commentsByEditor/:flag', findAllCommentsByEditor);
+router.get('/commentsByEditor', findAllCommentsByEditor);
 router.get('/commentByEditor/:id', findCommentByEditorById);
-router.get('/commentsByEditor/:confirmation/:flag', findCommentsByEditorByConfirmation);
+router.get('/commentsByEditor/:confirmation', findCommentsByEditorByConfirmation);
 router.post('/commentByEditor/:article_id/:user_id', addCommentByEditor);
 router.put('/commentByEditor/:id', updateCommentByEditor);
 router.delete('/commentByEditor/:id', deleteCommentByEditor);
@@ -19,7 +18,7 @@ function findAllCommentsByEditor(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (user && user.roles && user.roles.includes('CN=NEWS_Editor')) {
-			CommentByEditor.find().sort({ time : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
+			CommentByEditor.find().sort({ time : -1 })
 				.populate('article')
 				.exec(function(err, commentsByEditor) { 
 					if(err) {
@@ -63,11 +62,12 @@ function findCommentByEditorById(req, res, next) {
 }
 
 // *** get All commentsByEditor by confirmation *** //
+//TODO: Нужно или нет
 function findCommentsByEditorByConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (user && user.roles && user.roles.includes('CN=NEWS_Editor')) {
-			CommentByEditor.find({'confirmation':req.params.confirmation}).sort({ time : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
+			CommentByEditor.find({'confirmation':req.params.confirmation})
 				.populate('article')
 				.exec(function(err, commentsByEditor) {
 					if(err) {

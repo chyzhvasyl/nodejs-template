@@ -11,7 +11,7 @@ const dataChunk = require('../config/general');
 router.get('/comments/:flag', findAllComments);
 router.get('/comment/:id', findCommentById);
 router.get('/comments/:confirmation/:flag', findCommentsByConfirmation);
-router.get('/comments_by_auth/:user_id', findAllCommentsOnAllUsersArticles);
+router.get('/comments_by_auth', findAllCommentsOnAllUsersArticles);
 router.post('/comment/:article_id/:user_id', addComment);
 router.put('/comment/:id', updateComment);
 router.delete('/comment/:id', deleteComment);
@@ -92,7 +92,7 @@ function findAllCommentsOnAllUsersArticles(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Author')) {
-			Article.find({'user':req.params.user_id}).populate('comments').exec(function(err, articles) {
+			Article.find({'user':user.id}).populate('comments').exec(function(err, articles) {
 				if(err) {
 					res.status(400);
 					res.json(err);

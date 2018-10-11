@@ -30,7 +30,7 @@ router.get('/articles/confirmation/:confirmation/:flag', findAllArticlesByConfir
 router.get('/articles/status/:flag', findAllArticlesBySeveralStatus);
 router.post('/article/:category_id/:template_id?/:user_id?', addArticle);
 router.put('/article/:id/:category_id?', updateArticle);
-router.put('/article/:id/like/:is_liked', likeArticle);
+router.put('/article/:id/like', likeArticle);
 router.delete('/article/:id', deleteArticle);
 
 // *** get ALL articles *** //
@@ -900,46 +900,28 @@ function likeArticle(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			if (req.params.is_liked == 'true') {
-				Article.findById({_id: req.params.id}, function(err, article) {
-					if (err) {
-						res.status(400);
-						res.json(err);
-						intel.error(err);
-					} else {
-						if (article.likes.indexOf(user._id) == -1) {
-							article.likes.push(user._id);
-						}
-						article.save(function(err, article) {
-							if(err) {
-								res.status(400);
-								res.json(err);
-								intel.error(err);
-							}
-							res.json(article);
-						});	
-					}
-				});
-			} else {
-				Article.findById({_id: req.params.id}, function(err, article) {
-					if (err) {
-						res.status(400);
-						res.json(err);
-						intel.error(err);
+			Article.findById({_id: req.params.id}, function(err, article) {
+				if (err) {
+					res.status(400);
+					res.json(err);
+					intel.error(err);
+				} else {
+					if (article.likes.indexOf(user._id) == -1) {
+						article.likes.push(user._id);
 					} else {
 						const num = article.likes.indexOf(user._id);
-						article.likes.splice(num, num + 1);
-						article.save(function(err, article) {
-							if(err) {
-								res.status(400);
-								res.json(err);
-								intel.error(err);
-							}
-							res.json(article);
-						});	
+						article.likes.splice(num, 1);
 					}
-				});
-			}
+					article.save(function(err, article) {
+						if(err) {
+							res.status(400);
+							res.json(err);
+							intel.error(err);
+						}
+						res.json(article);
+					});	
+				}
+			});
 		} else {
 			res.status(403);
 			res.send('Access denied');

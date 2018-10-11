@@ -35,10 +35,7 @@ const articleSchema = new Schema({
 		required: true,
 		enum: ['created', 'modified', 'not approved by editor', 'not approved by publisher', 'published']
 	},
-	likes: {
-		type: Number,
-		default: 0
-	},
+	likes: [{ type: Schema.Types.ObjectId, ref: 'user' }],	
 	category: { type: Schema.Types.ObjectId, ref: 'category' },
 	file: { type: Schema.Types.ObjectId, ref: 'file' },
 	user: { type: Schema.Types.ObjectId, ref: 'user' },

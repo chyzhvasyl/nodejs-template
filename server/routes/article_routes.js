@@ -900,21 +900,46 @@ function likeArticle(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			let likeAction;
 			if (req.params.is_liked == 'false') {
-				likeAction = { $inc: { likes: 1 } };
+				Article.findById({_id: req.params.id}, function(err, article) {
+					if (err) {
+						res.status(400);
+						res.json(err);
+						intel.error(err);
+					} else {
+						if (article.likes.indexOf(user._id) == -1) {
+							article.likes.push(user._id);
+						}
+						article.save(function(err, article) {
+							if(err) {
+								res.status(400);
+								res.json(err);
+								intel.error(err);
+							}
+							res.json(article);
+						});	
+					}
+				});
 			} else {
-				likeAction = { $inc: { likes: -1 } };
+				Article.findById({_id: req.params.id}, function(err, article) {
+					if (err) {
+						res.status(400);
+						res.json(err);
+						intel.error(err);
+					} else {
+						const num = article.likes.likedUsers.indexOf(user._id);
+						article.likes.likedUsers.splice(num, num + 1);
+						article.save(function(err, article) {
+							if(err) {
+								res.status(400);
+								res.json(err);
+								intel.error(err);
+							}
+							res.json(article);
+						});	
+					}
+				});
 			}
-			Article.findOneAndUpdate({_id: req.params.id}, likeAction, { new: true }, function (err, article) {
-				if (err) {
-					res.status(400);
-					res.json(err);
-					intel.error(err);
-				} else {
-					res.json(article);
-				}
-			});
 		} else {
 			res.status(403);
 			res.send('Access denied');

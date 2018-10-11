@@ -11,10 +11,10 @@ const dataChunk = require('../config/general');
 router.get('/comments/:flag', findAllComments);
 router.get('/comment/:id', findCommentById);
 router.get('/comments/:confirmation/:flag', findCommentsByConfirmation);
-router.get('/comments_by_auth', findAllCommentsOnAllUsersArticles);
+router.get('/comments_by_auth/:flag', findAllCommentsOnAllUsersArticles);
 router.post('/comment/:article_id/:user_id', addComment);
 router.put('/comment/:id', updateComment);
-router.delete('/comment/:id', deleteComment);
+router.delete('/comment/:id', deleteComment); 
 
 // *** get ALL comments *** //
 function findAllComments(req, res, next) {
@@ -104,7 +104,10 @@ function findAllCommentsOnAllUsersArticles(req, res, next) {
 							comments.push(comment);
 						});
 					});
-					res.json(comments);
+					// comments.sort(function(a, b){return a.time + b.time;});
+					let a = req.params.flag * dataChunk;
+					let b = req.params.flag * dataChunk + dataChunk;
+					res.json(comments.slice(a, b));
 					intel.info('Get all comments by author ', user.id);
 				}
 			});

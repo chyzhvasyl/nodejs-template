@@ -927,8 +927,8 @@ function likeArticle(req, res, next) {
 						res.json(err);
 						intel.error(err);
 					} else {
-						const num = article.likes.likedUsers.indexOf(user._id);
-						article.likes.likedUsers.splice(num, num + 1);
+						const num = article.likes.indexOf(user._id);
+						article.likes.splice(num, num + 1);
 						article.save(function(err, article) {
 							if(err) {
 								res.status(400);

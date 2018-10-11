@@ -29,9 +29,10 @@ router.get('/articles/user/:user_id/:flag', findAllArticlesByUserId);
 router.get('/articles/confirmation/:confirmation/:flag', findAllArticlesByConfirmation);
 router.get('/articles/status/:flag', findAllArticlesBySeveralStatus);
 router.post('/article/:category_id/:template_id?/:user_id?', addArticle);
+router.put('/article/like/:id', likeArticle);
 router.put('/article/:id/:category_id?', updateArticle);
-router.put('/article/:id/like', likeArticle);
 router.delete('/article/:id', deleteArticle);
+// don't change the order of the methods
 
 // *** get ALL articles *** //
 function findAllArticles(req, res, next) {

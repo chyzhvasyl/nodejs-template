@@ -11,7 +11,7 @@ const dataChunk = require('../config/general');
 router.get('/comments/:flag', findAllComments);
 router.get('/comment/:id', findCommentById);
 router.get('/comments/:confirmation/:flag', findCommentsByConfirmation);
-router.get('comments/:user_id', findAllCommentsOnAllUsersArticles);
+// router.get('comments/:user_id', findAllCommentsOnAllUsersArticles);
 router.post('/comment/:article_id/:user_id', addComment);
 router.put('/comment/:id', updateComment);
 router.delete('/comment/:id', deleteComment);

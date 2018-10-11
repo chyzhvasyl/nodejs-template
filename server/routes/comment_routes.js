@@ -11,7 +11,7 @@ const dataChunk = require('../config/general');
 router.get('/comments/:flag', findAllComments);
 router.get('/comment/:id', findCommentById);
 router.get('/comments/:confirmation/:flag', findCommentsByConfirmation);
-// router.get('comments/:user_id', findAllCommentsOnAllUsersArticles);
+router.get('/comments_by_auth/:user_id', findAllCommentsOnAllUsersArticles);
 router.post('/comment/:article_id/:user_id', addComment);
 router.put('/comment/:id', updateComment);
 router.delete('/comment/:id', deleteComment);
@@ -81,6 +81,33 @@ function findCommentsByConfirmation(req, res, next) {
 						intel.info('Get comments by confirmation ', comments);
 					}
 				});
+		} else {
+			res.status(403);
+			res.send('Access denied');
+		}
+	})(req, res, next);
+}
+
+function findAllCommentsOnAllUsersArticles(req, res, next) {
+	passport.authenticate('local', function(err, user) {
+		if (err) { return next(err); }
+		if (util.hasRole(user, 'CN=NEWS_Author')) {
+			Article.find({'user':req.params.user_id}).populate('comments').exec(function(err, articles) {
+				if(err) {
+					res.status(400);
+					res.json(err);
+					intel.error(err);
+				} else {
+					let comments = [];
+					Array.from(articles).forEach(article => {
+						article.comments.forEach(comment => {
+							comments.push(comment);
+						});
+					});
+					res.json(comments);
+					intel.info('Get all comments by author ', user.id);
+				}
+			});
 		} else {
 			res.status(403);
 			res.send('Access denied');

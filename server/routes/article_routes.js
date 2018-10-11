@@ -900,7 +900,7 @@ function likeArticle(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			if (req.params.is_liked == 'like') {
+			if (req.params.is_liked == 'true') {
 				Article.findById({_id: req.params.id}, function(err, article) {
 					if (err) {
 						res.status(400);

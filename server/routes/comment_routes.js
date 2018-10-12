@@ -104,7 +104,12 @@ function findAllCommentsOnAllUsersArticles(req, res, next) {
 							comments.push(comment);
 						});
 					});
-					// comments.sort(function(a, b){return a.time + b.time;});
+					comments.sort(function(a, b){
+						a = new Date(a.time);
+						b = new Date(b.time);
+						return a>b ? -1 : a<b ? 1 : 0;
+					});
+					console.log(comments);
 					let a = req.params.flag * dataChunk;
 					let b = req.params.flag * dataChunk + dataChunk;
 					res.json(comments.slice(a, b));

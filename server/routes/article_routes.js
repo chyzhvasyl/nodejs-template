@@ -423,7 +423,8 @@ function saveCallback(req, res, file, user) {
 			intel.error('Can\'t save article ', err);
 		} else {
 			if (file.contentType.indexOf('video') != -1) {
-				convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, function(err){
+				convert(UPLOAD_PATH_VIDEOS + '/' + file.filename, file.filename, req, function(err){
+					//TODO: refactoring
 					if(!err) {
 						console.log('conversion complete');
 					}
@@ -515,18 +516,21 @@ function checkFileType(file, cb) {
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 console.log(ffmpegInstaller.path, ffmpegInstaller.version);
 
-function convert(input, filename, callback) {
+function convert(input, filename, req, callback) {
 	ffmpeg(input)
 		.output(UPLOAD_PATH_VIDEOS + '/' + 'convert_' + filename.substring(0, filename.lastIndexOf('.')) + '.mp4').format('mp4').size('640x480')
 		.output(UPLOAD_PATH_VIDEOS + '/' + 'convert_' + filename.substring(0, filename.lastIndexOf('.')) + '.ogv').format('ogv').size('640x480')
 		.output(UPLOAD_PATH_VIDEOS + '/' + 'convert_' + filename.substring(0, filename.lastIndexOf('.')) + '.webm').format('webm').size('640x480')
-		.on('end', function() {                    
-			console.log('conversion ended');
-			callback(null);
+		.on('progress', function(progress) {
+			console.log('Processing: ' + progress.percent + '% done');
 		})
 		.on('error', function(err){
 			console.log('error: ', err.code, err.msg);
-			callback(err);
+			callback(err);	
+		})
+		.on('end', function() {                    
+			console.log('Processing finished !');
+			req.io.emit('video', 'Processing finished !');
 		}).run();
 }
 
@@ -538,7 +542,6 @@ function getScreenshot(filePath, fileName, outputFolder, callback) {
 		})
 		.on('end', function() {
 			console.log('Screenshots taken');
-			// callback(err);
 		})
 		.thumbnail({
 			count: 1,

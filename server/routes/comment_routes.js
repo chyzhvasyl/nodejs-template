@@ -109,7 +109,6 @@ function findAllCommentsOnAllUsersArticles(req, res, next) {
 						b = new Date(b.time);
 						return a>b ? -1 : a<b ? 1 : 0;
 					});
-					console.log(comments);
 					let a = req.params.flag * dataChunk;
 					let b = req.params.flag * dataChunk + dataChunk;
 					res.json(comments.slice(a, b));

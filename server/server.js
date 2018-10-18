@@ -1,4 +1,3 @@
-// TODO: Likes
 // TODO: Remove useless files from git
 const fs = require('fs');
 const path = require('path');

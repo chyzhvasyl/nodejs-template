@@ -8,7 +8,8 @@ const corsOptions = require('./config/cors');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const morgan = require('morgan');
-const intel = require('intel');
+// const intel = require('intel');
+const winston = require('winston');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const User = require('./models/user');
@@ -36,13 +37,15 @@ const io = require('socket.io')(http);
 mongoose.connect(dbConfig.database, (err) => {
 	if(err) {
 		console.log('Database error: ' + err);
-		intel.error(err);
+		// intel.error(err);
 	} else {
 		console.log('Connected to database ' + dbConfig.database);
-		intel.info('Connected to database %s', dbConfig.database);
+		// intel.info('Connected to database %s', dbConfig.database);
+		logger.info('Hello again distributed logs');
+		logger.error('Hello again distributed logs');
 		Template.find(function(err, templates) {
 			if(err) {
-				intel.error(err);
+				// intel.error(err);
 			} else {
 				if (!templates || Object.keys(templates).length == 0) {
 					let newTemplate = new Template({
@@ -69,9 +72,9 @@ mongoose.connect(dbConfig.database, (err) => {
 									
 					newTemplate.save(function(err, newTemplate) {
 						if(err) {
-							intel.error(err);
+							// intel.error(err);
 						} else { 
-							intel.info('Added new template ', newTemplate);
+							// intel.info('Added new template ', newTemplate);
 						}
 					});
 				}
@@ -79,7 +82,7 @@ mongoose.connect(dbConfig.database, (err) => {
 		});
 		Category.find(function(err, categories) {
 			if(err) {
-				intel.error(err);
+				// intel.error(err);
 			} else {
 				if (!categories || Object.keys(categories).length == 0) {
 					let newCategory = new Category({
@@ -88,9 +91,9 @@ mongoose.connect(dbConfig.database, (err) => {
 									
 					newCategory.save(function(err, newCategory) {
 						if(err) {
-							intel.error(err);
+							// intel.error(err);
 						} else { 
-							intel.info('Added new category ', newCategory);
+							// intel.info('Added new category ', newCategory);
 						}
 					});
 				}
@@ -114,7 +117,19 @@ client.on('error', function (err) {
 });
 
 // *** logger *** //
-intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
+// intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
+const logger = winston.createLogger({
+	level: 'info',
+	format: winston.format.json(),
+	transports: [
+		//
+		// - Write to all logs with level `info` and below to `combined.log` 
+		// - Write all logs error (and below) to `error.log`.
+		//
+		new winston.transports.File({ filename: 'server/logs/error.log', level: 'error' }),
+		new winston.transports.File({ filename: 'server/logs/combined.log' })
+	]
+});
 
 // *** morgan stream *** //
 const accessLogStream = fs.createWriteStream(path.join(__dirname, './logs/access.log'), {flags: 'a'});
@@ -229,7 +244,7 @@ server.use((err, req, res, next) => {
 //TODO: make better way to handle errors - user domains
 process.on('uncaughtException', function(err) {
 	// handle the error safely
-	intel.error(err);
+	// intel.error(err);
 	console.log(err);
 });
 // server.use(forceSsl);
@@ -294,7 +309,7 @@ io.on('connection', function(socket){
 	// 	io.emit('chat message', msg);
 	// });
 	socket.on('login', function(user){
-    // console.log('user logged in ' + JSON.stringify(user));
+		// console.log('user logged in ' + JSON.stringify(user));
 		socket.handshake.session.user = user;
 		socket.handshake.session.save();
 		// console.log(socket.handshake.session.user);

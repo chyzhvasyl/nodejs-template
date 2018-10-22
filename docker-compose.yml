@@ -1,0 +1,41 @@
+version: "3"
+services:
+  mongo:
+    container_name: mongo
+    image: mongo
+    restart: always
+    volumes:
+      - ./data:/data/db
+    ports:
+      - "27017:27017"
+  redis:
+    container_name: redis
+    image: redis
+    restart: always
+    ports:
+    - "6379:6379"
+    volumes:
+    - ../data/redis:/data
+    entrypoint: redis-server --appendonly yes
+  server:
+    hostname: vknews
+    container_name: vknews-server
+    image: rickydunlop/nodejs-ffmpeg
+    restart: always
+    build: .
+    volumes:
+    - .:/usr/src/app
+    - npm-cache:/root/.npm
+    command: npm run install-start
+    ports:
+    - "3000:3000"
+    links:
+    - mongo
+    - redis:redis
+    depends_on:
+    - mongo
+    - redis
+
+volumes:
+  npm-cache:
+    external: false

@@ -4,7 +4,8 @@
   "description": "Article app",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon ./server/server",
+    "start": "node ./server/server",
+    "install-start": "npm install && npm start",
     "test": "mocha"
   },
   "author": "Andrey Gazhala",
@@ -19,6 +20,7 @@
     "express-force-ssl": "^0.3.2",
     "express-session": "^1.15.6",
     "express-socket.io-session": "^1.3.5",
+    "ffprobe": "^1.1.0",
     "fluent-ffmpeg": "^2.1.2",
     "intel": "^1.2.0",
     "mime": "^2.3.1",

@@ -39,7 +39,9 @@ mongoose.connect(dbConfig.database, (err) => {
 		console.log('Database error: ' + err);
 		// intel.error(err);
 	} else {
-		console.log('Connected to database ' + dbConfig.database);
+      console.log(' |------------------------------------------------------|');
+      console.log(' | Connected to database ' + dbConfig.database + ' |');
+      console.log(' |------------------------------------------------------|');
 		// intel.info('Connected to database %s', dbConfig.database);
 		logger.info('Hello again distributed logs');
 		logger.error('Hello again distributed logs');
@@ -47,7 +49,7 @@ mongoose.connect(dbConfig.database, (err) => {
 			if(err) {
 				// intel.error(err);
 			} else {
-				if (!templates || Object.keys(templates).length == 0) {
+				if (!templates || Object.keys(templates).length === 0) {
 					let newTemplate = new Template({
 						generalStyles: {
 							fontSizeMetric: 'px',
@@ -84,7 +86,7 @@ mongoose.connect(dbConfig.database, (err) => {
 			if(err) {
 				// intel.error(err);
 			} else {
-				if (!categories || Object.keys(categories).length == 0) {
+				if (!categories || Object.keys(categories).length === 0) {
 					let newCategory = new Category({
 						'name' : 'прочее'
 					});
@@ -103,13 +105,15 @@ mongoose.connect(dbConfig.database, (err) => {
 });
 
 // *** redis config *** //
-const redisHostname = '172.17.0.2';
+const redisHostname = 'redis';
 const redisPort = 6379;
 
 const client = redis.createClient(redisPort, redisHostname);
 
 client.on('connect', function() {
-	console.log('Redis client connected');
+  console.log('|------------------------|');
+  console.log('| Redis client connected |');
+  console.log('|------------------------|');
 });
 
 client.on('error', function (err) {
@@ -162,7 +166,7 @@ passport.use(new LocalStrategy(
 					if (err) {
 						return console.error('upload failed:', err);
 					}
-					if (httpResponse.statusCode == 200) {
+					if (httpResponse.statusCode === 200) {
 						const newUser = new User({
 							// TODO: token live time
 							token: uuidv4(),
@@ -180,7 +184,7 @@ passport.use(new LocalStrategy(
 								intel.error(err);
 								return done(null, false);
 							} else {
-								intel.info('Added new user ', newUser);
+								// intel.info('Added new user ', newUser);
 								newUser = newUser.toObject();
 								newUser['isCookie'] = false;
 								return done(null, newUser);
@@ -197,7 +201,7 @@ passport.use(new LocalStrategy(
 					request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {"UserName": login, "Password": password}}, function optionalCallback(err, httpResponse, body) {
 						if (err) {
 							return console.error('upload failed:', err); 
-						} else if (httpResponse.statusCode == 200) {
+						} else if (httpResponse.statusCode === 200) {
 							const newToken = uuidv4();
 							User.findOneAndUpdate(
 								{ login: login, token: user.token },
@@ -216,7 +220,7 @@ passport.use(new LocalStrategy(
 										intel.error(err);
 										return done(null, false);
 									} else {
-										intel.info('Added new user ', updatedUser);
+										// intel.info('Added new user ', updatedUser);
 										updatedUser = updatedUser.toObject();
 										updatedUser['isCookie'] = false;
 										return done(null, updatedUser);
@@ -295,30 +299,30 @@ server.post('/login', function(req, res, next) {
 
 // *** server config *** //
 // const hostname = '192.168.0.123';
-const port = 3000; 
+const port = 3000;
 
-// server.listen(port, () => {
-//     console.log(`Server started on port + ${port}`);   
-//     intel.info(`Server started on port , ${port}`);
-// });
+http.listen(port, function(){
+  console.log('|-----------------------------------|');
+  console.log('| Server is listening on port: 3000 |');
+  console.log('|-----------------------------------|');
+});
 
 // *** socket.io config *** //
 io.on('connection', function(socket){
-	console.log('user connected');
-	// socket.on('chat message', function(msg){
-	// 	io.emit('chat message', msg);
-	// });
+	console.log('|-------------------------------------------|');
+	console.log('| Socket is opened ID: ' + socket.id  + ' |');
+  	console.log('|-------------------------------------------|');
 	socket.on('login', function(user){
-		// console.log('user logged in ' + JSON.stringify(user));
+		console.log('user logged in ' + JSON.stringify(user));
 		socket.handshake.session.user = user;
 		socket.handshake.session.save();
-		// console.log(socket.handshake.session.user);
+		console.log(socket.handshake.session.user);
 		client.keys('*', function (err, keys) {
 			if (err) return console.log(err);
 			for(var i = 0; i <= keys.length -1; i++) {
-				if (keys[i].indexOf(socket.handshake.session.user.login) != -1) {
+				if (keys[i].indexOf(socket.handshake.session.user.login) !== -1) {
 					client.get(keys[i], function (err, result) {
-						if (err) {	
+						if (err) {
 							intel.error(err);
 						}
 						socket.local.emit('update', JSON.parse(result));
@@ -328,13 +332,12 @@ io.on('connection', function(socket){
 			}
 		});
 	});
-	socket.on('disconnect', function(){
-		console.log('user disconnected');
-	});
-});
+	socket.on('disconnect', function() {
+      console.log('|-------------------------------------------|');
+      console.log('| Socket is closed ID: ' + socket.id  + ' |');
+      console.log('|-------------------------------------------|');
 
-http.listen(port, function(){
-	console.log('listening on *:3000');
+    });
 });
 
 //TODO: https

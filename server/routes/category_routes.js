@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Category = require('../models/category');
 const Article = require('../models/article');
-const intel = require('intel');
+// const intel = require('intel');
 const passport = require('passport');
 const util = require('../util');
 
@@ -22,10 +22,10 @@ function findAllCategories(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				} else {
 					res.json(categories);
-					intel.info('Get all categories ', categories);
+					// intel.info('Get all categories ', categories);
 				}
 			});
 		} else {
@@ -44,10 +44,10 @@ function findCategoryById(req, res, next) {
 				if(err) {
 					res.status(404);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				} else {
 					res.json(category);
-					intel.info('Get single category by id ', category);
+					// intel.info('Get single category by id ', category);
 				}
 			});
 		} else {
@@ -70,10 +70,10 @@ function addCategory(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				} else {
 					res.json(newCategory);
-					intel.info('Added new category ', newCategory);
+					// intel.info('Added new category ', newCategory);
 				}
 			});
 		} else {
@@ -94,10 +94,10 @@ function updateCategory(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(category);
-						intel.info('Updated category ', category);
+						// intel.info('Updated category ', category);
 					}
 				});
 			});
@@ -123,17 +123,17 @@ function deleteCategory(req, res, next) {
 							if(err) {
 								res.status(400);
 								res.json(err);
-								intel.error(err);
+								// intel.error(err);
 							} else {
 								if (templateCategory != null) {
 									Article.where({ category : deletedCategory._id }).updateMany({ $set: { category : templateCategory._id }}).exec(function(err){
 										if (err) {
 											res.status(400);
 											res.json(err);
-											intel.error(err);
+											// intel.error(err);
 										}
 										res.json(deletedCategory);
-										intel.info('Deleted category ', deletedCategory);
+										// intel.info('Deleted category ', deletedCategory);
 									});
 								} else {
 
@@ -145,18 +145,18 @@ function deleteCategory(req, res, next) {
 										if(err) {
 											res.status(400);
 											res.json(err);
-											intel.error(err);
+											// intel.error(err);
 										} else {
 											Article.where({ category : deletedCategory._id }).updateMany({ $set: { category : newTemplateCategory._id }}).exec(function(err){
 												if (err) {
 													res.status(400);
 													res.json(err);
-													intel.error(err);
+													// intel.error(err);
 												}
 												res.json(deletedCategory);
-												intel.info('Deleted category ', deletedCategory);
+												// intel.info('Deleted category ', deletedCategory);
 											});
-											intel.info('Added new category ', newTemplateCategory);
+											// intel.info('Added new category ', newTemplateCategory);
 										}
 									});
 								}

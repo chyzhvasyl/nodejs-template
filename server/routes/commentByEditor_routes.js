@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const CommentByEditor = require('../models/commentByEditor');
 const Article = require('../models/article');
-const intel = require('intel');
+// const intel = require('intel');
 const passport = require('passport');
 
 // *** api routes *** //
@@ -24,10 +24,10 @@ function findAllCommentsByEditor(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(commentsByEditor);
-						intel.info('Get all commentsByEditor ', commentsByEditor);
+						// intel.info('Get all commentsByEditor ', commentsByEditor);
 					}
 				});
 		} else {
@@ -48,10 +48,10 @@ function findCommentByEditorById(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(commentByEditor);
-						intel.info('Get single commentByEditor by id ', commentByEditor);
+						// intel.info('Get single commentByEditor by id ', commentByEditor);
 					}
 				});
 		} else {
@@ -73,10 +73,10 @@ function findCommentsByEditorByConfirmation(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(commentsByEditor);
-						intel.info('Get commentsByEditor by confirmation ', commentsByEditor);
+						// intel.info('Get commentsByEditor by confirmation ', commentsByEditor);
 					}
 				});
 		} else {
@@ -108,7 +108,7 @@ function addCommentByEditor(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					}
 				});
 			}));
@@ -117,10 +117,10 @@ function addCommentByEditor(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				} else {
 					res.json(newCommentByEditor);
-					intel.info('Added new commentByEditor ', newCommentByEditor);
+					// intel.info('Added new commentByEditor ', newCommentByEditor);
 				}
 			});
 		} else {
@@ -149,10 +149,10 @@ function updateCommentByEditor(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(commentByEditor);
-						intel.info('Updated commentByEditor ', commentByEditor);
+						// intel.info('Updated commentByEditor ', commentByEditor);
 					}
 				});
 			});
@@ -172,10 +172,10 @@ function deleteCommentByEditor(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					intel.error(err);;
+					// intel.error(err);
 				} else {
 					res.json(commentByEditor);
-					intel.info('Deleted commentByEditor ', commentByEditor);
+					// intel.info('Deleted commentByEditor ', commentByEditor);
 				}
 			});
 		} else {

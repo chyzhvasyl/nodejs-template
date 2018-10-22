@@ -1,14 +1,12 @@
 // TODO: Remove useless files from git
 const fs = require('fs');
 const path = require('path');
-// const https = require('https');
 const express = require('express');
 const mongoose = require('mongoose');
 const corsOptions = require('./config/cors');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const morgan = require('morgan');
-// const intel = require('intel');
 const winston = require('winston');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
@@ -26,6 +24,7 @@ const session = require('express-session')({
 	resave: true,
 	saveUninitialized: true
 });
+// const https = require('https');
 // const forceSsl = require('express-force-ssl');
 
 // *** http, express instance *** //
@@ -213,10 +212,10 @@ passport.use(new LocalStrategy(
 									if(err) {
 										// res.status(400);
 										// res.json(err);
-										intel.error(err);
+										// intel.error(err);
 										return done(null, false);
 									} else {
-										intel.info('Added new user ', updatedUser);
+										// intel.info('Added new user ', updatedUser);
 										updatedUser = updatedUser.toObject();
 										updatedUser['isCookie'] = false;
 										return done(null, updatedUser);
@@ -278,7 +277,7 @@ server.post('/login', function(req, res, next) {
 		if (err) { return next(err); }
 		if (user) {
 			Template.find({}, function(err, templates) {
-				if (err) intel.error(err);
+				// if (err) intel.error(err);
 				const template = templates[0];
 				if (user.isCookie == false) {
 					res.cookie('user', user, {maxAge : 1 * 1000 * 60 * 60 * 24});
@@ -319,7 +318,7 @@ io.on('connection', function(socket){
 				if (keys[i].indexOf(socket.handshake.session.user.login) != -1) {
 					client.get(keys[i], function (err, result) {
 						if (err) {	
-							intel.error(err);
+							// intel.error(err);
 						}
 						socket.local.emit('update', JSON.parse(result));
 					});

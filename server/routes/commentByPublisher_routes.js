@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const intel = require('intel');
+// const intel = require('intel');
 const passport = require('passport');
 const Article = require('../models/article');
 const CommentByPublisher = require('../models/commentByPublisher');
@@ -24,10 +24,10 @@ function findAllCommentsByPublisher(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(commentsByPublisher);
-						intel.info('Get all commentsByPublisher ', commentsByPublisher);
+						// intel.info('Get all commentsByPublisher ', commentsByPublisher);
 					}
 				});
 		} else {
@@ -48,10 +48,10 @@ function findCommentByPublisherById(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(commentByPublisher);
-						intel.info('Get single commentByPublisher by id ', commentByPublisher);
+						// intel.info('Get single commentByPublisher by id ', commentByPublisher);
 					}
 				});
 		} else {
@@ -72,10 +72,10 @@ function findCommentsByPublisherByConfirmation(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(commentsByPublisher);
-						intel.info('Get commentsByPublisher by confirmation ', commentsByPublisher);
+						// intel.info('Get commentsByPublisher by confirmation ', commentsByPublisher);
 					}
 				});
 		} else {
@@ -107,7 +107,7 @@ function addCommentByPublisher(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					}
 				});
 			}));
@@ -116,10 +116,10 @@ function addCommentByPublisher(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				} else {
 					res.json(newCommentByPublisher);
-					intel.info('Added new commentByPublisher ', newCommentByPublisher);
+					// intel.info('Added new commentByPublisher ', newCommentByPublisher);
 				}
 			});
 		} else {
@@ -148,10 +148,10 @@ function updateCommentByPublisher(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(commentByPublisher);
-						intel.info('Updated commentByPublisher ', commentByPublisher);
+						// intel.info('Updated commentByPublisher ', commentByPublisher);
 					}
 				});
 			});
@@ -171,10 +171,10 @@ function deleteCommentByPublisher(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				} else {
 					res.json(commentByPublisher);
-					intel.info('Deleted commentByPublisher ', commentByPublisher);
+					// intel.info('Deleted commentByPublisher ', commentByPublisher);
 				}
 			});
 		} else {

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const File = require('../models/file');
-const intel = require('intel');
+// const intel = require('intel');
 const fs = require('fs');
 const path = require('path');
 const UPLOAD_PATH = './server/uploads';
@@ -24,10 +24,10 @@ function findAllFiles(req, res, next) {
 				if (err) {
 					res.sendStatus(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				}
 				res.json(files);
-				intel.info('Get all files ', files);
+				// intel.info('Get all files ', files);
 			});
 		} else {
 			res.status(403);
@@ -45,7 +45,7 @@ function findFileById(req, res, next) {
 				if (err) {
 					res.sendStatus(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				}
 				res.setHeader('Content-Type', file.contentType);
 				fs.createReadStream(path.join(UPLOAD_PATH + '/images/', file.filename)).pipe(res);
@@ -66,7 +66,7 @@ function findFileSmallById(req, res, next) {
 				if (err) {
 					res.sendStatus(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				}
 				res.setHeader('Content-Type', file.contentType); 
 				fs.createReadStream(path.join(UPLOAD_PATH + '/images/', 'small-' + file.filename)).pipe(res);
@@ -87,7 +87,7 @@ function findVideoById(req, res, next) {
 				if (err) {
 					res.sendStatus(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				}
 				const videoPath = path.join(UPLOAD_PATH + '/videos/', 'convert_' + file.filename);
 				const stat = fs.statSync(videoPath);
@@ -126,7 +126,7 @@ function findScreenshotById(req, res, next) {
 				if (err) {
 					res.sendStatus(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				}
 				res.setHeader('Content-Type', 'image/png');
 				fs.createReadStream(path.join(UPLOAD_PATH + '/videos/', 'screenshot_' + file.filename.substring(0, file.filename.lastIndexOf('.')) + '.png')).pipe(res);

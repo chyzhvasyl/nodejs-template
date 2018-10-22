@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
-const intel = require('intel');
+// const intel = require('intel');
 
 // *** api routes *** //
 router.get('/users', findAllUsers);
@@ -17,10 +17,10 @@ function findAllUsers(req, res) {
 		if(err) {
 			res.status(400);
 			res.json(err);
-			intel.error(err);
+			// intel.error(err);
 		} else {
 			res.json(users);
-			intel.info('Get all users ', users);
+			// intel.info('Get all users ', users);
 		}
 	});
 }
@@ -31,10 +31,10 @@ function findAllUsersByRole(req, res) {
 		if(err) {
 			res.status(400);
 			res.json(err);
-			intel.error(err);
+			// intel.error(err);
 		} else {
 			res.json(users);
-			intel.info('Get all users by role ', users);
+			// intel.info('Get all users by role ', users);
 		}
 	});
 }
@@ -45,10 +45,10 @@ function findUserById(req, res) {
 		if(err) {
 			res.status(404);
 			res.json(err);
-			intel.error(err);
+			// intel.error(err);
 		} else {
 			res.json(user);
-			intel.info('Get single user by id ', user);
+			// intel.info('Get single user by id ', user);
 		}
 	});
 }
@@ -68,10 +68,10 @@ function addUser(req, res) {
 		if(err) {
 			res.status(400);
 			res.json(err);
-			intel.error(err);
+			// intel.error(err);
 		} else {
 			res.json(newUser);
-			intel.info('Added new user ', newUser);
+			// intel.info('Added new user ', newUser);
 		}
 	});
 }
@@ -89,10 +89,10 @@ function updateUser(req, res) {
 			if(err) {
 				res.status(400);
 				res.json(err);
-				intel.error(err);
+				// intel.error(err);
 			} else {
 				res.json(user);
-				intel.info('Updated user ', user);
+				// intel.info('Updated user ', user);
 			}
 		});
 	});
@@ -105,7 +105,7 @@ function deleteUser(req, res) {
 			res.json(err);
 		} else {
 			res.json(user);
-			intel.info('Deleted user ', user);
+			// intel.info('Deleted user ', user);
 		}
 	});
 }

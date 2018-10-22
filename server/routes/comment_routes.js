@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Comment = require('../models/comment');
 const Article = require('../models/article');
-const intel = require('intel');
+// const intel = require('intel');
 const passport = require('passport');
 const util = require('../util');
 const dataChunk = require('../config/general'); 
@@ -27,10 +27,10 @@ function findAllComments(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(comments);
-						intel.info('Get all comments ', comments);
+						// intel.info('Get all comments ', comments);
 					}
 				});
 		} else {
@@ -51,10 +51,10 @@ function findCommentById(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(comment);
-						intel.info('Get single comment by id ', comment);
+						// intel.info('Get single comment by id ', comment);
 					}
 				});
 		} else {
@@ -75,10 +75,10 @@ function findCommentsByConfirmation(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(comments);
-						intel.info('Get comments by confirmation ', comments);
+						// intel.info('Get comments by confirmation ', comments);
 					}
 				});
 		} else {
@@ -96,7 +96,7 @@ function findAllCommentsOnAllUsersArticles(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				} else {
 					let comments = [];
 					Array.from(articles).forEach(article => {
@@ -112,7 +112,7 @@ function findAllCommentsOnAllUsersArticles(req, res, next) {
 					let a = req.params.flag * dataChunk;
 					let b = req.params.flag * dataChunk + dataChunk;
 					res.json(comments.slice(a, b));
-					intel.info('Get all comments by author ', user.id);
+					// intel.info('Get all comments by author ', user.id);
 				}
 			});
 		} else {
@@ -144,7 +144,7 @@ function addComment(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					}
 				});
 			}));
@@ -153,10 +153,10 @@ function addComment(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				} else {
 					res.json(newComment);
-					intel.info('Added new comment ', newComment);
+					// intel.info('Added new comment ', newComment);
 				}
 			});
 		} else {
@@ -185,10 +185,10 @@ function updateComment(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(comment);
-						intel.info('Updated comment ', comment);
+						// intel.info('Updated comment ', comment);
 					}
 				});
 			});
@@ -208,10 +208,10 @@ function deleteComment(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				} else {
 					res.json(comment);
-					intel.info('Deleted comment ', comment);
+					// intel.info('Deleted comment ', comment);
 				}
 			});
 		} else {

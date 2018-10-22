@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Template = require('../models/template');
 const User = require('../models/user');
-const intel = require('intel');
+// const intel = require('intel');
 const passport = require('passport');
 const util = require('../util');
 
@@ -22,10 +22,10 @@ function findAllTemplates(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				} else {
 					res.json(templates);
-					intel.info('Get all templates ', templates);
+					// intel.info('Get all templates ', templates);
 				}
 			});
 		} else {
@@ -46,10 +46,10 @@ function findTemplateById(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(template);
-						intel.info('Get single template by id ', template);
+						// intel.info('Get single template by id ', template);
 					}
 				});
 		} else {
@@ -90,10 +90,10 @@ function addTemplate(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				} else {
 					res.json(newTemplate);
-					intel.info('Added new template ', newTemplate);
+					// intel.info('Added new template ', newTemplate);
 				}
 			});
 		} else {
@@ -139,7 +139,7 @@ function updateTemplate(req, res, next) {
 							if (err) {
 								res.json(err);
 							} else {
-								intel.info('Clear token field in all users');
+								// intel.info('Clear token field in all users');
 							}
 						});
 					} 
@@ -149,10 +149,10 @@ function updateTemplate(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						intel.error(err);
+						// intel.error(err);
 					} else {
 						res.json(template);
-						intel.info('Updated template ', template);
+						// intel.info('Updated template ', template);
 					}
 				});
 			});
@@ -172,10 +172,10 @@ function deleteTemplate(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					intel.error(err);
+					// intel.error(err);
 				} else {
 					res.json(template);
-					intel.info('Deleted template ', template);
+					// intel.info('Deleted template ', template);
 				}
 			});
 		} else {

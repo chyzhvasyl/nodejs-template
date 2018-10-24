@@ -39,9 +39,9 @@ mongoose.connect(dbConfig.database, (err) => {
 		console.log('Database error: ' + err);
 		// intel.error(err);
 	} else {
-      console.log(' |------------------------------------------------------|');
-      console.log(' | Connected to database ' + dbConfig.database + ' |');
-      console.log(' |------------------------------------------------------|');
+		console.log(' |------------------------------------------------------|');
+		console.log(' | Connected to database ' + dbConfig.database + ' |');
+		console.log(' |------------------------------------------------------|');
 		// intel.info('Connected to database %s', dbConfig.database);
 		logger.info('Hello again distributed logs');
 		logger.error('Hello again distributed logs');
@@ -111,9 +111,9 @@ const redisPort = 6379;
 const client = redis.createClient(redisPort, redisHostname);
 
 client.on('connect', function() {
-  console.log('|------------------------|');
-  console.log('| Redis client connected |');
-  console.log('|------------------------|');
+	console.log('|------------------------|');
+	console.log('| Redis client connected |');
+	console.log('|------------------------|');
 });
 
 client.on('error', function (err) {
@@ -159,10 +159,10 @@ server.use(function(req,res,next){
 });
 passport.use(new LocalStrategy(
 	function(login, password, done) {
-		User.findOne({ login: login }, function(err, user) {
+		User.findOne({ login: /login/i }, function(err, user) {
 			if (err) { return done(err); }
 			if (!user) {
-				request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {"UserName": login, "Password": password}}, function optionalCallback(err, httpResponse, body) {
+				request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
 					if (err) {
 						return console.error('upload failed:', err);
 					}
@@ -181,7 +181,7 @@ passport.use(new LocalStrategy(
 							if(err) {
 								// res.status(400);
 								// res.json(err);
-								intel.error(err);
+								// intel.error(err);
 								return done(null, false);
 							} else {
 								// intel.info('Added new user ', newUser);
@@ -196,12 +196,19 @@ passport.use(new LocalStrategy(
 				});
 			} else {
 				if (user.token === password) {
-					return done(null, user);
+					//TODO: token not expired
+					// if (!expired) {
+					// 	return done(null, user);
+					// } else {
+
+					// }
 				} else {
-					request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {"UserName": login, "Password": password}}, function optionalCallback(err, httpResponse, body) {
+					
+					request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
 						if (err) {
 							return console.error('upload failed:', err); 
 						} else if (httpResponse.statusCode === 200) {
+							//TODO: has token not expired in db - return
 							const newToken = uuidv4();
 							User.findOneAndUpdate(
 								{ login: login, token: user.token },
@@ -217,7 +224,7 @@ passport.use(new LocalStrategy(
 									if(err) {
 										// res.status(400);
 										// res.json(err);
-										intel.error(err);
+										// intel.error(err);
 										return done(null, false);
 									} else {
 										// intel.info('Added new user ', updatedUser);
@@ -282,7 +289,9 @@ server.post('/login', function(req, res, next) {
 		if (err) { return next(err); }
 		if (user) {
 			Template.find({}, function(err, templates) {
-				if (err) intel.error(err);
+				if (err) {
+					// intel.error(err);
+				}
 				const template = templates[0];
 				if (user.isCookie == false) {
 					res.cookie('user', user, {maxAge : 1 * 1000 * 60 * 60 * 24});
@@ -302,16 +311,16 @@ server.post('/login', function(req, res, next) {
 const port = 3000;
 
 http.listen(port, function(){
-  console.log('|-----------------------------------|');
-  console.log('| Server is listening on port: 3000 |');
-  console.log('|-----------------------------------|');
+	console.log('|-----------------------------------|');
+	console.log('| Server is listening on port: 3000 |');
+	console.log('|-----------------------------------|');
 });
 
 // *** socket.io config *** //
 io.on('connection', function(socket){
 	console.log('|-------------------------------------------|');
 	console.log('| Socket is opened ID: ' + socket.id  + ' |');
-  	console.log('|-------------------------------------------|');
+	console.log('|-------------------------------------------|');
 	socket.on('login', function(user){
 		console.log('user logged in ' + JSON.stringify(user));
 		socket.handshake.session.user = user;
@@ -323,7 +332,7 @@ io.on('connection', function(socket){
 				if (keys[i].indexOf(socket.handshake.session.user.login) !== -1) {
 					client.get(keys[i], function (err, result) {
 						if (err) {
-							intel.error(err);
+							// intel.error(err);
 						}
 						socket.local.emit('update', JSON.parse(result));
 					});
@@ -333,11 +342,10 @@ io.on('connection', function(socket){
 		});
 	});
 	socket.on('disconnect', function() {
-      console.log('|-------------------------------------------|');
-      console.log('| Socket is closed ID: ' + socket.id  + ' |');
-      console.log('|-------------------------------------------|');
-
-    });
+		console.log('|-------------------------------------------|');
+		console.log('| Socket is closed ID: ' + socket.id  + ' |');
+		console.log('|-------------------------------------------|');
+	});
 });
 
 //TODO: https

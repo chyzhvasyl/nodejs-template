@@ -8,6 +8,10 @@ const userSchema = new Schema({
 		required: true,
 		trim: true
 	},
+	tokenLifeTime: {
+		type: Date,
+		default: Date.now
+	},
 	login: {
 		type: String,
 		required: true,

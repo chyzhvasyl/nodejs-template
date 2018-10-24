@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const Template = require('../models/template');
 const User = require('../models/user');
-// const intel = require('intel');
 const passport = require('passport');
 const util = require('../util');
+// const intel = require('intel');
 
 // *** api routes *** //
 router.get('/templates', findAllTemplates);

@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-// const intel = require('intel');
 const passport = require('passport');
 const Article = require('../models/article');
 const CommentByPublisher = require('../models/commentByPublisher');
+// const intel = require('intel');
 
 // *** api routes *** //
 router.get('/commentsByPublisher', findAllCommentsByPublisher);

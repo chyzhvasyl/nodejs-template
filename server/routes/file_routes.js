@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const File = require('../models/file');
-// const intel = require('intel');
 const fs = require('fs');
 const path = require('path');
 const UPLOAD_PATH = './server/uploads';
 const passport = require('passport');
 const util = require('../util');
+// const intel = require('intel');
 
 // *** api routes *** //
 router.get('/files', findAllFiles);

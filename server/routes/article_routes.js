@@ -530,7 +530,7 @@ function convert(input, filename, req, callback) {
 		})
 		.on('end', function() {                    
 			console.log('Processing finished !');
-			req.io.emit('video', 'Processing finished !');
+			req.io.emit('video', 'Video converted');
 		}).run();
 }
 

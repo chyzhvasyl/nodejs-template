@@ -39,9 +39,7 @@ mongoose.connect(dbConfig.database, (err) => {
 		console.log('Database error: ' + err);
 		// intel.error(err);
 	} else {
-		console.log(' |------------------------------------------------------|');
-		console.log(' | Connected to database ' + dbConfig.database + ' |');
-		console.log(' |------------------------------------------------------|');
+		console.log('Connected to database ' + dbConfig.database);
 		// intel.info('Connected to database %s', dbConfig.database);
 		logger.info('Hello again distributed logs');
 		logger.error('Hello again distributed logs');
@@ -69,7 +67,7 @@ mongoose.connect(dbConfig.database, (err) => {
 								fontSize: 18
 							}
 						},
-						cookieLifeTime : 9999
+						cookieLifeTime : 1
 					});
 									
 					newTemplate.save(function(err, newTemplate) {
@@ -88,7 +86,7 @@ mongoose.connect(dbConfig.database, (err) => {
 			} else {
 				if (!categories || Object.keys(categories).length === 0) {
 					let newCategory = new Category({
-						'name' : 'прочее'
+						'name' : 'Прочее'
 					});
 									
 					newCategory.save(function(err, newCategory) {
@@ -111,9 +109,7 @@ const redisPort = 6379;
 const client = redis.createClient(redisPort, redisHostname);
 
 client.on('connect', function() {
-	console.log('|------------------------|');
-	console.log('| Redis client connected |');
-	console.log('|------------------------|');
+	console.log('Redis client connected');
 });
 
 client.on('error', function (err) {
@@ -159,7 +155,7 @@ server.use(function(req,res,next){
 });
 passport.use(new LocalStrategy(
 	function(login, password, done) {
-		User.findOne({ login: /login/i }, function(err, user) {
+		User.findOne({ login: login.toLowerCase() }, function(err, user) {
 			if (err) { return done(err); }
 			if (!user) {
 				request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
@@ -168,7 +164,6 @@ passport.use(new LocalStrategy(
 					}
 					if (httpResponse.statusCode === 200) {
 						const newUser = new User({
-							// TODO: token live time
 							token: uuidv4(),
 							login: login,
 							firstName: body.FirstName,
@@ -196,29 +191,45 @@ passport.use(new LocalStrategy(
 				});
 			} else {
 				if (user.token === password) {
-					//TODO: token not expired
-					// if (!expired) {
-					// 	return done(null, user);
-					// } else {
-
-					// }
+					if ((Date.now() - user.tokenLifeTime) < 86400000) {
+						return done(null, user);
+					} else {
+						const newToken = uuidv4();
+						User.findOneAndUpdate(
+							{ login: login.toLowerCase(), token: user.token },
+							{
+								token: newToken,
+								tokenLifeTime: Date.now()
+							}, 
+							{ new: true }, (function(err, updatedUser){
+								if(err) {
+									// res.status(400);
+									// res.json(err);
+									// intel.error(err);
+									return done(null, false);
+								} else {
+									// intel.info('Added new user ', updatedUser);
+									updatedUser = updatedUser.toObject();
+									updatedUser['isCookie'] = false;
+									return done(null, updatedUser);
+								}
+							})
+						);
+					}
 				} else {
-					
 					request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
 						if (err) {
 							return console.error('upload failed:', err); 
-						} else if (httpResponse.statusCode === 200) {
-							//TODO: has token not expired in db - return
+						} 
+						if ((httpResponse.statusCode === 200) && ((Date.now() - user.tokenLifeTime) < 86400000)) {
+							return done(null, user);
+						} else if ((httpResponse.statusCode === 200) && ((Date.now() - user.tokenLifeTime) > 86400000)) {
 							const newToken = uuidv4();
 							User.findOneAndUpdate(
 								{ login: login, token: user.token },
 								{
 									token: newToken,
-									login: login,
-									firstName: body.FirstName,
-									lastName: body.LastName,
-									secondaryName: body.SecondName,
-									roles: body.ListGroups
+									tokenLifeTime: Date.now()
 								}, 
 								{ new: true }, (function(err, updatedUser){
 									if(err) {
@@ -233,7 +244,8 @@ passport.use(new LocalStrategy(
 										return done(null, updatedUser);
 									}
 								})
-							)} else {
+							);
+						} else {
 							return done(null, false);     
 						}
 					});
@@ -311,16 +323,12 @@ server.post('/login', function(req, res, next) {
 const port = 3000;
 
 http.listen(port, function(){
-	console.log('|-----------------------------------|');
-	console.log('| Server is listening on port: 3000 |');
-	console.log('|-----------------------------------|');
+	console.log('Server is listening on port: 3000');
 });
 
 // *** socket.io config *** //
 io.on('connection', function(socket){
-	console.log('|-------------------------------------------|');
-	console.log('| Socket is opened ID: ' + socket.id  + ' |');
-	console.log('|-------------------------------------------|');
+	console.log('Socket is opened ID: ' + socket.id);
 	socket.on('login', function(user){
 		console.log('user logged in ' + JSON.stringify(user));
 		socket.handshake.session.user = user;
@@ -342,9 +350,7 @@ io.on('connection', function(socket){
 		});
 	});
 	socket.on('disconnect', function() {
-		console.log('|-------------------------------------------|');
-		console.log('| Socket is closed ID: ' + socket.id  + ' |');
-		console.log('|-------------------------------------------|');
+		console.log('| Socket is closed ID: ' + socket.id);
 	});
 });
 

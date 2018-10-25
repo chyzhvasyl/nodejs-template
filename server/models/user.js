@@ -15,7 +15,9 @@ const userSchema = new Schema({
 	login: {
 		type: String,
 		required: true,
-		trim: true
+		trim: true,
+		index: true,
+		lowercase: true
 	},
 	firstName: {
 		type: String,

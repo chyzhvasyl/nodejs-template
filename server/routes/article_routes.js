@@ -42,15 +42,18 @@ function findAllArticles(req, res, next) {
 			Article.find().sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
-					populate: { path: 'user' }
+					populate: { path: 'user' },
+					options: { sort: { time : -1 }, skip: (req.params.flag * dataChunk), limit: {dataChunk} }
 				})
 				.populate({
 					path: 'commentsByEditor',
-					populate: { path: 'user' }
+					populate: { path: 'user' },
+					options: { sort: { time : -1 }, skip: (req.params.flag * dataChunk), limit: {dataChunk} }
 				})
 				.populate({
 					path: 'commentsByPublisher',
-					populate: { path: 'user' }
+					populate: { path: 'user' },
+					options: { sort: { time : -1 }, skip: (req.params.flag * dataChunk), limit: {dataChunk} }
 				})
 				.populate('category')
 				.populate('file')
@@ -124,21 +127,21 @@ function findAllArticlesByCategoryAndConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation}).sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation}).sort({ timeOfPublication : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' },
-					// match: { confirmation : true }
+					options: { sort: { time : -1 }, skip: (req.params.flag * dataChunk), limit: {dataChunk} }
 				})
 				.populate({
 					path: 'commentsByEditor',
 					populate: { path: 'user' },
-					// match: { confirmation : true }
+					options: { sort: { time : -1 }, skip: (req.params.flag * dataChunk), limit: {dataChunk} }
 				})
 				.populate({
 					path: 'commentsByPublisher',
 					populate: { path: 'user' },
-					// match: { confirmation : true }
+					options: { sort: { time : -1 }, skip: (req.params.flag * dataChunk), limit: {dataChunk} }
 				})
 				.populate('category')
 				.populate('file')
@@ -168,21 +171,24 @@ function findAllArticlesByConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Article.find({'confirmation':req.params.confirmation}).sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Article.find({'confirmation':req.params.confirmation}).sort({ timeOfPublication : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' },
-					match: { confirmation : true }
+					match: { confirmation : true },
+					options: { sort: { time : -1 }, skip: (req.params.flag * dataChunk), limit: {dataChunk} }
 				})
 				.populate({
 					path: 'commentsByEditor',
 					populate: { path: 'user' },
-					match: { confirmation : true }
+					match: { confirmation : true },
+					options: { sort: { time : -1 }, skip: (req.params.flag * dataChunk), limit: {dataChunk} }
 				})
 				.populate({
 					path: 'commentsByPublisher',
 					populate: { path: 'user' },
-					match: { confirmation : true }
+					match: { confirmation : true },
+					options: { sort: { time : -1 }, skip: (req.params.flag * dataChunk), limit: {dataChunk} }
 				})
 				.populate('category')
 				.populate('file')
@@ -215,15 +221,18 @@ function findAllArticlesByUserId(req, res, next) {
 			Article.find({'user':req.params.user_id}).sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
-					populate: { path: 'user' }
+					populate: { path: 'user' },
+					options: { sort: { time : -1 }, skip: (req.params.flag * dataChunk), limit: {dataChunk} }
 				})
 				.populate({
 					path: 'commentsByEditor',
-					populate: { path: 'user' }
+					populate: { path: 'user' },
+					options: { sort: { time : -1 }, skip: (req.params.flag * dataChunk), limit: {dataChunk} }
 				})
 				.populate({
 					path: 'commentsByPublisher',
-					populate: { path: 'user' }
+					populate: { path: 'user' },
+					options: { sort: { time : -1 }, skip: (req.params.flag * dataChunk), limit: {dataChunk} }
 				})
 				.populate('category')
 				.populate('file')
@@ -257,7 +266,8 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 			Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]}).sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
 				.populate({
 					path: 'comments',
-					populate: { path: 'user' }
+					populate: { path: 'user' },
+					options: { sort: { timeOfCreation : -1 }, skip: (req.params.flag * dataChunk), limit: {dataChunk} }
 				})
 				.populate({
 					path: 'commentsByEditor',
@@ -593,6 +603,7 @@ function updateArticle(req, res, next) {
 								article.status = req.body.status;
 								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
 							} else if (article.status == 'modified' && req.body.status == 'published') {
+								article.timeOfPublication = Date.now();
 								article.status = req.body.status;
 								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Reader', 'update', req);
 							} else if (article.status === 'not approved by publisher' && req.body.status == 'modified') {

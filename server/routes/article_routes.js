@@ -72,7 +72,7 @@ function findArticleByIdAndConfirmation(req, res, next) {
 				.populate('user')
 				.populate({
 					path: 'comments',
-					match: { confirmation: false},
+					match: { confirmation: true},
 					populate: { path: 'user' },
 					options: { sort: { time : -1 }}
 				})

@@ -143,7 +143,7 @@ admin.messaging().send(message)
 	.catch((error) => {
 		console.log('Error sending message:', error);
 	});
-	
+
 // *** logger *** //
 // intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
 const logger = winston.createLogger({
@@ -347,10 +347,10 @@ server.post('/login', function(req, res, next) {
 });
 
 // *** server config *** //
-// const hostname = '192.168.0.123';
+const hostname = '10.10.160.206';
 const port = 3000;
 
-http.listen(port, function(){
+http.listen(port, hostname, function(){
 	console.log('Server is listening on port: 3000');
 });
 

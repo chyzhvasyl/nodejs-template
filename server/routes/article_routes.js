@@ -536,8 +536,8 @@ function updateArticle(req, res, next) {
 							} else if (article.status == 'modified' && req.body.status == 'published') {
 								article.timeOfPublication = Date.now();
 								article.status = req.body.status;
-								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Reader', 'update', req);
+								// let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Reader', 'update', req);
 							} else if (article.status === 'not approved by publisher' && req.body.status == 'modified') {
 								article.status = req.body.status;
 								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);

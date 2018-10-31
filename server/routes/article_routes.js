@@ -3,7 +3,6 @@ const path = require('path');
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-// const intel = require('intel');
 const mime = require('mime');
 const Article = require('../models/article');
 const Comment = require('../models/comment');
@@ -20,6 +19,7 @@ const passport = require('passport');
 const redis = require('redis');
 const util = require('../util');
 const dataChunk = require('../config/general'); 
+// const intel = require('intel');
 
 // *** api routes *** //
 router.get('/articles/:flag', findAllArticles);
@@ -378,7 +378,7 @@ function saveCallback(req, res, file, user) {
 			} else {
 				let articleResponse = addFileUrl(article.toJSONObject(), file, req, user);
 				// TODO: io
-				notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
+				notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Editor', 'update', req);
 				res.status(201);
 				res.json(articleResponse);
 				// intel.info('Added new article ', articleResponse);
@@ -519,23 +519,29 @@ function updateArticle(req, res, next) {
 						//TODO: change emit to broadcast
 							if (article.status == 'created' && req.body.status == 'not approved by editor') {
 								article.status = req.body.status;
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Author', 'update', req);
+								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Author', 'update', req);
 							} else if (article.status == 'created' && req.body.status == 'modified') {
 								article.status = req.body.status;
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_publisher', 'update', req);
+								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_publisher', 'update', req);
 							} else if (article.status == 'not approved by editor' && req.body.status == 'created') {
 								article.status = req.body.status;
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
+								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Editor', 'update', req);
 							} else if (article.status == 'modified' && req.body.status == 'not approved by publisher') {
 								article.status = req.body.status;
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
+								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Editor', 'update', req);
 							} else if (article.status == 'modified' && req.body.status == 'published') {
 								article.timeOfPublication = Date.now();
 								article.status = req.body.status;
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Reader', 'update', req);
+								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Reader', 'update', req);
 							} else if (article.status === 'not approved by publisher' && req.body.status == 'modified') {
 								article.status = req.body.status;
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_publisher', 'update', req);
+								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_publisher', 'update', req);
 							} else {
 								article.status = req.body.status;
 							}

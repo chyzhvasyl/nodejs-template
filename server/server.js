@@ -26,6 +26,7 @@ const session = require('express-session')({
 	resave: true,
 	saveUninitialized: true
 });
+const admin = require('firebase-admin');
 // const forceSsl = require('express-force-ssl');
 
 // *** http, express instance *** //
@@ -116,6 +117,33 @@ client.on('error', function (err) {
 	console.log('Something went wrong ' + err);
 });
 
+// *** firebase config *** //
+var serviceAccount = require('./encryption/vknews-b4214-firebase-adminsdk-wfm2i-6b87162f8f.json');
+
+admin.initializeApp({
+	credential: admin.credential.cert(serviceAccount),
+	databaseURL: 'https://vknews-b4214.firebaseio.com'
+});
+
+const topic = 'highScores';
+
+const message = {
+	data: {
+		score: '850',
+		time: '2:45'
+	},
+	topic: topic
+};
+
+admin.messaging().send(message)
+	.then((response) => {
+		// Response is a message ID string.
+		console.log('Successfully sent message:', response);
+	})
+	.catch((error) => {
+		console.log('Error sending message:', error);
+	});
+	
 // *** logger *** //
 // intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
 const logger = winston.createLogger({

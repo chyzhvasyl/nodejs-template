@@ -347,10 +347,10 @@ server.post('/login', function(req, res, next) {
 });
 
 // *** server config *** //
-const hostname = '10.10.160.206';
+// const hostname = '10.10.160.206';
 const port = 3000;
 
-http.listen(port, hostname, function(){
+http.listen(port, function(){
 	console.log('Server is listening on port: 3000');
 });
 

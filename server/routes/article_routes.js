@@ -536,8 +536,8 @@ function updateArticle(req, res, next) {
 							} else if (article.status == 'modified' && req.body.status == 'published') {
 								article.timeOfPublication = Date.now();
 								article.status = req.body.status;
-								// let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Reader', 'update', req);
+								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Reader', 'update', req);
 							} else if (article.status === 'not approved by publisher' && req.body.status == 'modified') {
 								article.status = req.body.status;
 								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
@@ -677,25 +677,32 @@ function updateArticle(req, res, next) {
 									article.confirmation = req.body.confirmation;
 								}
 								if (req.body.status) {
-								//TODO: change emit to broadcast
+									//TODO: change emit to broadcast
 									if (article.status == 'created' && req.body.status == 'not approved by editor') {
 										article.status = req.body.status;
-										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Author', 'update', req);
+										let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
+										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Author', 'update', req);
 									} else if (article.status == 'created' && req.body.status == 'modified') {
 										article.status = req.body.status;
-										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_publisher', 'update', req);
+										let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
+										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_publisher', 'update', req);
 									} else if (article.status == 'not approved by editor' && req.body.status == 'created') {
 										article.status = req.body.status;
-										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
+										let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
+										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Editor', 'update', req);
 									} else if (article.status == 'modified' && req.body.status == 'not approved by publisher') {
 										article.status = req.body.status;
-										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
+										let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
+										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Editor', 'update', req);
 									} else if (article.status == 'modified' && req.body.status == 'published') {
+										article.timeOfPublication = Date.now();
 										article.status = req.body.status;
-										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Reader', 'update', req);
+										let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
+										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Reader', 'update', req);
 									} else if (article.status === 'not approved by publisher' && req.body.status == 'modified') {
 										article.status = req.body.status;
-										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, article.toJSONObject(), 'CN=NEWS_Editor', 'update', req);
+										let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
+										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_publisher', 'update', req);
 									} else {
 										article.status = req.body.status;
 									}
@@ -819,6 +826,7 @@ function notifyUsers(clientSockets, connectedSockets, article, role, event, requ
 			let session = socket.handshake.session;
 			if (session.user && session.user.roles && Array.isArray(session.user.roles)) {
 				if (session.user.roles.indexOf(role) !== -1) {
+					console.log(i);
 					connectedSockets[socketsArray[i].id].emit(event, article);
 				}
 			} else {
@@ -826,7 +834,7 @@ function notifyUsers(clientSockets, connectedSockets, article, role, event, requ
 			}
 		}
 		// Save "event" to redis user's data who offline
- 		usersArray = Object.values(users);
+		usersArray = Object.values(users);
 		for (let i = 0; i < socketsArray.length; i++) {
 			const socket = socketsArray[i];
 			let session = socket.handshake.session;

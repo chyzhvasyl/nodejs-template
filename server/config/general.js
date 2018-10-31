@@ -1,3 +1,3 @@
-const dataChunk = 5;
+const dataChunk = 10;
 
 module.exports = dataChunk;

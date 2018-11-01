@@ -4,7 +4,7 @@
   "description": "Article app",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon ./server/server",
+    "start": "node ./server/server",
     "install-start": "npm install && npm start",
     "test": "mocha"
   },

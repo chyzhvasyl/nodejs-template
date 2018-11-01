@@ -289,6 +289,7 @@ function addArticle(req, res, next) {
 								newArticle.category = req.params.category_id;
 								newArticle.template = req.params.template_id;
 								newArticle.user = req.params.user_id;
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, newArticle, 'CN=NEWS_Editor', 'update', req);
 								newArticle.save(saveCallback(req, res, newFile, user));
 							});
 						}
@@ -319,6 +320,7 @@ function addArticle(req, res, next) {
 						newArticle.category = req.params.category_id;
 						newArticle.template = req.params.template_id;
 						newArticle.user = req.params.user_id;
+						notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, newArticle, 'CN=NEWS_Editor', 'update', req);
 						newArticle.save(saveCallback(req, res, newFile, user));
 					});
 				}   
@@ -377,8 +379,6 @@ function saveCallback(req, res, file, user) {
 				// intel.info('Added new article ', articleResponse);
 			} else {
 				let articleResponse = addFileUrl(article.toJSONObject(), file, req, user);
-				// TODO: io
-				notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Editor', 'update', req);
 				res.status(201);
 				res.json(articleResponse);
 				// intel.info('Added new article ', articleResponse);

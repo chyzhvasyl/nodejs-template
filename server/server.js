@@ -197,7 +197,8 @@ passport.use(new LocalStrategy(
 							firstName: body.FirstName,
 							lastName: body.LastName,
 							secondaryName: body.SecondName,
-							roles: body.ListGroups
+							roles: body.ListGroups,
+							tokenLifeTime: Date.now()
 						});
 												
 						newUser.save(function(err, newUser) {
@@ -218,16 +219,15 @@ passport.use(new LocalStrategy(
 					}
 				});
 			} else {
-				if (user.token === password) {
-					if ((Date.now() - user.tokenLifeTime) < 86400000) {
-						return done(null, user);
-					} else {
-						const newToken = uuidv4();
+				request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
+					if (err) {
+						return console.error('upload failed:', err); 
+					} 
+					if ((httpResponse.statusCode === 200) && ((Date.now() - user.tokenLifeTime) < 86400000)) {
 						User.findOneAndUpdate(
-							{ login: login.toLowerCase(), token: user.token },
+							{ login: login, token: user.token },
 							{
-								token: newToken,
-								tokenLifeTime: Date.now()
+								roles: body.ListGroups
 							}, 
 							{ new: true }, (function(err, updatedUser){
 								if(err) {
@@ -243,41 +243,33 @@ passport.use(new LocalStrategy(
 								}
 							})
 						);
+					} else if ((httpResponse.statusCode === 200) && ((Date.now() - user.tokenLifeTime) > 86400000)) {
+						const newToken = uuidv4();
+						User.findOneAndUpdate(
+							{ login: login, token: user.token },
+							{
+								token: newToken,
+								tokenLifeTime: Date.now(),
+								roles: body.ListGroups
+							}, 
+							{ new: true }, (function(err, updatedUser){
+								if(err) {
+									// res.status(400);
+									// res.json(err);
+									// intel.error(err);
+									return done(null, false);
+								} else {
+									// intel.info('Added new user ', updatedUser);
+									updatedUser = updatedUser.toObject();
+									updatedUser['isCookie'] = false;
+									return done(null, updatedUser);
+								}
+							})
+						);
+					} else {
+						return done(null, false);     
 					}
-				} else {
-					request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
-						if (err) {
-							return console.error('upload failed:', err); 
-						} 
-						if ((httpResponse.statusCode === 200) && ((Date.now() - user.tokenLifeTime) < 86400000)) {
-							return done(null, user);
-						} else if ((httpResponse.statusCode === 200) && ((Date.now() - user.tokenLifeTime) > 86400000)) {
-							const newToken = uuidv4();
-							User.findOneAndUpdate(
-								{ login: login, token: user.token },
-								{
-									token: newToken,
-									tokenLifeTime: Date.now()
-								}, 
-								{ new: true }, (function(err, updatedUser){
-									if(err) {
-										// res.status(400);
-										// res.json(err);
-										// intel.error(err);
-										return done(null, false);
-									} else {
-										// intel.info('Added new user ', updatedUser);
-										updatedUser = updatedUser.toObject();
-										updatedUser['isCookie'] = false;
-										return done(null, updatedUser);
-									}
-								})
-							);
-						} else {
-							return done(null, false);     
-						}
-					});
-				}
+				});
 			}
 		});
 	}
@@ -347,7 +339,7 @@ server.post('/login', function(req, res, next) {
 });
 
 // *** server config *** //
-// const hostname = '10.10.160.206';
+// const hostname = '192.168.0.123';
 const port = 3000;
 
 http.listen(port, function(){

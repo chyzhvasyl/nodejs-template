@@ -118,11 +118,11 @@ client.on('error', function (err) {
 });
 
 // *** firebase config *** //
-var serviceAccount = require('./encryption/vknews-b4214-firebase-adminsdk-wfm2i-6b87162f8f.json');
+var serviceAccount = require('./encryption/test-6f70a-firebase-adminsdk-jacfy-96dd5c6762.json');
 
 admin.initializeApp({
 	credential: admin.credential.cert(serviceAccount),
-	databaseURL: 'https://vknews-b4214.firebaseio.com'
+	databaseURL: 'https://test-6f70a.firebaseio.com'
 });
 
 const topic = 'highScores';
@@ -369,7 +369,7 @@ io.on('connection', function(socket){
 		console.log('user logged in ' + JSON.stringify(user));
 		socket.handshake.session.user = user;
 		socket.handshake.session.save();
-		console.log(socket.handshake.session.user);
+		// console.log(socket.handshake.session.user);
 		client.keys('*', function (err, keys) {
 			if (err) return console.log(err);
 			for(var i = 0; i <= keys.length -1; i++) {

@@ -254,35 +254,36 @@ passport.use(new LocalStrategy(
 						request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
 							if (err) {
 								return console.error('upload failed:', err); 
-							} 
-							if ((httpResponse.statusCode === 200) && ((Date.now() - user.tokenLifeTime) < 86400000 * template.cookieLifeTime)) {
-								return done(null, user);
-							} else if ((httpResponse.statusCode === 200) && ((Date.now() - user.tokenLifeTime) > 86400000 * template.cookieLifeTime)) {
-								const newToken = uuidv4();
-								User.findOneAndUpdate(
-									{ login: login, token: user.token },
-									{
-										token: newToken,
-										tokenLifeTime: Date.now(),
-										roles: body.ListGroups
-									}, 
-									{ new: true }, (function(err, updatedUser){
-										if(err) {
-											// res.status(400);
-											// res.json(err);
-											// intel.error(err);
-											return done(null, false);
-										} else {
-											// intel.info('Added new user ', updatedUser);
-											updatedUser = updatedUser.toObject();
-											updatedUser['isCookie'] = false;
-											return done(null, updatedUser);
-										}
-									})
-								);
-							} else {
-								return done(null, false);     
 							}
+							const newToken = uuidv4();
+							User.findOneAndUpdate(
+								{ login: login, token: user.token },
+								{
+									token: newToken,
+									tokenLifeTime: Date.now(),
+									roles: body.ListGroups
+								}, 
+								{ new: true }, (function(err, updatedUser){
+									if(err) {
+										// res.status(400);
+										// res.json(err);
+										// intel.error(err);
+										return done(null, false);
+									} else {
+										// intel.info('Added new user ', updatedUser);
+										updatedUser = updatedUser.toObject();
+										updatedUser['isCookie'] = false;
+										return done(null, updatedUser);
+									}
+								})
+							);
+							// if ((httpResponse.statusCode === 200) && ((Date.now() - user.tokenLifeTime) < 86400000 * template.cookieLifeTime)) {
+							// 	return done(null, user);
+							// } else if ((httpResponse.statusCode === 200) && ((Date.now() - user.tokenLifeTime) > 86400000 * template.cookieLifeTime)) {
+								
+							// } else {
+							// 	return done(null, false);     
+							// }
 						});
 					}
 				});

@@ -69,7 +69,6 @@ function findArticleByIdAndConfirmation(req, res, next) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
 			Article.findOne({'_id' : req.params.id, 'confirmation' : req.params.confirmation})
-				.populate('user')
 				.populate({
 					path: 'comments',
 					match: { confirmation: true},
@@ -78,16 +77,15 @@ function findArticleByIdAndConfirmation(req, res, next) {
 				})
 				.populate({
 					path: 'commentsByEditor',
-					match: { confirmation: true},
 					populate: { path: 'user' },
 					options: { sort: { time : -1 }}
 				})
 				.populate({
 					path: 'commentsByPublisher',
-					match: { confirmation: true},
 					populate: { path: 'user' },
 					options: { sort: { time : -1 }}
 				})
+				.populate('user')
 				.populate('category')
 				.populate('file')
 				.populate('template')
@@ -496,6 +494,7 @@ function updateArticle(req, res, next) {
 			if (req.headers['content-type'].indexOf('application/json') !== -1) {
 				Article.findById(req.params.id)
 					.populate('file')
+					.populate('category')
 					.exec(function(err, article) {
 						if (req.body.title) {
 							article.title = req.body.title;

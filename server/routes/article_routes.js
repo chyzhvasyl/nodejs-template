@@ -495,6 +495,7 @@ function updateArticle(req, res, next) {
 				Article.findById(req.params.id)
 					.populate('file')
 					.populate('category')
+					.populate('user')
 					.exec(function(err, article) {
 						if (req.body.title) {
 							article.title = req.body.title;

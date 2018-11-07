@@ -493,8 +493,8 @@ function updateArticle(req, res, next) {
 		if (util.hasRole(user, 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
 			if (req.headers['content-type'].indexOf('application/json') !== -1) {
 				Article.findById(req.params.id)
-					.populate('file')
 					.populate('category')
+					.populate('file')
 					.populate('user')
 					.exec(function(err, article) {
 						if (req.body.title) {

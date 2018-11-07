@@ -48,7 +48,14 @@ function findFileById(req, res, next) {
 					// intel.error(err);
 				}
 				res.setHeader('Content-Type', file.contentType);
-				fs.createReadStream(path.join(UPLOAD_PATH + '/images/', file.filename)).pipe(res);
+				var readStream = fs.createReadStream(path.join(UPLOAD_PATH + '/images/', file.filename));
+				readStream.on('open', function () {
+					readStream.pipe(res);
+				});
+				readStream.on('error', function(err) {
+					console.log('Read stream error');
+					res.end(err);
+				});
 			});
 		} else {
 			res.status(403);

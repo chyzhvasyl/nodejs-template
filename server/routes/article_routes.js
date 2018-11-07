@@ -51,7 +51,7 @@ function findAllArticles(req, res, next) {
 						res.json(err);
 						// intel.error(err);
 					} else {
-						articles = articles.map(a => addFileUrl(a, a.file, req, a.user));
+						articles = articles.map(a => addFileUrl(a, a.file, req, user));
 						res.json(articles);
 						// intel.info('Get all articles ', articles);
 					}
@@ -96,7 +96,7 @@ function findArticleByIdAndConfirmation(req, res, next) {
 						res.json(err);
 						// intel.error(err);
 					} else {
-						article = addFileUrl(article, article.file, req, article.user);
+						article = addFileUrl(article, article.file, req, user);
 						res.json(article);
 						// intel.info('Get single article by id ', article);
 					}
@@ -125,7 +125,7 @@ function findAllArticlesByCategoryAndConfirmation(req, res, next) {
 						res.json(err);
 						// intel.error(err);
 					} else {
-						articles = articles.map(a => addFileUrl(a, a.file, req, a.user));
+						articles = articles.map(a => addFileUrl(a, a.file, req, user));
 						res.json(articles);
 						// intel.info('Get all articles by category ' + req.params.category, articles);
 					}
@@ -154,7 +154,7 @@ function findAllArticlesByConfirmation(req, res, next) {
 						res.json(err);
 						// intel.error(err);
 					} else {
-						articles = articles.map(a => addFileUrl(a, a.file, req, a.user));
+						articles = articles.map(a => addFileUrl(a, a.file, req, user));
 						res.json(articles);
 						// intel.info('Get all articles by confirmation ' + req.params.category, articles);
 					}
@@ -183,7 +183,7 @@ function findAllArticlesByUserId(req, res, next) {
 						res.json(err);
 						// intel.error(err);
 					} else {
-						articles = articles.map(a => addFileUrl(a, a.file, req, a.user));
+						articles = articles.map(a => addFileUrl(a, a.file, req, user));
 						res.json(articles);
 						// intel.info('Get all articles by user id ' + req.params.category, articles);
 					}
@@ -213,7 +213,7 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 						res.json(err);
 						// intel.error(err);
 					} else {
-						articles = articles.map(a => addFileUrl(a, a.file, req, a.user));
+						articles = articles.map(a => addFileUrl(a, a.file, req, user));
 						res.json(articles);
 						// intel.info('Get all articles by several status ' , articles);
 					}
@@ -243,7 +243,7 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 						res.json(err);
 						// intel.error(err);
 					} else {
-						articles = articles.map(a => addFileUrl(a, a.file, req, a.user));
+						articles = articles.map(a => addFileUrl(a, a.file, req, user));
 						res.json(articles);
 						// intel.info('Get all articles by several status ' , articles);
 					}
@@ -495,6 +495,7 @@ function updateArticle(req, res, next) {
 				Article.findById(req.params.id)
 					.populate('file')
 					.populate('category')
+					.populate('user')
 					.exec(function(err, article) {
 						if (req.body.title) {
 							article.title = req.body.title;
@@ -656,6 +657,8 @@ function updateArticle(req, res, next) {
 					} else {
 						Article.findById(req.params.id)
 							.populate('file')
+							.populate('category')
+							.populate('user')
 							.exec(function(err, article) {
 								if (req.body.title) {
 									article.title = req.body.title;

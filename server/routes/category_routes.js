@@ -90,18 +90,13 @@ function updateCategory(req, res, next) {
 			return next(err);
 		}
 		if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Category.findById(req.params.id, function(err, updatedCategory) {
-				updatedCategory.name = req.body.name;
-				updatedCategory.save(function(err) {
-					if(err) {
-						res.status(400);
-						res.json(err);
-						logger.error(err);
-					} else {
-						res.json(updatedCategory);
-						logger.info(`Updated category ${updatedCategory.name}`);
-					}
-				});
+			Category.findByIdAndUpdate(req.params.id, {'name' : req.body.name}, { new: true }, function(err, updatedCategory) {
+				if(err) {
+					logger.error(err);
+				} else {
+					res.json(updatedCategory);
+					logger.info(`Updated category ${updatedCategory.name}`);
+				}
 			});
 		} else {
 			res.status(403);

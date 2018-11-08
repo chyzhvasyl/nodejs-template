@@ -3,7 +3,7 @@ const router = express.Router();
 const Category = require('../models/category');
 const Article = require('../models/article');
 const passport = require('passport');
-const logger = require('../logs/logger');
+const logger = require('../config/logger');
 const util = require('../util');
 
 // *** api routes *** //

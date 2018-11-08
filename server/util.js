@@ -6,6 +6,6 @@ module.exports = {
 			}
 			return Array.from(arguments).some(hasRole);
 		}
-			return false;
-		}
+		return false;
+	}
 };

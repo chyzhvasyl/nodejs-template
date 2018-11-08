@@ -7,7 +7,7 @@ const corsOptions = require('./config/cors');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const morgan = require('morgan');
-const logger = require('./logger');
+const logger = require('./config/logger');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const User = require('./models/user');
@@ -24,7 +24,7 @@ const session = require('express-session')({
 	saveUninitialized: true
 });
 const admin = require('firebase-admin');
-const tokenLifeTime = require('../config/general');
+const general = require('./config/general');
 // const https = require('https');
 // const forceSsl = require('express-force-ssl');
 // const redis = require('redis');
@@ -197,7 +197,7 @@ passport.use(new LocalStrategy(
 							}
 						});
 					} else {
-						return done(null, false);     
+						return done(null, false);
 					}
 				});
 			} else {
@@ -207,14 +207,18 @@ passport.use(new LocalStrategy(
 					}
 					const template = templates[0];
 					if (user.token === password) {
-						if ((Date.now() - user.tokenRefreshTime) < tokenLifeTime * template.tokenLifeTimeMultiplier) {
+						if ((Date.now() - user.tokenRefreshTime) < general.tokenLifeTime * template.tokenLifeTimeMultiplier) {
 							return done(null, user);
 						} else {
-							request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
-								if (err) {
-									return logger.error(err); 
-								}
-								const newToken = uuidv4();
+							return done(null, false);
+						}
+					} else {
+						request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
+							if (err) {
+								return logger.error(err); 
+							}
+							const newToken = uuidv4();
+							if (httpResponse.statusCode === 200) {
 								User.findOneAndUpdate(
 									{ login: login, token: user.token },
 									{
@@ -232,31 +236,9 @@ passport.use(new LocalStrategy(
 										}
 									})
 								);
-							});
-						}
-					} else {
-						request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
-							if (err) {
-								return logger.error(err); 
+							} else {
+								return done(null, false);     
 							}
-							const newToken = uuidv4();
-							User.findOneAndUpdate(
-								{ login: login, token: user.token },
-								{
-									token: newToken,
-									tokenLifeTime: Date.now(),
-									roles: body.ListGroups
-								}, 
-								{ new: true }, (function(err, updatedUser){
-									if(err) {
-										logger.error(err);
-										return done(null, false);
-									} else {
-										logger.info(`Updated user ${updatedUser.login}`);
-										return done(null, updatedUser);
-									}
-								})
-							);
 						});
 					}
 				});

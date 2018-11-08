@@ -18,7 +18,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const passport = require('passport');
 const redis = require('redis');
 const util = require('../util');
-const dataChunk = require('../config/general'); 
+const general = require('../config/general'); 
 // const intel = require('intel');
 
 // *** api routes *** //
@@ -39,7 +39,7 @@ function findAllArticles(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Administrator')) {
-			Article.find().sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Article.find().sort({ timeOfCreation : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate('category')
 				.populate('file')
 				.populate('template')
@@ -113,7 +113,7 @@ function findAllArticlesByCategoryAndConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation}).sort({ timeOfPublication : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation}).sort({ timeOfPublication : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate('category')
 				.populate('file')
 				.populate('template')
@@ -142,7 +142,7 @@ function findAllArticlesByConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Article.find({'confirmation':req.params.confirmation}).sort({ timeOfPublication : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Article.find({'confirmation':req.params.confirmation}).sort({ timeOfPublication : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate('category')
 				.populate('file')
 				.populate('template')
@@ -152,6 +152,7 @@ function findAllArticlesByConfirmation(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
+						console.log(err);
 						// intel.error(err);
 					} else {
 						articles = articles.map(a => addFileUrl(a, a.file, req, user));
@@ -171,7 +172,7 @@ function findAllArticlesByUserId(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Author')) {
-			Article.find({'user':req.params.user_id}).sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Article.find({'user':req.params.user_id}).sort({ timeOfCreation : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate('category')
 				.populate('file')
 				.populate('template')
@@ -201,7 +202,7 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator', 'CN=NEWS_Author')) {
-			Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]}).sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]}).sort({ timeOfCreation : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate('category')
 				.populate('file')
 				.populate('template')
@@ -219,7 +220,7 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 					}
 				});
 		} else if (util.hasRole(user, 'CN=NEWS_publisher', 'CN=NEWS_Administrator')){
-			Article.find({ $or: [{status : 'modified'}]}).sort({ timeOfCreation : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Article.find({ $or: [{status : 'modified'}]}).sort({ timeOfCreation : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate({
 					path: 'comments',
 					populate: { path: 'user' }

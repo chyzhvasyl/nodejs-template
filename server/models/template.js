@@ -20,7 +20,10 @@ const templateSchema = new Schema({
 			fontSize: Number 
 		},
 	},
-	tokenLifeTimeMultiplier: {
+	// tokenLifeTimeMultiplier: {
+	// 	type: Number
+	// },
+	cookieLifeTime: {
 		type: Number
 	},
 	article: { type: Schema.Types.ObjectId, ref: 'article' }

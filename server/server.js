@@ -65,7 +65,7 @@ mongoose.connect(dbConfig.database, (err) => {
 								fontSize: 18
 							}
 						},
-						tokenLifeTimeMultiplier : 1
+						cookieLifeTime : 1
 					});
 									
 					newTemplate.save(function(err) {
@@ -207,7 +207,7 @@ passport.use(new LocalStrategy(
 					}
 					const template = templates[0];
 					if (user.token === password) {
-						if ((Date.now() - user.tokenRefreshTime) < general.tokenLifeTime * template.tokenLifeTimeMultiplier) {
+						if ((Date.now() - user.tokenRefreshTime) < general.tokenLifeTime * template.cookieLifeTime) {
 							return done(null, user);
 						} else {
 							return done(null, false);
@@ -301,10 +301,10 @@ server.post('/login', function(req, res, next) {
 });
 
 // *** server config *** //
-// const hostname = '192.168.0.123';
+const hostname = '192.168.0.123';
 const port = 3000;
 
-http.listen(port, function(){
+http.listen(port, hostname, function(){
 	console.log('Server started on port: 3000');
 	logger.info(`Server started on port: ${port}`);
 });

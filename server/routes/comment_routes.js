@@ -5,7 +5,7 @@ const Article = require('../models/article');
 // const intel = require('intel');
 const passport = require('passport');
 const util = require('../util');
-const dataChunk = require('../config/general'); 
+const general = require('../config/general'); 
 
 // *** api routes *** //
 router.get('/comments/:flag', findAllComments);
@@ -21,7 +21,7 @@ function findAllComments(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Comment.find().sort({ time : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Comment.find().sort({ time : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate('article')
 				.exec(function(err, comments) {
 					if(err) {
@@ -69,7 +69,7 @@ function findCommentsByConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Comment.find({'confirmation':req.params.confirmation}).sort({ time : -1 }).skip(req.params.flag * dataChunk).limit(dataChunk)
+			Comment.find({'confirmation':req.params.confirmation}).sort({ time : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate('article')
 				.exec(function(err, comments) {
 					if(err) {
@@ -109,8 +109,8 @@ function findAllCommentsOnAllUsersArticles(req, res, next) {
 						b = new Date(b.time);
 						return a>b ? -1 : a<b ? 1 : 0;
 					});
-					let a = req.params.flag * dataChunk;
-					let b = req.params.flag * dataChunk + dataChunk;
+					let a = req.params.flag * general.dataChunk;
+					let b = req.params.flag * general.dataChunk + general.dataChunk;
 					res.json(comments.slice(a, b));
 					// intel.info('Get all comments by author ', user.id);
 				}

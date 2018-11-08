@@ -1,15 +1,13 @@
 // TODO: Remove useless files from git
 const fs = require('fs');
 const path = require('path');
-// const https = require('https');
 const express = require('express');
 const mongoose = require('mongoose');
 const corsOptions = require('./config/cors');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const morgan = require('morgan');
-// const intel = require('intel');
-const winston = require('winston');
+const logger = require('./logger');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const User = require('./models/user');
@@ -27,6 +25,7 @@ const session = require('express-session')({
 	saveUninitialized: true
 });
 const admin = require('firebase-admin');
+// const https = require('https');
 // const forceSsl = require('express-force-ssl');
 
 // *** http, express instance *** //
@@ -37,16 +36,13 @@ const io = require('socket.io')(http);
 // *** mongodb config *** //
 mongoose.connect(dbConfig.database, (err) => {
 	if(err) {
-		console.log('Database error: ' + err);
-		// intel.error(err);
+		logger.error(err);
 	} else {
-		console.log('Connected to database ' + dbConfig.database);
-		// intel.info('Connected to database %s', dbConfig.database);
-		logger.info('Hello again distributed logs');
-		logger.error('Hello again distributed logs');
+		console.log(`Connected to database ${dbConfig.database}`);
+		logger.info(`Connected to database ${dbConfig.database}`);
 		Template.find(function(err, templates) {
 			if(err) {
-				// intel.error(err);
+				logger.error(err);
 			} else {
 				if (!templates || Object.keys(templates).length === 0) {
 					let newTemplate = new Template({
@@ -71,11 +67,11 @@ mongoose.connect(dbConfig.database, (err) => {
 						cookieLifeTime : 1
 					});
 									
-					newTemplate.save(function(err, newTemplate) {
+					newTemplate.save(function(err) {
 						if(err) {
-							// intel.error(err);
+							logger.error(err);
 						} else { 
-							// intel.info('Added new template ', newTemplate);
+							logger.error('Added new template');
 						}
 					});
 				}
@@ -83,7 +79,7 @@ mongoose.connect(dbConfig.database, (err) => {
 		});
 		Category.find(function(err, categories) {
 			if(err) {
-				// intel.error(err);
+				logger.error(err);
 			} else {
 				if (!categories || Object.keys(categories).length === 0) {
 					let newCategory = new Category({
@@ -92,9 +88,9 @@ mongoose.connect(dbConfig.database, (err) => {
 									
 					newCategory.save(function(err, newCategory) {
 						if(err) {
-							// intel.error(err);
-						} else { 
-							// intel.info('Added new category ', newCategory);
+							logger.error(err);
+						} else {
+							logger.info(`Added new category ${newCategory.name}`);
 						}
 					});
 				}
@@ -104,18 +100,18 @@ mongoose.connect(dbConfig.database, (err) => {
 });
 
 // *** redis config *** //
-const redisHostname = 'redis';
-const redisPort = 6379;
+// const redisHostname = 'redis';
+// const redisPort = 6379;
 
-const client = redis.createClient(redisPort, redisHostname);
+// const client = redis.createClient(redisPort, redisHostname);
 
-client.on('connect', function() {
-	console.log('Redis client connected');
-});
+// client.on('connect', function() {
+// 	console.log('Redis client connected');
+// });
 
-client.on('error', function (err) {
-	console.log('Something went wrong ' + err);
-});
+// client.on('error', function (err) {
+// 	console.log('Something went wrong ' + err);
+// });
 
 // *** firebase config *** //
 var serviceAccount = require('./encryption/test-6f70a-firebase-adminsdk-jacfy-96dd5c6762.json');
@@ -138,26 +134,14 @@ const message = {
 admin.messaging().send(message)
 	.then((response) => {
 		// Response is a message ID string.
-		console.log('Successfully sent message:', response);
+		logger.info(`Successfully sent message: ${response}`);
 	})
-	.catch((error) => {
-		console.log('Error sending message:', error);
+	.catch((err) => {
+		logger.error(err);
 	});
 
 // *** logger *** //
 // intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
-const logger = winston.createLogger({
-	level: 'info',
-	format: winston.format.json(),
-	transports: [
-		//
-		// - Write to all logs with level `info` and below to `combined.log` 
-		// - Write all logs error (and below) to `error.log`.
-		//
-		new winston.transports.File({ filename: 'server/logs/error.log', level: 'error' }),
-		new winston.transports.File({ filename: 'server/logs/combined.log' })
-	]
-});
 
 // *** morgan stream *** //
 const accessLogStream = fs.createWriteStream(path.join(__dirname, './logs/access.log'), {flags: 'a'});
@@ -177,10 +161,10 @@ server.use(function(req,res,next){
 	req.io = io;
 	next();
 });
-server.use(function(req,res,next){
-	req.client = client;
-	next();
-});
+// server.use(function(req,res,next){
+// 	req.client = client;
+// 	next();
+// });
 passport.use(new LocalStrategy(
 	function(login, password, done) {
 		User.findOne({ login: login.toLowerCase() }, function(err, user) {
@@ -188,7 +172,7 @@ passport.use(new LocalStrategy(
 			if (!user) {
 				request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
 					if (err) {
-						return console.error('upload failed:', err);
+						return logger.error(err);
 					}
 					if (httpResponse.statusCode === 200) {
 						const newUser = new User({
@@ -203,14 +187,10 @@ passport.use(new LocalStrategy(
 												
 						newUser.save(function(err, newUser) {
 							if(err) {
-								// res.status(400);
-								// res.json(err);
-								// intel.error(err);
+								logger.error(err);
 								return done(null, false);
 							} else {
-								// intel.info('Added new user ', newUser);
-								newUser = newUser.toObject();
-								newUser['isCookie'] = false;
+								logger.info(`Added new user ${newUser.login}`);
 								return done(null, newUser);
 							}
 						});
@@ -221,39 +201,41 @@ passport.use(new LocalStrategy(
 			} else {
 				Template.find({}, function(err, templates) {
 					if (err) {
-						// intel.error(err);
+						logger.error(err);
 					}
 					const template = templates[0];
 					if (user.token === password) {
 						if ((Date.now() - user.tokenLifeTime) < 86400000 * template.cookieLifeTime) {
 							return done(null, user);
 						} else {
-							const newToken = uuidv4();
-							User.findOneAndUpdate(
-								{ login: login.toLowerCase(), token: user.token },
-								{
-									token: newToken,
-									tokenLifeTime: Date.now()
-								}, 
-								{ new: true }, (function(err, updatedUser){
-									if(err) {
-										// res.status(400);
-										// res.json(err);
-										// intel.error(err);
-										return done(null, false);
-									} else {
-										// intel.info('Added new user ', updatedUser);
-										updatedUser = updatedUser.toObject();
-										updatedUser['isCookie'] = false;
-										return done(null, updatedUser);
-									}
-								})
-							);
+							request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
+								if (err) {
+									return logger.error(err); 
+								}
+								const newToken = uuidv4();
+								User.findOneAndUpdate(
+									{ login: login, token: user.token },
+									{
+										token: newToken,
+										tokenLifeTime: Date.now(),
+										roles: body.ListGroups
+									}, 
+									{ new: true }, (function(err, updatedUser){
+										if(err) {
+											logger.error(err);
+											return done(null, false);
+										} else {
+											logger.info(`Updated user ${updatedUser.login}`);
+											return done(null, updatedUser);
+										}
+									})
+								);
+							});
 						}
 					} else {
 						request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
 							if (err) {
-								return console.error('upload failed:', err); 
+								return logger.error(err); 
 							}
 							const newToken = uuidv4();
 							User.findOneAndUpdate(
@@ -265,25 +247,14 @@ passport.use(new LocalStrategy(
 								}, 
 								{ new: true }, (function(err, updatedUser){
 									if(err) {
-										// res.status(400);
-										// res.json(err);
-										// intel.error(err);
+										logger.error(err);
 										return done(null, false);
 									} else {
-										// intel.info('Added new user ', updatedUser);
-										updatedUser = updatedUser.toObject();
-										updatedUser['isCookie'] = false;
+										logger.info(`Updated user ${updatedUser.login}`);
 										return done(null, updatedUser);
 									}
 								})
 							);
-							// if ((httpResponse.statusCode === 200) && ((Date.now() - user.tokenLifeTime) < 86400000 * template.cookieLifeTime)) {
-							// 	return done(null, user);
-							// } else if ((httpResponse.statusCode === 200) && ((Date.now() - user.tokenLifeTime) > 86400000 * template.cookieLifeTime)) {
-								
-							// } else {
-							// 	return done(null, false);     
-							// }
 						});
 					}
 				});
@@ -304,7 +275,6 @@ server.use((err, req, res, next) => {
 //TODO: make better way to handle errors - user domains
 process.on('uncaughtException', function(err) {
 	// handle the error safely
-	// intel.error(err);
 	console.log(err);
 });
 // server.use(forceSsl);
@@ -335,20 +305,11 @@ server.use('/', userRoutes);
 
 server.post('/login', function(req, res, next) {
 	passport.authenticate('local', function(err, user) {
-		if (err) { return next(err); }
+		if (err) { 
+			return next(err);
+		}
 		if (user) {
-			Template.find({}, function(err, templates) {
-				if (err) {
-					// intel.error(err);
-				}
-				const template = templates[0];
-				if (user.isCookie == false) {
-					res.cookie('user', user, {maxAge : 1 * 1000 * 60 * 60 * 24});
-					delete user['isCookie'];
-					user['cookieLifeTime'] = template.cookieLifeTime;
-				}
-				return res.json(user);
-			});
+			return res.json(user);
 		} else {
 			return res.sendStatus(401);
 		}
@@ -360,7 +321,8 @@ server.post('/login', function(req, res, next) {
 const port = 3000;
 
 http.listen(port, function(){
-	console.log('Server is listening on port: 3000');
+	console.log('Server started on port: 3000');
+	logger.info(`Server started on port: ${port}`);
 });
 
 // *** socket.io config *** //
@@ -371,20 +333,20 @@ io.on('connection', function(socket){
 		socket.handshake.session.user = user;
 		socket.handshake.session.save();
 		// console.log(socket.handshake.session.user);
-		client.keys('*', function (err, keys) {
-			if (err) return console.log(err);
-			for(var i = 0; i <= keys.length -1; i++) {
-				if (keys[i].indexOf(socket.handshake.session.user.login) !== -1) {
-					client.get(keys[i], function (err, result) {
-						if (err) {
-							// intel.error(err);
-						}
-						socket.local.emit('update', JSON.parse(result));
-					});
-					client.del(keys[i]);
-				}
-			}
-		});
+		// client.keys('*', function (err, keys) {
+		// 	if (err) return console.log(err);
+		// 	for(var i = 0; i <= keys.length -1; i++) {
+		// 		if (keys[i].indexOf(socket.handshake.session.user.login) !== -1) {
+		// 			client.get(keys[i], function (err, result) {
+		// 				if (err) {
+		// 					// intel.error(err);
+		// 				}
+		// 				socket.local.emit('update', JSON.parse(result));
+		// 			});
+		// 			client.del(keys[i]);
+		// 		}
+		// 	}
+		// });
 	});
 	socket.on('disconnect', function() {
 		console.log('| Socket is closed ID: ' + socket.id);

@@ -836,20 +836,20 @@ function notifyUsers(clientSockets, connectedSockets, article, role, event, requ
 			}
 		}
 		// Save "event" to redis user's data who offline
-		usersArray = Object.values(users);
-		for (let i = 0; i < socketsArray.length; i++) {
-			const socket = socketsArray[i];
-			let session = socket.handshake.session;
-			if (session.user && session.user.roles && Array.isArray(session.user.roles)) {
-				usersArray = usersArray.filter(user => user.login != session.user.login);
-			} else {
-				console.warn('Socket: ' + socket.id + ' has invalid session: ');
-			}
-		}
+		// usersArray = Object.values(users);
+		// for (let i = 0; i < socketsArray.length; i++) {
+		// 	const socket = socketsArray[i];
+		// 	let session = socket.handshake.session;
+		// 	if (session.user && session.user.roles && Array.isArray(session.user.roles)) {
+		// 		usersArray = usersArray.filter(user => user.login != session.user.login);
+		// 	} else {
+		// 		console.warn('Socket: ' + socket.id + ' has invalid session: ');
+		// 	}
+		// }
 		// console.log(usersArray);
-		for (let i = 0; i < usersArray.length; i++) {
-			request.client.set(usersArray[i].login + Date.now(), JSON.stringify(article), redis.print);
-		}
+		// for (let i = 0; i < usersArray.length; i++) {
+		// 	request.client.set(usersArray[i].login + Date.now(), JSON.stringify(article), redis.print);
+		// }
 	});
 }
 

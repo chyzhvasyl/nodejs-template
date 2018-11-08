@@ -8,18 +8,9 @@ services:
       - ../data/mongo:/data/db
     ports:
       - "27017:27017"
-  redis:
-    container_name: redis
-    image: redis
-    restart: always
-    ports:
-    - "6379:6379"
-    volumes:
-    - ../data/redis:/data
-    entrypoint: redis-server --appendonly yes
   server:
-    hostname: vknews
-    container_name: vknews-server
+    hostname: retail-group-news
+    container_name: rgn-server
     image: rickydunlop/nodejs-ffmpeg
     restart: always
     build: .
@@ -31,10 +22,8 @@ services:
     - "3000:3000"
     links:
     - mongo
-    - redis:redis
     depends_on:
     - mongo
-    - redis
 
 volumes:
   npm-cache:

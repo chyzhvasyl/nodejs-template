@@ -2,13 +2,12 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-	// TODO: required : true
 	token: {
 		type: String,
 		required: true,
 		trim: true
 	},
-	tokenLifeTime: {
+	tokenRefreshTime: {
 		type: Date,
 		default: Date.now
 	},
@@ -21,17 +20,14 @@ const userSchema = new Schema({
 	},
 	firstName: {
 		type: String,
-		// required: true,
 		trim: true
 	},
 	lastName: {
 		type: String,
-		// required: true,
 		trim: true
 	},
 	secondaryName: {
 		type: String,
-		// required: true,
 		trim: true
 	},
 	roles: [String]

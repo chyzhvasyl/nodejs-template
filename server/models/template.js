@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const templateSchema = new Schema({
-	// TODO: required : true
 	generalStyles: {
 		fontSizeMetric: String,
 		backgroundColor: String,
@@ -21,7 +20,7 @@ const templateSchema = new Schema({
 			fontSize: Number 
 		},
 	},
-	cookieLifeTime : {
+	tokenLifeTimeMultiplier: {
 		type: Number
 	},
 	article: { type: Schema.Types.ObjectId, ref: 'article' }

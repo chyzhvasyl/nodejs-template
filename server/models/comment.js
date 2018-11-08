@@ -12,10 +12,14 @@ const commentSchema = new Schema({
 		required: true,
 		default: false
 	},
-	time: {
+	timeOfCreation: {
 		type: Date,
 		required: true,
 		default: Date.now
+	},
+	timeOfPublication: {
+		type: Date,
+		default: Date.now 
 	},
 	article: { type: Schema.Types.ObjectId, ref: 'article' },
 	user: { type: Schema.Types.ObjectId, ref: 'user'}

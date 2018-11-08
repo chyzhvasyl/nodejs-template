@@ -83,7 +83,7 @@ function addTemplate(req, res, next) {
 						fontSize: req.body.articleStyles.title.fontSize
 					}
 				},
-				cookieLifeTime : req.body.cookieLifeTime
+				tokenLifeTimeMultiplier : req.body.tokenLifeTimeMultiplier
 			});
     
 			newTemplate.save(function(err, newTemplate) {
@@ -133,7 +133,7 @@ function updateTemplate(req, res, next) {
 				if (req.body.articleStyles.title.fontSize) {
 					template.articleStyles.title.fontSize = req.body.articleStyles.title.fontSize;
 				}
-				if (req.body.cookieLifeTime == 0) {
+				if (req.body.tokenLifeTimeMultiplier == 0) {
 					// if (req.body.cookieLifeTime < template.cookieLifeTime) {
 					// 	User.find().updateMany({ $set: { token : '' }}).exec(function(err){
 					// 		if (err) {
@@ -143,7 +143,7 @@ function updateTemplate(req, res, next) {
 					// 		}
 					// 	});
 					// } 
-					template.cookieLifeTime = 1;
+					template.tokenLifeTimeMultiplier = 1;
 				}
 				template.save(function(err) {
 					if(err) {

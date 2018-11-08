@@ -15,6 +15,7 @@ const fileSchema = new Schema({
 	},
 	timeOfCreation: {
 		type: Date, 
+		required: true,
 		default: Date.now()
 	},
 	article: { type: Schema.Types.ObjectId, ref: 'article' }

@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Category = require('../models/category');
 const Article = require('../models/article');
-// const intel = require('intel');
 const passport = require('passport');
+const logger = require('../logs/logger');
 const util = require('../util');
 
 // *** api routes *** //
@@ -22,10 +22,10 @@ function findAllCategories(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					// intel.error(err);
+					logger.error(err);
 				} else {
 					res.json(categories);
-					// intel.info('Get all categories ', categories);
+					logger.info(`Get all categories ${categories.length}`);
 				}
 			});
 		} else {
@@ -44,10 +44,10 @@ function findCategoryById(req, res, next) {
 				if(err) {
 					res.status(404);
 					res.json(err);
-					// intel.error(err);
+					logger.error(err);
 				} else {
 					res.json(category);
-					// intel.info('Get single category by id ', category);
+					logger.info(`Get single category by id ${category._id}`);
 				}
 			});
 		} else {
@@ -70,10 +70,10 @@ function addCategory(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					// intel.error(err);
+					logger.error(err);
 				} else {
 					res.json(newCategory);
-					// intel.info('Added new category ', newCategory);
+					logger.info(`Added new category ${newCategory.name}`);
 				}
 			});
 		} else {
@@ -86,18 +86,20 @@ function addCategory(req, res, next) {
 // *** update SINGLE category *** //
 function updateCategory(req, res, next) {
 	passport.authenticate('local', function(err, user) {
-		if (err) { return next(err); }
+		if (err) { 
+			return next(err);
+		}
 		if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Category.findById(req.params.id, function(err, category) {
-				category.name = req.body.name;
-				category.save(function(err) {
+			Category.findById(req.params.id, function(err, updatedCategory) {
+				updatedCategory.name = req.body.name;
+				updatedCategory.save(function(err) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						// intel.error(err);
+						logger.error(err);
 					} else {
-						res.json(category);
-						// intel.info('Updated category ', category);
+						res.json(updatedCategory);
+						logger.info(`Updated category ${updatedCategory.name}`);
 					}
 				});
 			});
@@ -111,7 +113,9 @@ function updateCategory(req, res, next) {
 // *** delete SINGLE category *** //
 function deleteCategory(req, res, next) {
 	passport.authenticate('local', function(err, user) {
-		if (err) { return next(err); }
+		if (err) { 
+			return next(err);
+		}
 		if (util.hasRole(user, 'CN=NEWS_Administrator')) {
 			Category.findByIdAndDelete(req.params.id, function(err, deletedCategory) {
 				if(err) {
@@ -123,17 +127,17 @@ function deleteCategory(req, res, next) {
 							if(err) {
 								res.status(400);
 								res.json(err);
-								// intel.error(err);
+								logger.error(err);
 							} else {
 								if (templateCategory != null) {
 									Article.where({ category : deletedCategory._id }).updateMany({ $set: { category : templateCategory._id }}).exec(function(err){
 										if (err) {
 											res.status(400);
 											res.json(err);
-											// intel.error(err);
+											logger.error(err);
 										}
 										res.json(deletedCategory);
-										// intel.info('Deleted category ', deletedCategory);
+										logger.info(`Deleted category ${deletedCategory.name}`);
 									});
 								} else {
 
@@ -145,18 +149,18 @@ function deleteCategory(req, res, next) {
 										if(err) {
 											res.status(400);
 											res.json(err);
-											// intel.error(err);
+											logger.error(err);
 										} else {
 											Article.where({ category : deletedCategory._id }).updateMany({ $set: { category : newTemplateCategory._id }}).exec(function(err){
 												if (err) {
 													res.status(400);
 													res.json(err);
-													// intel.error(err);
+													logger.error(err);
 												}
 												res.json(deletedCategory);
-												// intel.info('Deleted category ', deletedCategory);
+												logger.info(`Deleted category ${deletedCategory.name}`);
 											});
-											// intel.info('Added new category ', newTemplateCategory);
+											logger.info(`Added new category ${newTemplateCategory.name}`);
 										}
 									});
 								}

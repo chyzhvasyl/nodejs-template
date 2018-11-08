@@ -17,7 +17,6 @@ const dbConfig = require('./config/database');
 const request = require('request');
 const flash = require('connect-flash');
 const uuidv4 = require('uuid/v4');
-const redis = require('redis');
 const sharedsession = require('express-socket.io-session');
 const session = require('express-session')({
 	secret: 'ssshhhhh',
@@ -25,8 +24,10 @@ const session = require('express-session')({
 	saveUninitialized: true
 });
 const admin = require('firebase-admin');
+const tokenLifeTime = require('../config/general');
 // const https = require('https');
 // const forceSsl = require('express-force-ssl');
+// const redis = require('redis');
 
 // *** http, express instance *** //
 const server = express();
@@ -64,14 +65,14 @@ mongoose.connect(dbConfig.database, (err) => {
 								fontSize: 18
 							}
 						},
-						cookieLifeTime : 1
+						tokenLifeTimeMultiplier : 1
 					});
 									
 					newTemplate.save(function(err) {
 						if(err) {
 							logger.error(err);
 						} else { 
-							logger.error('Added new template');
+							logger.info('Added new template');
 						}
 					});
 				}
@@ -134,6 +135,7 @@ const message = {
 admin.messaging().send(message)
 	.then((response) => {
 		// Response is a message ID string.
+		console.log(`Successfully sent message: ${response}`);
 		logger.info(`Successfully sent message: ${response}`);
 	})
 	.catch((err) => {
@@ -205,7 +207,7 @@ passport.use(new LocalStrategy(
 					}
 					const template = templates[0];
 					if (user.token === password) {
-						if ((Date.now() - user.tokenLifeTime) < 86400000 * template.cookieLifeTime) {
+						if ((Date.now() - user.tokenRefreshTime) < tokenLifeTime * template.tokenLifeTimeMultiplier) {
 							return done(null, user);
 						} else {
 							request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {

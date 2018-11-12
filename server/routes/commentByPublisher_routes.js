@@ -3,7 +3,7 @@ const router = express.Router();
 const passport = require('passport');
 const Article = require('../models/article');
 const CommentByPublisher = require('../models/commentByPublisher');
-// const intel = require('intel');
+const logger = require('../config/logger');
 
 // *** api routes *** //
 router.get('/commentsByPublisher', findAllCommentsByPublisher);
@@ -24,10 +24,10 @@ function findAllCommentsByPublisher(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						// intel.error(err);
+						logger.error(err);
 					} else {
 						res.json(commentsByPublisher);
-						// intel.info('Get all commentsByPublisher ', commentsByPublisher);
+						logger.info(`Get all commentsByPublisher ${commentsByPublisher.length}`);
 					}
 				});
 		} else {
@@ -48,10 +48,10 @@ function findCommentByPublisherById(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						// intel.error(err);
+						logger.error(err);
 					} else {
 						res.json(commentByPublisher);
-						// intel.info('Get single commentByPublisher by id ', commentByPublisher);
+						logger.info(`Get single commentByPublisher by id ${commentByPublisher._id}`);
 					}
 				});
 		} else {
@@ -72,10 +72,10 @@ function findCommentsByPublisherByConfirmation(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						// intel.error(err);
+						logger.error(err);
 					} else {
 						res.json(commentsByPublisher);
-						// intel.info('Get commentsByPublisher by confirmation ', commentsByPublisher);
+						logger.info(`Get commentsByPublisher by confirmation ${commentsByPublisher._id}`);
 					}
 				});
 		} else {
@@ -107,7 +107,7 @@ function addCommentByPublisher(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						// intel.error(err);
+						logger.error(err);
 					}
 				});
 			}));
@@ -116,10 +116,10 @@ function addCommentByPublisher(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					// intel.error(err);
+					logger.error(err);
 				} else {
 					res.json(newCommentByPublisher);
-					// intel.info('Added new commentByPublisher ', newCommentByPublisher);
+					logger.info(`Added new commentByPublisher ${newCommentByPublisher.body}`);
 				}
 			});
 		} else {
@@ -148,10 +148,10 @@ function updateCommentByPublisher(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						// intel.error(err);
+						logger.error(err);
 					} else {
 						res.json(commentByPublisher);
-						// intel.info('Updated commentByPublisher ', commentByPublisher);
+						logger.info(`Updated commentByPublisher ${commentByPublisher.body}`);
 					}
 				});
 			});
@@ -167,14 +167,14 @@ function deleteCommentByPublisher(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (user && user.roles && user.roles.includes('CN=NEWS_publisher')) { 
-			CommentByPublisher.findByIdAndDelete(req.params.id, function(err, commentByPublisher) {
+			CommentByPublisher.findByIdAndDelete(req.params.id, function(err, deletedCommentByPublisher) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					// intel.error(err);
+					logger.error(err);
 				} else {
-					res.json(commentByPublisher);
-					// intel.info('Deleted commentByPublisher ', commentByPublisher);
+					res.json(deletedCommentByPublisher);
+					logger.info(`Deleted commentByEditor ${deletedCommentByPublisher.body}`);
 				}
 			});
 		} else {

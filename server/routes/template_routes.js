@@ -132,17 +132,13 @@ function updateTemplate(req, res, next) {
 				if (req.body.articleStyles.title.fontSize) {
 					template.articleStyles.title.fontSize = req.body.articleStyles.title.fontSize;
 				}
-				if (req.body.cookieLifeTime == 0) {
-					// if (req.body.cookieLifeTime < template.cookieLifeTime) {
-					// 	User.find().updateMany({ $set: { token : '' }}).exec(function(err){
-					// 		if (err) {
-					// 			res.json(err);
-					// 		} else {
-					// 			// intel.info('Clear token field in all users');
-					// 		}
-					// 	});
-					// } 
-					template.cookieLifeTime = 1;
+				if (req.body.cookieLifeTime) {
+					if (req.body.cookieLifeTime == 0) {
+						template.cookieLifeTime = 1;
+					}
+					else if (req.body.cookieLifeTime > 0) {
+						template.cookieLifeTime = req.body.cookieLifeTime;
+					}
 				}
 				template.save(function(err) {
 					if(err) {

@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Comment = require('../models/comment');
 const Article = require('../models/article');
-// const intel = require('intel');
 const passport = require('passport');
+const logger = require('../config/logger');
 const util = require('../util');
 const general = require('../config/general'); 
 
@@ -27,10 +27,10 @@ function findAllComments(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						// intel.error(err);
+						logger.error(err);
 					} else {
 						res.json(comments);
-						// intel.info('Get all comments ', comments);
+						logger.info(`Get all comments ${comments.length}`);
 					}
 				});
 		} else {
@@ -51,10 +51,10 @@ function findCommentById(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						// intel.error(err);
+						logger.error(err);
 					} else {
 						res.json(comment);
-						// intel.info('Get single comment by id ', comment);
+						logger.info(`Get single comment by id ${comment._id}`);
 					}
 				});
 		} else {
@@ -75,10 +75,10 @@ function findCommentsByConfirmation(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						// intel.error(err);
+						logger.error(err);
 					} else {
 						res.json(comments);
-						// intel.info('Get comments by confirmation ', comments);
+						logger.info(`Get comments by confirmation ${comments.length}`);
 					}
 				});
 		} else {
@@ -96,7 +96,7 @@ function findAllCommentsOnAllUsersArticles(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					// intel.error(err);
+					logger.error(err);
 				} else {
 					let comments = [];
 					Array.from(articles).forEach(article => {
@@ -112,7 +112,7 @@ function findAllCommentsOnAllUsersArticles(req, res, next) {
 					let a = req.params.flag * general.dataChunk;
 					let b = req.params.flag * general.dataChunk + general.dataChunk;
 					res.json(comments.slice(a, b));
-					// intel.info('Get all comments by author ', user.id);
+					logger.info(`Get all comments by author ${user.login}`);
 				}
 			});
 		} else {
@@ -144,7 +144,7 @@ function addComment(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						// intel.error(err);
+						logger.error(err);
 					}
 				});
 			}));
@@ -153,10 +153,10 @@ function addComment(req, res, next) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					// intel.error(err);
+					logger.error(err);
 				} else {
 					res.json(newComment);
-					// intel.info('Added new comment ', newComment);
+					logger.info(`Added new comment ${newComment.body}`);
 				}
 			});
 		} else {
@@ -167,6 +167,7 @@ function addComment(req, res, next) {
 }
 
 // *** update SINGLE comment *** //
+//TODO: findByIdAndUpdate
 function updateComment(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
@@ -185,10 +186,10 @@ function updateComment(req, res, next) {
 					if(err) {
 						res.status(400);
 						res.json(err);
-						// intel.error(err);
+						logger.error(err);
 					} else {
 						res.json(comment);
-						// intel.info('Updated comment ', comment);
+						logger.info(`Added new comment ${comment.body}`);
 					}
 				});
 			});
@@ -204,14 +205,14 @@ function deleteComment(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user,'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Comment.findByIdAndDelete(req.params.id, function(err, comment) {
+			Comment.findByIdAndDelete(req.params.id, function(err, deletedComment) {
 				if(err) {
 					res.status(400);
 					res.json(err);
-					// intel.error(err);
+					logger.error(err);
 				} else {
-					res.json(comment);
-					// intel.info('Deleted comment ', comment);
+					res.json(deletedComment);
+					logger.info(`Deleted comment ${deletedComment.body}`);
 				}
 			});
 		} else {

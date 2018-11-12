@@ -27,7 +27,6 @@ const admin = require('firebase-admin');
 const general = require('./config/general');
 // const https = require('https');
 // const forceSsl = require('express-force-ssl');
-// const redis = require('redis');
 
 // *** http, express instance *** //
 const server = express();
@@ -213,33 +212,37 @@ passport.use(new LocalStrategy(
 							return done(null, false);
 						}
 					} else {
-						request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
-							if (err) {
-								return logger.error(err); 
-							}
-							const newToken = uuidv4();
-							if (httpResponse.statusCode === 200) {
-								User.findOneAndUpdate(
-									{ login: login, token: user.token },
-									{
-										token: newToken,
-										tokenLifeTime: Date.now(),
-										roles: body.ListGroups
-									}, 
-									{ new: true }, (function(err, updatedUser){
-										if(err) {
-											logger.error(err);
-											return done(null, false);
-										} else {
-											logger.info(`Updated user ${updatedUser.login}`);
-											return done(null, updatedUser);
-										}
-									})
-								);
-							} else {
-								return done(null, false);     
-							}
-						});
+						if ((Date.now() - user.tokenRefreshTime) < general.tokenLifeTime * template.cookieLifeTime) {
+							return done(null, user);
+						} else {
+							request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
+								if (err) {
+									return logger.error(err); 
+								}
+								const newToken = uuidv4();
+								if (httpResponse.statusCode === 200) {
+									User.findOneAndUpdate(
+										{ login: login, token: user.token },
+										{
+											token: newToken,
+											tokenLifeTime: Date.now(),
+											roles: body.ListGroups
+										}, 
+										{ new: true }, (function(err, updatedUser){
+											if(err) {
+												logger.error(err);
+												return done(null, false);
+											} else {
+												logger.info(`Updated user ${updatedUser.login}`);
+												return done(null, updatedUser);
+											}
+										})
+									);
+								} else {
+									return done(null, false);     
+								}
+							});
+						}
 					}
 				});
 			}
@@ -301,11 +304,12 @@ server.post('/login', function(req, res, next) {
 });
 
 // *** server config *** //
-// const hostname = '192.168.0.123';
+const hostname = '192.168.0.123';
 const port = 3000;
 
-http.listen(port, function(){
+http.listen(port, hostname, function(){
 	console.log('Server started on port: 3000');
+	// console.log('LIBUV Threads: ', process.env.UV_THREADPOOL_SIZE);
 	logger.info(`Server started on port: ${port}`);
 });
 

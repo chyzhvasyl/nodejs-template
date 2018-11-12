@@ -25,6 +25,7 @@ const session = require('express-session')({
 });
 const admin = require('firebase-admin');
 const general = require('./config/general');
+const compression = require('compression');
 // const https = require('https');
 // const forceSsl = require('express-force-ssl');
 
@@ -162,6 +163,7 @@ server.use(function(req,res,next){
 	req.io = io;
 	next();
 });
+server.use(compression());
 // server.use(function(req,res,next){
 // 	req.client = client;
 // 	next();
@@ -304,10 +306,10 @@ server.post('/login', function(req, res, next) {
 });
 
 // *** server config *** //
-const hostname = '192.168.0.123';
+// const hostname = '192.168.0.123';
 const port = 3000;
 
-http.listen(port, hostname, function(){
+http.listen(port, function(){
 	console.log('Server started on port: 3000');
 	// console.log('LIBUV Threads: ', process.env.UV_THREADPOOL_SIZE);
 	logger.info(`Server started on port: ${port}`);

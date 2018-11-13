@@ -113,7 +113,7 @@ function findAllArticlesByCategoryAndConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation}, { title: true, shortBody: true, status: true, confirmation: true, user: true, file: true, timeOfCreation: true, timeOfPublication: true }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
+			Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation}, { title: true, shortBody: true, status: true, confirmation: true, user: true, file: true, timeOfCreation: true, timeOfPublication: true }).sort({ timeOfPublication : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate('category')
 				.populate('file')
 				.populate('template')
@@ -218,7 +218,7 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 						logger.info(`Get all articles by several status: not approved by publisher, created ${articles.length}`);
 					}
 				});
-		} else if (util.hasRole(user, 'CN=NEWS_publisher', 'CN=NEWS_Administrator')){
+		} if (util.hasRole(user, 'CN=NEWS_publisher', 'CN=NEWS_Administrator')){
 			Article.find({ $or: [{status : 'modified'}]}).sort({ timeOfCreation : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate({
 					path: 'comments',

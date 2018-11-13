@@ -1,4 +1,4 @@
 module.exports = {
-	database: 'mongodb://mongo:27017/template',
+	database: 'mongodb://localhost:27017/template',
 	secret: 'yoursecret'
 };

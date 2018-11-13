@@ -23,6 +23,7 @@ function findAllComments(req, res, next) {
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
 			Comment.find().sort({ time : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate('article')
+				.populate('user')
 				.exec(function(err, comments) {
 					if(err) {
 						res.status(400);
@@ -92,7 +93,10 @@ function findAllCommentsOnAllUsersArticles(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Author')) {
-			Article.find({'user':user.id}).populate('comments').exec(function(err, articles) {
+			Article.find({'user':user.id}).populate({
+				path: 'comments',
+				populate: { path: 'user' },
+			}).exec(function(err, articles) {
 				if(err) {
 					res.status(400);
 					res.json(err);

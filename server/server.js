@@ -122,14 +122,14 @@ admin.initializeApp({
 	databaseURL: 'https://test-6f70a.firebaseio.com'
 });
 
-const topic = 'highScores';
+const registrationToken = 'd5k2ntNQKcc:APA91bELZXuXtjIuZ4SpSb_SFgxDdixFrqrGJ_NfzFP8h0Szdag9AmeA_xXsoVdBPgGUP9yLtJLzzAY-Hb9vTowF8L2eZbcrx4dZTivATrHCCkK1skWxj0u6F3CVk2YzyClU-SbCghwG';
 
-const message = {
+var message = {
 	data: {
 		score: '850',
 		time: '2:45'
 	},
-	topic: topic
+	token: registrationToken
 };
 
 admin.messaging().send(message)

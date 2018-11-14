@@ -27,7 +27,8 @@ router.get('/article/:id/:confirmation', findArticleByIdAndConfirmation);
 router.get('/articles/category/:category_id/:confirmation/:flag', findAllArticlesByCategoryAndConfirmation);
 router.get('/articles/user/:user_id/:flag', findAllArticlesByUserId);
 router.get('/articles/confirmation/:confirmation/:flag', findAllArticlesByConfirmation);
-router.get('/articles/status/:flag', findAllArticlesBySeveralStatus);
+router.get('/articles/status_created/:flag', findAllArticlesStatusCreated);
+router.get('/articles/status_modified/:flag', findAllArticlesStatusModified);
 router.post('/article/:category_id/:template_id?/:user_id?', addArticle);
 router.put('/article/like/:id', likeArticle);
 router.put('/article/:id/:category_id?', updateArticle);
@@ -197,11 +198,11 @@ function findAllArticlesByUserId(req, res, next) {
 
 // *** get All articles by several status *** //
 // TODO: refactoring
-function findAllArticlesBySeveralStatus(req, res, next) {
+function findAllArticlesStatusCreated(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
-		if (util.hasRole(user, 'CN=NEWS_Editor', 'CN=NEWS_Administrator', 'CN=NEWS_Author')) {
-			Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]}, { title: true, shortBody: true, status: true, confirmation: true, user: true, file: true, timeOfCreation: true, timeOfPublication: true, template: true, category: true }).sort({ timeOfCreation : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
+		if (util.hasRole(user, 'CN=NEWS_Editor')) {
+			Article.find({ $or: [{status : 'not approved by publisher'}, {status : 'created'}]}).sort({ timeOfCreation : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate('category')
 				.populate('file')
 				.populate('template')
@@ -218,7 +219,17 @@ function findAllArticlesBySeveralStatus(req, res, next) {
 						logger.info(`Get all articles by several status: not approved by publisher, created ${articles.length}`);
 					}
 				});
-		} if (util.hasRole(user, 'CN=NEWS_publisher', 'CN=NEWS_Administrator')){
+		} else {
+			res.status(403);
+			res.send('Access denied');
+		}
+	})(req, res, next);
+}
+
+function findAllArticlesStatusModified(req, res, next) {
+	passport.authenticate('local', function(err, user) {
+		if (err) { return next(err); }
+		if (util.hasRole(user, 'CN=NEWS_publisher')){
 			Article.find({ $or: [{status : 'modified'}]}).sort({ timeOfCreation : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate({
 					path: 'comments',

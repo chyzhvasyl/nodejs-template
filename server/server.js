@@ -115,21 +115,21 @@ mongoose.connect(dbConfig.database, (err) => {
 // });
 
 // *** firebase config *** //
-var serviceAccount = require('./encryption/test-6f70a-firebase-adminsdk-jacfy-96dd5c6762.json');
+const serviceAccount = require('./encryption/test-6f70a-firebase-adminsdk-jacfy-96dd5c6762.json');
 
 admin.initializeApp({
 	credential: admin.credential.cert(serviceAccount),
 	databaseURL: 'https://test-6f70a.firebaseio.com'
 });
 
-const registrationToken = 'd5k2ntNQKcc:APA91bELZXuXtjIuZ4SpSb_SFgxDdixFrqrGJ_NfzFP8h0Szdag9AmeA_xXsoVdBPgGUP9yLtJLzzAY-Hb9vTowF8L2eZbcrx4dZTivATrHCCkK1skWxj0u6F3CVk2YzyClU-SbCghwG';
+const topic = 'highScores';
 
-var message = {
+const message = {
 	data: {
 		score: '850',
 		time: '2:45'
 	},
-	token: registrationToken
+	topic: topic
 };
 
 admin.messaging().send(message)

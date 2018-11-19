@@ -848,20 +848,45 @@ function notifyUsers(clientSockets, connectedSockets, article, role, event, requ
 			}
 		}
 		// Save "event" to redis user's data who offline
-		// usersArray = Object.values(users);
-		// for (let i = 0; i < socketsArray.length; i++) {
-		// 	const socket = socketsArray[i];
-		// 	let session = socket.handshake.session;
-		// 	if (session.user && session.user.roles && Array.isArray(session.user.roles)) {
-		// 		usersArray = usersArray.filter(user => user.login != session.user.login);
-		// 	} else {
-		// 		console.warn('Socket: ' + socket.id + ' has invalid session: ');
-		// 	}
-		// }
-		// console.log(usersArray);
-		// for (let i = 0; i < usersArray.length; i++) {
+		usersArray = Object.values(users);
+		for (let i = 0; i < socketsArray.length; i++) {
+			const socket = socketsArray[i];
+			let session = socket.handshake.session;
+			if (session.user && session.user.roles && Array.isArray(session.user.roles)) {
+				usersArray = usersArray.filter(user => user.login != session.user.login);
+			} else {
+				console.warn('Socket: ' + socket.id + ' has invalid session: ');
+			}
+		}
+		console.log(usersArray);
+		for (let i = 0; i < usersArray.length; i++) {
+			const topic = `${usersArray[i].login}`;
+			var message = {
+				notification: {
+					title: 'Тестовое сообщение',
+					body: `Пользователю ${usersArray[i].login}`,
+				},
+				android: {
+					ttl: 3600 * 1000,
+					notification: {
+						icon: 'stock_ticker_update',
+						color: '#f45342',
+						click_action: 'FCM_PLUGIN_ACTIVITY',
+						sound: 'default'
+					}
+				},
+				topic: topic,
+			};
+			request.admin.messaging().send(message)
+				.then((response) => {
+				// Response is a message ID string.
+					console.log('Successfully sent message:', response);
+				})
+				.catch((error) => {
+					console.log('Error sending message:', error);
+				});
 		// 	request.client.set(usersArray[i].login + Date.now(), JSON.stringify(article), redis.print);
-		// }
+		}
 	});
 }
 

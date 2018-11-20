@@ -863,7 +863,7 @@ function notifyUsers(clientSockets, connectedSockets, article, role, messageText
 			const topic = `${usersArray[i].login}`;
 			var message = {
 				notification: {
-					title: 'Тестовое сообщение',
+					title: 'Retail Group News',
 					body: `${messageText}`,
 				},
 				android: {

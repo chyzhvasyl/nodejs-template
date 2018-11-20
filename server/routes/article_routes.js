@@ -298,7 +298,7 @@ function addArticle(req, res, next) {
 								newArticle.category = req.params.category_id;
 								newArticle.template = req.params.template_id;
 								newArticle.user = req.params.user_id;
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, newArticle, 'CN=NEWS_Editor', 'update', req);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, newArticle, 'CN=NEWS_Editor', 'У Вас появилась новость требующая проверки', 'update', req);
 								newArticle.save(saveCallback(req, res, newFile, user));
 							});
 						}
@@ -329,7 +329,7 @@ function addArticle(req, res, next) {
 						newArticle.category = req.params.category_id;
 						newArticle.template = req.params.template_id;
 						newArticle.user = req.params.user_id;
-						notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, newArticle, 'CN=NEWS_Editor', 'update', req);
+						notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, newArticle, 'CN=NEWS_Editor', 'У Вас появилась новость требующая проверки', 'update', req);
 						newArticle.save(saveCallback(req, res, newFile, user));
 					});
 				}   
@@ -532,28 +532,28 @@ function updateArticle(req, res, next) {
 							if (article.status == 'created' && req.body.status == 'not approved by editor') {
 								article.status = req.body.status;
 								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Author', 'update', req);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Author', 'Ваша новость не утверждена, необходимо редактирование', 'update', req);
 							} else if (article.status == 'created' && req.body.status == 'modified') {
 								article.status = req.body.status;
 								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_publisher', 'update', req);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_publisher', 'У Вас появилась новость требующая проверки', 'update', req);
 							} else if (article.status == 'not approved by editor' && req.body.status == 'created') {
 								article.status = req.body.status;
 								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Editor', 'update', req);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Editor', 'У Вас появилась новость требующая проверки', 'update', req);
 							} else if (article.status == 'modified' && req.body.status == 'not approved by publisher') {
 								article.status = req.body.status;
 								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Editor', 'update', req);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Editor', 'Ваша новость не утверждена, необходимо редактирование', 'update', req);
 							} else if (article.status == 'modified' && req.body.status == 'published') {
 								article.timeOfPublication = Date.now();
 								article.status = req.body.status;
 								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Reader', 'update', req);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Reader', 'Опубликована новая новость', 'update', req);
 							} else if (article.status === 'not approved by publisher' && req.body.status == 'modified') {
 								article.status = req.body.status;
 								let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
-								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_publisher', 'update', req);
+								notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_publisher', 'У Вас появилась новость требующая проверки', 'update', req);
 							} else {
 								article.status = req.body.status;
 							}
@@ -695,28 +695,28 @@ function updateArticle(req, res, next) {
 									if (article.status == 'created' && req.body.status == 'not approved by editor') {
 										article.status = req.body.status;
 										let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
-										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Author', 'update', req);
+										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Author', 'Ваша новость не утверждена, необходимо редактирование', 'update', req);
 									} else if (article.status == 'created' && req.body.status == 'modified') {
 										article.status = req.body.status;
 										let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
-										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_publisher', 'update', req);
+										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_publisher', 'У Вас появилась новость требующая проверки', 'update', req);
 									} else if (article.status == 'not approved by editor' && req.body.status == 'created') {
 										article.status = req.body.status;
 										let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
-										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Editor', 'update', req);
+										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Editor', 'У Вас появилась новость требующая проверки', 'update', req);
 									} else if (article.status == 'modified' && req.body.status == 'not approved by publisher') {
 										article.status = req.body.status;
 										let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
-										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Editor', 'update', req);
+										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Editor', 'Ваша новость не утверждена, необходимо редактирование', 'update', req);
 									} else if (article.status == 'modified' && req.body.status == 'published') {
 										article.timeOfPublication = Date.now();
 										article.status = req.body.status;
 										let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
-										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Reader', 'update', req);
+										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_Reader', 'Опубликована новая новость', 'update', req);
 									} else if (article.status === 'not approved by publisher' && req.body.status == 'modified') {
 										article.status = req.body.status;
 										let articleResponse = addFileUrl(article.toJSONObject(), article.file, req, user);
-										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_publisher', 'update', req);
+										notifyUsers(req.io.sockets.clients(), req.io.sockets.connected, articleResponse, 'CN=NEWS_publisher', 'У Вас появилась новость требующая проверки', 'update', req);
 									} else {
 										article.status = req.body.status;
 									}
@@ -830,7 +830,7 @@ function updateArticle(req, res, next) {
 	})(req, res, next);
 }
 
-function notifyUsers(clientSockets, connectedSockets, article, role, event, request) {
+function notifyUsers(clientSockets, connectedSockets, article, role, messageText, event, request) {
 	User.find({ roles : role }, function (err, users) {
 		if (err) return console.error(err);
 		// Send notification to online users
@@ -864,7 +864,7 @@ function notifyUsers(clientSockets, connectedSockets, article, role, event, requ
 			var message = {
 				notification: {
 					title: 'Тестовое сообщение',
-					body: `Пользователю ${usersArray[i].login}`,
+					body: `${messageText}`,
 				},
 				android: {
 					ttl: 3600 * 1000,

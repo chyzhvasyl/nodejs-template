@@ -124,23 +124,56 @@ admin.initializeApp({
 
 const topic = 'highScores';
 
-const message = {
+var payload = {
 	data: {
 		score: '850',
 		time: '2:45'
-	},
-	topic: topic
+	}
 };
 
+// var registrationToken = 'f2UH6NAW-6U:APA91bHYrUukF5fUbVvt-jWzlBf_18qelYQe2OauITZV5AjLnIaRBo3XmFCFyCWa-n3SjxjjkuJoxQxgDGEXtR2IPsXXCbcW6ZwExlw6i-4qqoc4bGOx6NUNT8j7LMOmPjMyDDDxCQb0';
+
+// admin.messaging().sendToDevice(registrationToken, payload)
+// 	.then(function(response) {
+// 		// See the MessagingDevicesResponse reference documentation for
+// 		// the contents of response.
+// 		console.log('Successfully sent message:', response);
+// 	})
+// 	.catch(function(error) {
+// 		console.log('Error sending message:', error);
+// 	});
+
+// This registration token comes from the client FCM SDKs.
+var registrationToken = 'f2UH6NAW-6U:APA91bHYrUukF5fUbVvt-jWzlBf_18qelYQe2OauITZV5AjLnIaRBo3XmFCFyCWa-n3SjxjjkuJoxQxgDGEXtR2IPsXXCbcW6ZwExlw6i-4qqoc4bGOx6NUNT8j7LMOmPjMyDDDxCQb0';
+
+// See documentation on defining a message payload.
+var message = {
+	notification: {
+		title: 'Тестовое сообщение',
+		body: 'Тестовое сообщение',
+	},
+	android: {
+		ttl: 3600 * 1000,
+		notification: {
+			icon: 'stock_ticker_update',
+			color: '#f45342',
+			click_action: 'FCM_PLUGIN_ACTIVITY',
+			sound: 'default'
+		}
+	},
+	topic: topic,
+};
+
+// Send a message to the device corresponding to the provided
+// registration token.
 admin.messaging().send(message)
 	.then((response) => {
 		// Response is a message ID string.
-		console.log(`Successfully sent message: ${response}`);
-		logger.info(`Successfully sent message: ${response}`);
+		console.log('Successfully sent message:', response);
 	})
-	.catch((err) => {
-		logger.error(err);
-	});
+	.catch((error) => {
+		console.log('Error sending message:', error);
+	});	
 
 // *** logger *** //
 // intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
@@ -161,6 +194,10 @@ server.use(flash());
 server.use(passport.initialize());
 server.use(function(req,res,next){
 	req.io = io;
+	next();
+});
+server.use(function(req,res,next){
+	req.admin = admin;
 	next();
 });
 server.use(compression());
@@ -227,7 +264,7 @@ passport.use(new LocalStrategy(
 										{ login: login, token: user.token },
 										{
 											token: newToken,
-											tokenLifeTime: Date.now(),
+											tokenRefreshTime: Date.now(),
 											roles: body.ListGroups
 										}, 
 										{ new: true }, (function(err, updatedUser){
@@ -306,10 +343,10 @@ server.post('/login', function(req, res, next) {
 });
 
 // *** server config *** //
-// const hostname = '192.168.0.123';
+const hostname = '192.168.0.123';
 const port = 3000;
 
-http.listen(port, function(){
+http.listen(port, hostname, function(){
 	console.log('Server started on port: 3000');
 	logger.info(`Server started on port: ${port}`);
 });

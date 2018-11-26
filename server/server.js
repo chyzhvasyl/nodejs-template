@@ -115,11 +115,11 @@ mongoose.connect(dbConfig.database, (err) => {
 // });
 
 // *** firebase config *** //
-const serviceAccount = require('./encryption/test-6f70a-firebase-adminsdk-jacfy-96dd5c6762.json');
+const serviceAccount = require('./encryption/rgnews-503a0-firebase-adminsdk-rdlvz-b3349c8815.json');
 
 admin.initializeApp({
 	credential: admin.credential.cert(serviceAccount),
-	databaseURL: 'https://test-6f70a.firebaseio.com'
+	databaseURL: 'https://rgnews-503a0.firebaseio.com'
 });
 
 const topic = 'highScores';
@@ -144,36 +144,36 @@ var payload = {
 // 	});
 
 // This registration token comes from the client FCM SDKs.
-var registrationToken = 'f2UH6NAW-6U:APA91bHYrUukF5fUbVvt-jWzlBf_18qelYQe2OauITZV5AjLnIaRBo3XmFCFyCWa-n3SjxjjkuJoxQxgDGEXtR2IPsXXCbcW6ZwExlw6i-4qqoc4bGOx6NUNT8j7LMOmPjMyDDDxCQb0';
-
-// See documentation on defining a message payload.
-var message = {
-	notification: {
-		title: 'Тестовое сообщение',
-		body: 'Тестовое сообщение',
-	},
-	android: {
-		ttl: 3600 * 1000,
-		notification: {
-			icon: 'stock_ticker_update',
-			color: '#f45342',
-			click_action: 'FCM_PLUGIN_ACTIVITY',
-			sound: 'default'
-		}
-	},
-	topic: topic,
-};
-
-// Send a message to the device corresponding to the provided
-// registration token.
-admin.messaging().send(message)
-	.then((response) => {
-		// Response is a message ID string.
-		console.log('Successfully sent message:', response);
-	})
-	.catch((error) => {
-		console.log('Error sending message:', error);
-	});	
+// var registrationToken = 'f2UH6NAW-6U:APA91bHYrUukF5fUbVvt-jWzlBf_18qelYQe2OauITZV5AjLnIaRBo3XmFCFyCWa-n3SjxjjkuJoxQxgDGEXtR2IPsXXCbcW6ZwExlw6i-4qqoc4bGOx6NUNT8j7LMOmPjMyDDDxCQb0';
+//
+// // See documentation on defining a message payload.
+// var message = {
+// 	notification: {
+// 		title: 'Тестовое сообщение',
+// 		body: 'Тестовое сообщение',
+// 	},
+// 	android: {
+// 		ttl: 3600 * 1000,
+// 		notification: {
+// 			icon: 'stock_ticker_update',
+// 			color: '#f45342',
+// 			click_action: 'FCM_PLUGIN_ACTIVITY',
+// 			sound: 'default'
+// 		}
+// 	},
+// 	topic: topic,
+// };
+//
+// // Send a message to the device corresponding to the provided
+// // registration token.
+// admin.messaging().send(message)
+// 	.then((response) => {
+// 		// Response is a message ID string.
+// 		console.log('Successfully sent message:', response);
+// 	})
+// 	.catch((error) => {
+// 		console.log('Error sending message:', error);
+// 	});
 
 // *** logger *** //
 // intel.addHandler(new intel.handlers.File('./server/logs/file.log'));
@@ -343,10 +343,10 @@ server.post('/login', function(req, res, next) {
 });
 
 // *** server config *** //
-const hostname = '192.168.0.123';
+// const hostname = '192.168.122.1';
 const port = 3000;
 
-http.listen(port, hostname, function(){
+http.listen(port, function(){
 	console.log('Server started on port: 3000');
 	logger.info(`Server started on port: ${port}`);
 });

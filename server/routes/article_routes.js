@@ -863,14 +863,14 @@ function notifyUsers(clientSockets, connectedSockets, article, role, messageText
 			const topic = `${usersArray[i].login}`;
 			var message = {
 				notification: {
-					title: `RGnews`,
+					title: 'Retail Group News',
 					body: `${messageText}`,
 				},
 				android: {
 					ttl: 3600 * 1000,
 					notification: {
 						icon: 'stock_ticker_update',
-						color: '#000000',
+						color: '#576c33',
 						click_action: 'FCM_PLUGIN_ACTIVITY',
 						sound: 'default'
 					}

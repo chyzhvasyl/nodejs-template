@@ -870,7 +870,7 @@ function notifyUsers(clientSockets, connectedSockets, article, role, messageText
 					ttl: 3600 * 1000,
 					notification: {
 						icon: 'stock_ticker_update',
-						color: '#f45342',
+						color: '#576c33',
 						click_action: 'FCM_PLUGIN_ACTIVITY',
 						sound: 'default'
 					}

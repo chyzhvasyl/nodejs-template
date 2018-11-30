@@ -839,9 +839,14 @@ function notifyUsers(clientSockets, connectedSockets, article, role, messageText
 			const socket = socketsArray[i];
 			let session = socket.handshake.session;
 			if (session.user && session.user.roles && Array.isArray(session.user.roles)) {
-				if (session.user.roles.indexOf(role) !== -1) {
-					console.log(i);
-					connectedSockets[socketsArray[i].id].emit(event, article);
+				if (role == 'CN=NEWS_Author') {
+					if ((session.user.roles.indexOf(role) !== -1) && (session.user.login == article.user.login)) {
+						connectedSockets[socketsArray[i].id].emit(event, article);
+					}
+				} else {
+					if (session.user.roles.indexOf(role) !== -1) {
+						connectedSockets[socketsArray[i].id].emit(event, article);
+					}
 				}
 			} else {
 				console.warn('Socket: ' + socket.id + ' has invalid session: ');
@@ -877,14 +882,20 @@ function notifyUsers(clientSockets, connectedSockets, article, role, messageText
 				},
 				topic: topic,
 			};
-			request.admin.messaging().send(message)
-				.then((response) => {
-				// Response is a message ID string.
-					console.log('Successfully sent message:', response);
-				})
-				.catch((error) => {
-					console.log('Error sending message:', error);
-				});
+			if (role == 'CN=NEWS_Author') {
+				if (usersArray[i].login == article.user.login) {
+					connectedSockets[socketsArray[i].id].emit(event, article);
+				}
+			} else {
+				request.admin.messaging().send(message)
+					.then((response) => {
+						// Response is a message ID string.
+						console.log('Successfully sent message:', response);
+					})
+					.catch((error) => {
+						console.log('Error sending message:', error);
+					});
+			}
 		// 	request.client.set(usersArray[i].login + Date.now(), JSON.stringify(article), redis.print);
 		}
 	});

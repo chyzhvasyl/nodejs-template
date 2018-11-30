@@ -343,10 +343,10 @@ server.post('/login', function(req, res, next) {
 });
 
 // *** server config *** //
-// const hostname = '192.168.122.1';
+const hostname = '192.168.1.184';
 const port = 3000;
 
-http.listen(port, function(){
+http.listen(port, hostname, function(){
 	console.log('Server started on port: 3000');
 	logger.info(`Server started on port: ${port}`);
 });

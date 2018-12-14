@@ -39,8 +39,8 @@ router.delete('/article/:id', deleteArticle);
 function findAllArticles(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
-		if (util.hasRole(user, 'CN=NEWS_Administrator')) {
-			Article.find({}, { title: true, shortBody: true, status: true, confirmation: true, user: true, file: true, timeOfCreation: true, timeOfPublication: true }).sort({ timeOfCreation : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
+		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
+			Article.find({}, { title: true, shortBody: true, status: true, confirmation: true, user: true, file: true, timeOfCreation: true, timeOfPublication: true, body:true}).sort({ timeOfCreation : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate('category')
 				.populate('file')
 				.populate('template')

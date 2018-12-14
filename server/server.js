@@ -212,6 +212,7 @@ passport.use(new LocalStrategy(
 			if (!user) {
 				request.post({uri:'http://194.88.150.43:8090/GetUserInfo', json:true, body: {'UserName': login, 'Password': password}}, function optionalCallback(err, httpResponse, body) {
 					if (err) {
+
 						return logger.error(err);
 					}
 					if (httpResponse.statusCode === 200) {
@@ -335,8 +336,10 @@ server.post('/login', function(req, res, next) {
 			return next(err);
 		}
 		if (user) {
+            console.log('user', user);
 			return res.json(user);
 		} else {
+			console.log('res', res);
 			return res.sendStatus(401);
 		}
 	})(req, res, next);

@@ -114,7 +114,7 @@ function findAllArticlesByCategoryAndConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation}, { title: true, shortBody: true, status: true, confirmation: true, user: true, file: true, timeOfCreation: true, timeOfPublication: true }).sort({ timeOfPublication : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
+			Article.find({'category':req.params.category_id, 'confirmation' : req.params.confirmation}, { title: true, shortBody: true, status: true, confirmation: true, user: true, file: true, timeOfCreation: true, timeOfPublication: true}).sort({ timeOfPublication : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate('category')
 				.populate('file')
 				.populate('template')
@@ -143,7 +143,7 @@ function findAllArticlesByConfirmation(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Reader', 'CN=NEWS_Author', 'CN=NEWS_publisher', 'CN=NEWS_Editor', 'CN=NEWS_Administrator')) {
-			Article.find({'confirmation':req.params.confirmation}, { title: true, shortBody: true, status: true, confirmation: true, user: true, file: true, timeOfCreation: true, timeOfPublication: true }).sort({ timeOfPublication : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
+			Article.find({'confirmation':req.params.confirmation}, { title: true, shortBody: true, status: true, confirmation: true, user: true, file: true, timeOfCreation: true, timeOfPublication: true , body: true}).sort({ timeOfPublication : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate('category')
 				.populate('file')
 				.populate('template')
@@ -172,7 +172,7 @@ function findAllArticlesByUserId(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
 		if (util.hasRole(user, 'CN=NEWS_Author')) {
-			Article.find({'user':req.params.user_id}, { title: true, shortBody: true, status: true, confirmation: true, user: true, file: true, timeOfCreation: true, timeOfPublication: true }).sort({ timeOfCreation : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
+			Article.find({'user':req.params.user_id}, { title: true, shortBody: true, status: true, confirmation: true, user: true, file: true, timeOfCreation: true, timeOfPublication: true, body: true }).sort({ timeOfCreation : -1 }).skip(req.params.flag * general.dataChunk).limit(general.dataChunk)
 				.populate('category')
 				.populate('file')
 				.populate('template')
@@ -319,6 +319,7 @@ function addArticle(req, res, next) {
 							res.json(err);
 							logger.error(err);
 						}
+
 						const newArticle = new Article();
 						newArticle.title = req.body.title;
 						newArticle.shortBody = req.body.shortBody;

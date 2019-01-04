@@ -106,7 +106,7 @@ function addTemplate(req, res, next) {
 function updateTemplate(req, res, next) {
 	passport.authenticate('local', function(err, user) {
 		if (err) { return next(err); }
-		if (util.hasRole(user, 'CN=NEWS_Administrator')) {
+		if (util.hasRole(user, 'CN=NEWS_Administrator', 'CN=NEWS_Author')) {
 			Template.findById(req.params.id, function(err, template) {
 				if (req.body.generalStyles.fontSizeMetric) {
 					template.generalStyles.fontSizeMetric = req.body.generalStyles.fontSizeMetric;
